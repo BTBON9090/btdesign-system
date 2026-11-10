@@ -1,0 +1,145 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {
+  createTheme,
+  normalizeTheme,
+  themeToCSS,
+  contrastRatio,
+  presets,
+  defaultTheme,
+  applyThemePatch,
+} from '../dist/index.js';
+
+test('external configuration is normalized and CSS injection cannot escape colors', () => {
+  const config = normalizeTheme({
+    primary: 'red; background: url(https://bad)',
+    radius: Infinity,
+    density: 'large',
+    font: 'url(bad)',
+  });
+  assert.deepEqual(config, defaultTheme);
+  assert.equal(normalizeTheme({ radius: -4 }).radius, 0);
+  assert.equal(normalizeTheme({ radius: 400 }).radius, 20);
+  assert.equal(normalizeTheme({ primary: '#abcdef' }).primary, '#ABCDEF');
+  assert.equal(normalizeTheme(null).primary, defaultTheme.primary);
+});
+
+test('contrast calculation matches known black/white and same-color values', () => {
+  assert.equal(contrastRatio('#000000', '#FFFFFF'), 21);
+  assert.equal(contrastRatio('#FFFFFF', '#FFFFFF'), 1);
+  assert.throws(() => contrastRatio('#fff', '#000000'), TypeError);
+});
+
+test('foreground remains readable for any primary color, in either theme', () => {
+  for (const primary of [
+    ...presets.map((p) => p.primary),
+    '#FFFFFF',
+    '#000000',
+    '#FF0000',
+    '#777777',
+    '#00FF00',
+  ]) {
+    for (const mode of ['light', 'dark']) {
+      const vars = createTheme({ ...defaultTheme, primary }, mode);
+      assert.ok(contrastRatio(vars['--f-primary'], vars['--f-on-primary']) >= 4.5);
+      assert.ok(contrastRatio(vars['--f-text'], vars['--f-bg']) >= 7);
+      assert.ok(contrastRatio(vars['--f-muted'], vars['--f-bg']) >= 4.5);
+    }
+  }
+});
+
+test('export contains both modes and resolves spacing/font choices', () => {
+  const config = { ...defaultTheme, radius: 12, density: 'compact', font: 'mono' };
+  assert.equal(createTheme(config)['--f-control-height'], '32px');
+  assert.equal(createTheme(config)['--f-radius'], '12px');
+  assert.match(themeToCSS(config), /\[data-theme="dark"\]/);
+  assert.match(themeToCSS(config), /color-scheme: light/);
+  assert.match(themeToCSS(config), /SFMono-Regular/);
+});
+
+test('semantic and component overrides whitelist fields, colors, and bounded values', () => {
+  const result = normalizeTheme({
+    ...defaultTheme,
+    semantic: {
+      light: { background: '#abcdef', text: 'red; display:none', custom: '#000000' },
+      dark: { surface: '#202020' },
+      unexpected: { text: '#FFFFFF' },
+    },
+    components: {
+      button: { radius: 90, height: 12 },
+      input: { radius: NaN, height: 100 },
+      card: { padding: 0, radius: -1 },
+      script: { height: 30 },
+    },
+  });
+  assert.deepEqual(result.semantic, {
+    light: { background: '#ABCDEF' },
+    dark: { surface: '#202020' },
+  });
+  assert.deepEqual(result.components, {
+    button: { radius: 20, height: 28 },
+    input: { height: 56 },
+    card: { radius: 0, padding: 8 },
+  });
+  assert.equal(createTheme(result, 'light')['--f-bg'], '#ABCDEF');
+  assert.equal(createTheme(result, 'dark')['--f-surface'], '#202020');
+  assert.equal(createTheme(result)['--f-button-height'], '28px');
+  assert.equal(createTheme(result)['--f-card-padding'], '8px');
+  assert.equal('semantic' in normalizeTheme({ semantic: { light: { text: 'invalid' } } }), false);
+  assert.equal(
+    'components' in normalizeTheme({ components: { input: { height: Infinity } } }),
+    false,
+  );
+});
+
+test('enterprise locks preserve original values even when an AI patch replaces entire sections', () => {
+  const base = normalizeTheme({
+    ...defaultTheme,
+    primary: '#2563EB',
+    semantic: { light: { surface: '#F2F2F2' } },
+    components: { button: { radius: 4 } },
+  });
+  const result = applyThemePatch(
+    base,
+    {
+      name: 'New draft',
+      primary: '#FF0000',
+      radius: 14,
+      semantic: null,
+      components: { button: { radius: 16 } },
+    },
+    { locked: ['primary', 'semantic', 'components'] },
+  );
+  assert.equal(result.name, 'New draft');
+  assert.equal(result.primary, '#2563EB');
+  assert.equal(result.radius, 14);
+  assert.deepEqual(result.semantic, base.semantic);
+  assert.deepEqual(result.components, base.components);
+  assert.deepEqual(base.components, { button: { radius: 4 } });
+});
+
+test('partial patches merge independent overrides and can explicitly reset a section', () => {
+  const base = normalizeTheme({
+    ...defaultTheme,
+    semantic: { light: { background: '#F0F0F0', text: '#121212' }, dark: { surface: '#222222' } },
+    components: { button: { radius: 4, height: 40 }, card: { padding: 30 } },
+  });
+  const patched = applyThemePatch(base, {
+    semantic: { light: { text: '#333333' } },
+    components: { button: { height: 44 } },
+  });
+  assert.deepEqual(patched.semantic, {
+    light: { background: '#F0F0F0', text: '#333333' },
+    dark: { surface: '#222222' },
+  });
+  assert.deepEqual(patched.components, {
+    button: { radius: 4, height: 44 },
+    card: { padding: 30 },
+  });
+  assert.deepEqual(applyThemePatch(patched, { components: { button: null } }).components, {
+    card: { padding: 30 },
+  });
+  assert.equal('components' in applyThemePatch(patched, { components: null }), false);
+  assert.equal(createTheme(patched)['--f-input-height'], '38px');
+  assert.match(themeToCSS(patched), /--f-button-height: 44px/);
+});

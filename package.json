@@ -1,0 +1,32 @@
+{
+  "name": "forma-ui-workspace",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "npm run build:packages && node scripts/package-library.mjs && node scripts/dev.mjs",
+    "build:packages": "npm run build -w @forma-ui/tokens && npm run build -w @forma-ui/react && npm run build -w @forma-ui/vue",
+    "build": "npm run build:packages && npm run build -w @forma-ui/api && node scripts/package-library.mjs && npm run build -w @forma-ui/docs",
+    "test": "npm run build:packages && npm run test -w @forma-ui/tokens && npm run test -w @forma-ui/react && npm run test -w @forma-ui/vue && npm run test -w @forma-ui/api && node --test scripts/migrate-audit.test.mjs",
+    "typecheck": "npm run build:packages && npm run typecheck -w @forma-ui/docs",
+    "pack:libs": "npm run build:packages && node scripts/package-library.mjs",
+    "migrate:audit": "node scripts/migrate-audit.mjs",
+    "verify:packages": "node scripts/verify-packages.mjs",
+    "format": "prettier --write ."
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "prettier": "^3.9.10",
+    "tsx": "^4.23.15",
+    "typescript": "^5.9.3"
+  }
+}
