@@ -16,7 +16,8 @@ function run(command, args, cwd) {
   assert.equal(result.status, 0, `${command} ${args.join(' ')} failed`);
 }
 const flags = new Set(process.argv.slice(2));
-for (const flag of flags) assert.equal(flag, '--skip-pack', `Unknown argument: ${flag}`);
+for (const flag of flags)
+  assert.ok(['--skip-pack', '--offline'].includes(flag), `Unknown argument: ${flag}`);
 if (!flags.has('--skip-pack')) run(npm, ['run', 'pack:libs'], root);
 
 const downloads = join(root, 'apps/docs/public/downloads');
@@ -33,8 +34,9 @@ const tarballs = manifest.map((entry) => {
   return join(downloads, entry.file);
 });
 
-// Exact versions already installed by npm ci are expected to be in npm's cache.
-// --offline guarantees this verification never reaches another registry or website.
+// Pin direct dependencies to versions installed by npm ci. A fresh CI cache may
+// contain tarballs without registry metadata, so allow normal metadata resolution.
+// --offline remains available for environments with a populated npm cache.
 const dependencyNames = [
   'react',
   'react-dom',
@@ -60,7 +62,7 @@ try {
     npm,
     [
       'install',
-      '--offline',
+      flags.has('--offline') ? '--offline' : '--prefer-offline',
       '--ignore-scripts',
       '--no-audit',
       '--no-fund',
@@ -160,7 +162,7 @@ void [createElement, reactExample, vueExample, vueInput];
   run(process.execPath, ['smoke.mjs'], temp);
   run(process.execPath, ['node_modules/typescript/bin/tsc', '-p', 'tsconfig.json'], temp);
   console.log('PASS: clean consumer typecheck without skipLibCheck.');
-  console.log('Verified offline dependency versions:', dependencies.join(', '));
+  console.log('Verified dependency versions:', dependencies.join(', '));
 } finally {
   rmSync(temp, { recursive: true, force: true });
 }
