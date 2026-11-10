@@ -12,6 +12,11 @@ import {
   watch,
 } from 'vue';
 import type { App, PropType, VNodeChild } from 'vue';
+import { Field, controlProps, useFieldControl } from './field.js';
+import * as granular from './granular.js';
+export { Field } from './field.js';
+export type { ControlSize } from './field.js';
+export * from './granular.js';
 
 type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
 type Size = 'sm' | 'md' | 'lg';
@@ -54,40 +59,46 @@ export const Button = defineComponent({
 export const Input = defineComponent({
   name: 'BTDESIGNInput',
   inheritAttrs: false,
-  props: { modelValue: { type: [String, Number], default: undefined }, invalid: Boolean },
+  props: { modelValue: { type: [String, Number], default: undefined }, ...controlProps },
   emits: ['update:modelValue'],
   setup(props, { attrs, emit }) {
-    return () =>
-      h(
+    const field = useFieldControl();
+    return () => {
+      const bound = field(attrs, props.invalid);
+      const invalid = bound['aria-invalid'] === true || bound['aria-invalid'] === 'true';
+      return h(
         'input',
-        mergeProps(attrs, {
-          class: 'f-input',
+        mergeProps(attrs, bound, {
+          class: ['f-input', `f-control--${props.controlSize}`, invalid && 'f-control--invalid'],
           value: props.modelValue === undefined ? attrs.value : props.modelValue,
-          'aria-invalid': props.invalid || attrs['aria-invalid'],
           onInput: (event: Event) =>
             emit('update:modelValue', (event.target as HTMLInputElement).value),
         }),
       );
+    };
   },
 });
 
 export const Textarea = defineComponent({
   name: 'BTDESIGNTextarea',
   inheritAttrs: false,
-  props: { modelValue: { type: String, default: undefined }, invalid: Boolean },
+  props: { modelValue: { type: String, default: undefined }, ...controlProps },
   emits: ['update:modelValue'],
   setup(props, { attrs, emit }) {
-    return () =>
-      h(
+    const field = useFieldControl();
+    return () => {
+      const bound = field(attrs, props.invalid);
+      const invalid = bound['aria-invalid'] === true || bound['aria-invalid'] === 'true';
+      return h(
         'textarea',
-        mergeProps(attrs, {
-          class: 'f-textarea',
+        mergeProps(attrs, bound, {
+          class: ['f-textarea', `f-control--${props.controlSize}`, invalid && 'f-control--invalid'],
           value: props.modelValue === undefined ? attrs.value : props.modelValue,
-          'aria-invalid': props.invalid || attrs['aria-invalid'],
           onInput: (event: Event) =>
             emit('update:modelValue', (event.target as HTMLTextAreaElement).value),
         }),
       );
+    };
   },
 });
 
@@ -99,10 +110,11 @@ export const Select = defineComponent({
       type: [String, Number, Array] as PropType<string | number | Array<string | number>>,
       default: undefined,
     },
-    invalid: Boolean,
+    ...controlProps,
   },
   emits: ['update:modelValue'],
   setup(props, { attrs, slots, emit }) {
+    const field = useFieldControl();
     const modelValue = computed(() =>
       props.modelValue === undefined ? attrs.value : props.modelValue,
     );
@@ -123,13 +135,14 @@ export const Select = defineComponent({
         }
         return node;
       });
-    return () =>
-      h(
+    return () => {
+      const bound = field(attrs, props.invalid);
+      const invalid = bound['aria-invalid'] === true || bound['aria-invalid'] === 'true';
+      return h(
         'select',
-        mergeProps(attrs, {
-          class: 'f-select',
+        mergeProps(attrs, bound, {
+          class: ['f-select', `f-control--${props.controlSize}`, invalid && 'f-control--invalid'],
           value: Array.isArray(modelValue.value) ? undefined : modelValue.value,
-          'aria-invalid': props.invalid || attrs['aria-invalid'],
           onChange: (event: Event) => {
             const target = event.target as HTMLSelectElement;
             emit(
@@ -142,6 +155,7 @@ export const Select = defineComponent({
         }),
         selectedOptions(slots.default?.() ?? []),
       );
+    };
   },
 });
 
@@ -614,6 +628,8 @@ export const Progress = defineComponent({
 });
 
 const components = {
+  ...granular,
+  Field,
   Button,
   Input,
   Textarea,

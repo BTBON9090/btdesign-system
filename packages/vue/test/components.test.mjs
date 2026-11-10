@@ -147,8 +147,11 @@ test('all remaining components render semantic content and plugin registers name
       names.push(name);
     },
   });
-  assert.equal(names.length, 16);
+  assert.equal(names.length, 37);
   assert.ok(names.includes('FButton') && names.includes('FDialog'));
+  assert.ok(
+    names.includes('FField') && names.includes('FNumberInput') && names.includes('FTableHead'),
+  );
 });
 
 test('cross-framework visual props have equivalent semantics', async () => {

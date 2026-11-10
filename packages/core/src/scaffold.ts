@@ -12,8 +12,8 @@ export function scaffoldFiles(project: ProjectSpec): Record<string, string> {
   const framework = project.framework;
   const main = react ? 'main.tsx' : 'main.ts';
   const dependencies: Record<string, string> = {
-    '@btdesign/tokens': 'file:./packages/btdesign-tokens-0.1.0.tgz',
-    [`@btdesign/${framework}`]: `file:./packages/btdesign-${framework}-0.1.0.tgz`,
+    '@btdesign/tokens': 'file:./packages/btdesign-tokens-0.2.0.tgz',
+    [`@btdesign/${framework}`]: `file:./packages/btdesign-${framework}-0.2.0.tgz`,
     ...(react
       ? { react: '^19.3.1', 'react-dom': '^19.3.1', 'lucide-react': '^1.71.0' }
       : { vue: '^3.5.45' }),
@@ -35,7 +35,7 @@ export function scaffoldFiles(project: ProjectSpec): Record<string, string> {
   return {
     'package.json': json({
       name: `btdesign-${framework}-starter`,
-      version: '0.1.0',
+      version: '0.2.0',
       private: true,
       type: 'module',
       engines: { node: '>=22.12.0' },

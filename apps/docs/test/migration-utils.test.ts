@@ -279,3 +279,29 @@ test('a zero-finding report remains valid data without suggesting migration comp
   assert.ok(result.warnings.some((item) => item.includes('自动导入')));
   assert.ok(result.limitations.some((item) => item.includes('未检测到导入不代表迁移完成')));
 });
+
+test('granular component geometry imports from JSON and CSS without resetting other rules', () => {
+  const json = parseThemeImport(
+    JSON.stringify({
+      components: {
+        field: { gap: 10, labelSize: 14 },
+        table: { cellPadding: 16, rowHeight: 60 },
+      },
+    }),
+  );
+  assert.deepEqual(json.patch.components, {
+    field: { gap: 10, labelSize: 14 },
+    table: { cellPadding: 16, rowHeight: 60 },
+  });
+  assert.deepEqual(json.warnings, []);
+  const css = parseThemeImport(
+    ':root { --f-field-gap: 10px; --f-table-cell-padding: 16px; --f-table-row-height: 60px; }',
+  );
+  assert.deepEqual(css.patch.components, {
+    field: { gap: 10 },
+    table: { cellPadding: 16, rowHeight: 60 },
+  });
+  const bounded = parseThemeImport('--f-field-label-size: 99px;');
+  assert.equal(bounded.patch.components?.field?.labelSize, 16);
+  assert.equal(bounded.warnings.length, 1);
+});

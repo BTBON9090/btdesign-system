@@ -107,11 +107,17 @@ test('handoff contains portable files, true APIs, semantic tokens and honest bou
     ].sort(),
   );
   assert.deepEqual(JSON.parse(files['.btdesign/system.json']), project);
-  assert.equal(componentRegistry.components.length, 16);
+  assert.equal(componentRegistry.components.length, 24);
   const tokens = createTheme(project.theme);
   for (const entry of componentRegistry.components) {
     assert.ok(reactComponents[entry.name], `React export ${entry.name}`);
     assert.ok(vueComponents[entry.name], `Vue export ${entry.name}`);
+  }
+  for (const parts of Object.values(componentRegistry.composition)) {
+    for (const part of parts) {
+      assert.ok(reactComponents[part], `React composition export ${part}`);
+      assert.ok(vueComponents[part], `Vue composition export ${part}`);
+    }
   }
   for (const names of Object.values(componentRegistry.semanticTokens))
     for (const name of names) assert.ok(name in tokens, name);
@@ -125,7 +131,7 @@ test('handoff contains portable files, true APIs, semantic tokens and honest bou
   assert.match(context, /native main\/section\/form\/button\/input\/table/);
   assert.equal(
     JSON.parse(files['package.json']).dependencies['@btdesign/react'],
-    'file:./packages/btdesign-react-0.1.0.tgz',
+    'file:./packages/btdesign-react-0.2.0.tgz',
   );
   assert.match(files['README.md'], /npm install/);
   assert.match(files['README.md'], /npm run dev/);
@@ -294,11 +300,11 @@ test('React and Vue starters build with their complete Vite entry and TypeScript
       const pkg = JSON.parse(files['package.json']);
       assert.equal(
         pkg.dependencies['@btdesign/tokens'],
-        'file:./packages/btdesign-tokens-0.1.0.tgz',
+        'file:./packages/btdesign-tokens-0.2.0.tgz',
       );
       assert.equal(
         pkg.dependencies[`@btdesign/${framework}`],
-        `file:./packages/btdesign-${framework}-0.1.0.tgz`,
+        `file:./packages/btdesign-${framework}-0.2.0.tgz`,
       );
       assert.ok(pkg.dependencies['@fontsource-variable/inter']);
       assert.ok(!pkg.dependencies['@btdesign/core']);

@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { ArrowRight, ArrowUpRight, Check, ChevronRight, Search, Sparkles } from 'lucide-react';
 import { Alert, Badge } from '@btdesign/react';
-import { catalog, componentCode, type ComponentId, type Framework } from './catalog';
-import { ComponentDemo } from './ComponentDemo';
-import { VueDemo } from './VueDemo';
+import type { ThemeMode } from '@btdesign/tokens';
+import { catalog, componentAnatomy, type ComponentId, type Framework } from './catalog';
+import { ComponentWorkbench } from './ComponentWorkbench';
 import { CodeBlock, FrameworkToggle, Notice, PageLead } from './shared';
 const links = [
   ['/guides/development', '快速开始'],
@@ -11,7 +11,15 @@ const links = [
   ['/practices', '最佳实践'],
   ['/migration', '系统迁移'],
 ];
-export function Docs({ path, notify }: { path: string; notify: (s: string) => void }) {
+export function Docs({
+  path,
+  notify,
+  mode,
+}: {
+  path: string;
+  notify: (s: string) => void;
+  mode: ThemeMode;
+}) {
   const [framework, setFramework] = useState<Framework>('react');
   const [filter, setFilter] = useState('');
   const selected = catalog.find((c) => `/components/${c.id}` === path);
@@ -38,7 +46,7 @@ export function Docs({ path, notify }: { path: string; notify: (s: string) => vo
         </a>
         <div className="sidebar-group">
           <a href="#/components" className={path === '/components' ? 'active' : ''}>
-            组件总览<span>16</span>
+            组件总览<span>{catalog.length}</span>
           </a>
         </div>
         {['通用', '数据输入', '数据展示', '导航', '反馈', '布局'].map((group) => (
@@ -61,7 +69,7 @@ export function Docs({ path, notify }: { path: string; notify: (s: string) => vo
         ))}
         <div className="sidebar-foot">
           <span className="status-dot" />
-          BTDESIGN v0.1.0
+          BTDESIGN v0.2.0
         </div>
       </aside>
       <div className="docs-main">
@@ -98,20 +106,13 @@ export function Docs({ path, notify }: { path: string; notify: (s: string) => vo
                 </span>
               </div>
             </PageLead>
-            <div className="example-heading">
-              <h2 id="preview">交互预览</h2>
-              <FrameworkToggle value={framework} onChange={setFramework} />
-            </div>
-            <div className={`component-example example-${selected.id}`}>
-              {framework === 'react' ? (
-                <ComponentDemo key={selected.id} kind={selected.id} onAction={notify} />
-              ) : (
-                <VueDemo key={selected.id} kind={selected.id} onAction={notify} />
-              )}
-            </div>
-            <CodeBlock
-              label={framework === 'react' ? 'React · TSX' : 'Vue · SFC'}
-              code={componentCode(selected.id, framework)}
+            <ComponentWorkbench
+              key={selected.id}
+              kind={selected.id}
+              mode={mode}
+              framework={framework}
+              onFrameworkChange={setFramework}
+              onAction={notify}
             />
             <h2 className="doc-section-title" id="usage">
               使用建议
@@ -119,13 +120,7 @@ export function Docs({ path, notify }: { path: string; notify: (s: string) => vo
             <div className="usage-columns">
               <div>
                 <h3>保持意图清晰</h3>
-                <p>
-                  {selected.id === 'button'
-                    ? '一个操作区域只保留一个主要按钮。用动词描述动作，如「保存更改」，让用户预期操作结果。'
-                    : selected.id === 'table'
-                      ? '为表格添加 caption，为列添加 th。状态需要文字说明，数字与日期使用一致格式。'
-                      : '使用清晰可见的标签，优先采用原生语义。提供明确的默认、禁用与错误状态。'}
-                </p>
+                <p>{componentAnatomy[selected.id][0].purpose}</p>
               </div>
               <div>
                 <h3>跟随整体主题</h3>
@@ -185,7 +180,7 @@ export function Docs({ path, notify }: { path: string; notify: (s: string) => vo
             <PageLead
               eyebrow="COMPONENTS"
               title="细节到位，组合自在。"
-              description="16 个基础组件，两套框架实现。每一个都遵循相同的设计语言，随你的品牌一起变化。"
+              description={`${catalog.length} 个组件族，配合可独立组合的字段、卡片与表格部件。两套框架共享主题、状态与设计规则。`}
             />
             <label className="catalog-search">
               <Search size={16} />
@@ -195,7 +190,7 @@ export function Docs({ path, notify }: { path: string; notify: (s: string) => vo
                 placeholder="查找组件…"
                 aria-label="查找组件"
               />
-              <span>16 components</span>
+              <span>{catalog.length} components</span>
             </label>
             <div className="component-catalog">
               {catalog
@@ -233,7 +228,16 @@ export function Docs({ path, notify }: { path: string; notify: (s: string) => vo
               document.getElementById('preview')?.scrollIntoView({ behavior: 'smooth' });
             }}
           >
-            交互预览
+            组件实验台
+          </a>
+          <a
+            href="#anatomy"
+            onClick={(e) => {
+              e.preventDefault();
+              document.getElementById('anatomy')?.scrollIntoView({ behavior: 'smooth' });
+            }}
+          >
+            理解每一层
           </a>
           <a
             href="#usage"
@@ -382,6 +386,69 @@ function Miniature({ kind }: { kind: ComponentId }) {
       return (
         <span className="mini-progress">
           <i />
+        </span>
+      );
+    case 'field':
+      return (
+        <span className="mini-card">
+          <b>工作邮箱 *</b>
+          <span className="mini-input">you@company.com</span>
+          <small>用于接收邀请</small>
+        </span>
+      );
+    case 'input-group':
+      return (
+        <span className="mini-input">
+          <small>https://</small>
+          <b>my-team</b>
+        </span>
+      );
+    case 'radio-group':
+      return (
+        <span className="demo-stack">
+          <span>◉ 团队可见</span>
+          <span>○ 仅自己</span>
+        </span>
+      );
+    case 'number-input':
+      return (
+        <span className="mini-input">
+          <span>−</span>
+          <b>4</b>
+          <span>＋</span>
+        </span>
+      );
+    case 'breadcrumb':
+      return (
+        <span className="demo-row">
+          <span>项目</span>
+          <span>/</span>
+          <b>品牌规范</b>
+        </span>
+      );
+    case 'pagination':
+      return (
+        <span className="mini-tabs">
+          <span>‹</span>
+          <b>1</b>
+          <span>2</span>
+          <span>…</span>
+          <span>13</span>
+          <span>›</span>
+        </span>
+      );
+    case 'empty-state':
+      return (
+        <span className="mini-modal">
+          <b>还没有项目</b>
+          <span className="mini-button">创建项目</span>
+        </span>
+      );
+    case 'spinner':
+      return (
+        <span className="demo-row">
+          <span className="f-spinner" />
+          <span>正在加载</span>
         </span>
       );
   }
@@ -627,7 +694,7 @@ function Guide({
           description="先带入熟悉的品牌风格，再识别旧系统的组件与差异，按业务页面逐步迁入同一套规则。"
         />
         <Alert variant="info" title="兼容的边界">
-          BTDESIGN v0.1 支持 React 18 / 19 与 Vue 3.4+。现有 Ant Design、Arco、shadcn/ui 等组件的
+          BTDESIGN v0.2 支持 React 18 / 19 与 Vue 3.4+。现有 Ant Design、Arco、shadcn/ui 等组件的
           API 需要逐项适配，并非替换包名即可完成。
         </Alert>
         <h2>1. 带入已有的品牌风格</h2>
@@ -779,7 +846,7 @@ function Guide({
       <p>也可以在仓库运行打包命令，再将安装包复制到目标项目：</p>
       <CodeBlock
         label="Terminal"
-        code={`# 在 BTDESIGN 仓库中\nnpm run pack:libs\n\n# 在目标项目中，替换为实际文件路径\nnpm install /path/to/btdesign-tokens-0.1.0.tgz \\\n  /path/to/btdesign-${framework}-0.1.0.tgz${framework === 'react' ? '\n\n# 使用导出的 React 场景时\nnpm install lucide-react' : ''}`}
+        code={`# 在 BTDESIGN 仓库中\nnpm run pack:libs\n\n# 在目标项目中，替换为实际文件路径\nnpm install /path/to/btdesign-tokens-0.2.0.tgz \\\n  /path/to/btdesign-${framework}-0.2.0.tgz${framework === 'react' ? '\n\n# 使用导出的 React 场景时\nnpm install lucide-react' : ''}`}
       />
       <h2>4. 单独使用组件</h2>
       <CodeBlock

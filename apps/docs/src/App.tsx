@@ -105,7 +105,7 @@ export function App() {
         <header className="site-header">
           <div className="header-inner">
             <Logo />
-            <span className="header-version">v0.1</span>
+            <span className="header-version">v0.2</span>
             <nav className={`desktop-nav ${menu ? 'mobile-open' : ''}`} aria-label="主导航">
               <a
                 href="#/guides/development"
@@ -180,7 +180,7 @@ export function App() {
             onModeChange={() => setMode((m) => (m === 'light' ? 'dark' : 'light'))}
           />
         ) : isKnown ? (
-          <Docs path={path} notify={notify} />
+          <Docs path={path} notify={notify} mode={mode} />
         ) : (
           <main id="main" className="not-found">
             <span>404</span>

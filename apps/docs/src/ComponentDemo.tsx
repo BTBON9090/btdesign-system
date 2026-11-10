@@ -6,6 +6,26 @@ import {
   Badge,
   Button,
   Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+  Field,
+  InputGroup,
+  InputAddon,
+  RadioGroup,
+  NumberInput,
+  Breadcrumb,
+  Pagination,
+  EmptyState,
+  Spinner,
+  TableCaption,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
   Checkbox,
   Dialog,
   Input,
@@ -18,16 +38,34 @@ import {
   Tabs,
   Textarea,
 } from '@btdesign/react';
-import type { ComponentId } from './catalog';
+import { catalog, defaultDemoOptions, type DemoOptions, type ComponentId } from './catalog';
 export function ComponentDemo({
   kind,
   onAction = () => {},
+  options,
 }: {
+  options?: DemoOptions;
   kind: ComponentId;
   onAction?: (message: string) => void;
 }) {
   const [open, setOpen] = useState(false);
   const [checked, setChecked] = useState(true);
+  if (
+    options ||
+    [
+      'field',
+      'input-group',
+      'radio-group',
+      'number-input',
+      'breadcrumb',
+      'pagination',
+      'empty-state',
+      'spinner',
+    ].includes(kind)
+  )
+    return (
+      <ConfiguredDemo kind={kind} options={options ?? defaultDemoOptions} onAction={onAction} />
+    );
   switch (kind) {
     case 'button':
       return (
@@ -125,15 +163,17 @@ export function ComponentDemo({
     case 'card':
       return (
         <Card className="example-card">
-          <span className="surface-icon">
-            <Folder size={22} />
-          </span>
-          <h3>团队工作空间</h3>
-          <p>把规范、组件和好想法放在一起。</p>
-          <Button variant="secondary" onClick={() => onAction('工作空间卡片示例已响应')}>
-            进入工作空间
-            <ArrowRight size={14} />
-          </Button>
+          <CardHeader>
+            <CardTitle>团队工作空间</CardTitle>
+            <CardDescription>让设计与开发保持同步。</CardDescription>
+          </CardHeader>
+          <CardContent>共同维护品牌规则与组件。</CardContent>
+          <CardFooter>
+            <Button variant="secondary" onClick={() => onAction('工作空间卡片示例已响应')}>
+              进入工作空间
+              <ArrowRight size={14} />
+            </Button>
+          </CardFooter>
         </Card>
       );
     case 'alert':
@@ -168,7 +208,7 @@ export function ComponentDemo({
             {
               value: 'history',
               label: '更新记录',
-              content: <p>v0.1.0 — 16 个基础组件与主题实验室。</p>,
+              content: <p>v0.2.0 — {catalog.length} 个组件族与可组合子部件。</p>,
             },
           ]}
         />
@@ -247,16 +287,16 @@ export function ComponentDemo({
 export function MembersTable({ compact = false }: { compact?: boolean }) {
   return (
     <Table>
-      <caption className="sr-only">团队成员示例数据</caption>
-      <thead>
-        <tr>
-          <th>成员</th>
-          <th>角色</th>
-          <th>状态</th>
-          {!compact && <th>加入时间</th>}
-        </tr>
-      </thead>
-      <tbody>
+      <TableCaption className="sr-only">团队成员示例数据</TableCaption>
+      <TableHeader>
+        <TableRow>
+          <TableHead>成员</TableHead>
+          <TableHead>角色</TableHead>
+          <TableHead>状态</TableHead>
+          {!compact && <TableHead>加入时间</TableHead>}
+        </TableRow>
+      </TableHeader>
+      <TableBody>
         {[
           ['林晓', 'lin@forma.design', '设计师', '已加入', '2026-11-01'],
           ['Alex Chen', 'alex@forma.design', '开发者', '已加入', '2026-11-02'],
@@ -264,8 +304,8 @@ export function MembersTable({ compact = false }: { compact?: boolean }) {
         ]
           .slice(0, compact ? 2 : 3)
           .map(([name, email, role, status, date]) => (
-            <tr key={name}>
-              <td>
+            <TableRow key={name}>
+              <TableCell>
                 <div className="member">
                   <Avatar name={name} size="sm" />
                   <div>
@@ -273,15 +313,15 @@ export function MembersTable({ compact = false }: { compact?: boolean }) {
                     <small>{email}</small>
                   </div>
                 </div>
-              </td>
-              <td>{role}</td>
-              <td>
+              </TableCell>
+              <TableCell>{role}</TableCell>
+              <TableCell>
                 <Badge variant={status === '已加入' ? 'success' : 'warning'}>{status}</Badge>
-              </td>
-              {!compact && <td>{date}</td>}
-            </tr>
+              </TableCell>
+              {!compact && <TableCell>{date}</TableCell>}
+            </TableRow>
           ))}
-      </tbody>
+      </TableBody>
     </Table>
   );
 }
@@ -425,4 +465,210 @@ export function WorkspaceDemo({
       </Dialog>
     </div>
   );
+}
+
+function ConfiguredDemo({
+  kind,
+  options: o,
+  onAction,
+}: {
+  kind: ComponentId;
+  options: DemoOptions;
+  onAction: (s: string) => void;
+}) {
+  const [checked, setChecked] = useState(true);
+  const [choice, setChoice] = useState('team');
+  const [quantity, setQuantity] = useState<number | ''>(4);
+  const [page, setPage] = useState(1);
+  const disabled = o.state === 'disabled';
+  const invalid = o.state === 'invalid';
+  const control = { controlSize: o.size, disabled, invalid };
+  const error = invalid ? '请检查输入内容后重试。' : undefined;
+  switch (kind) {
+    case 'button':
+      return (
+        <Button
+          size={o.size}
+          variant={o.variant as 'primary' | 'secondary' | 'ghost' | 'danger'}
+          disabled={disabled}
+          loading={o.state === 'loading'}
+          onClick={() => onAction('按钮示例已响应')}
+        >
+          保存更改
+        </Button>
+      );
+    case 'input':
+      return (
+        <Field className="demo-form" label="工作邮箱" error={error}>
+          <Input {...control} type="email" placeholder="you@company.com" />
+        </Field>
+      );
+    case 'textarea':
+      return (
+        <Field className="demo-form" label="项目描述" error={error}>
+          <Textarea {...control} rows={4} placeholder="介绍一下你的项目…" />
+        </Field>
+      );
+    case 'select':
+      return (
+        <Field className="demo-form" label="团队角色" error={error}>
+          <Select {...control} defaultValue="designer">
+            <option value="designer">设计师</option>
+            <option value="developer">开发工程师</option>
+          </Select>
+        </Field>
+      );
+    case 'checkbox':
+      return (
+        <Checkbox
+          label="接收产品更新"
+          checked={checked}
+          onCheckedChange={setChecked}
+          disabled={disabled}
+        />
+      );
+    case 'switch':
+      return (
+        <Switch
+          label="邮件通知"
+          checked={checked}
+          onCheckedChange={setChecked}
+          disabled={disabled}
+        />
+      );
+    case 'badge':
+      return (
+        <Badge variant={o.variant as 'default' | 'success' | 'warning' | 'danger' | 'info'}>
+          项目状态
+        </Badge>
+      );
+    case 'alert':
+      return (
+        <Alert
+          variant={o.variant as 'success' | 'warning' | 'danger' | 'info'}
+          title="团队配置"
+          className="full-width"
+        >
+          这里显示与当前任务相关的信息。
+        </Alert>
+      );
+    case 'avatar':
+      return <Avatar name="林晓" size={o.size} />;
+    case 'separator':
+      return (
+        <div className="demo-row" style={{ width: '100%', minHeight: 64 }}>
+          <span>项目设置</span>
+          <Separator orientation={o.orientation} />
+          <span>团队成员</span>
+        </div>
+      );
+    case 'progress':
+      return (
+        <div className="demo-form">
+          <Progress value={o.progress} label="文件上传示例" />
+        </div>
+      );
+    case 'field':
+      return (
+        <Field
+          className="demo-form"
+          label="工作邮箱"
+          description="用于接收团队邀请"
+          error={error}
+          required
+          disabled={disabled}
+        >
+          <Input controlSize={o.size} type="email" placeholder="you@company.com" />
+        </Field>
+      );
+    case 'input-group':
+      return (
+        <Field className="demo-form" label="工作空间地址" error={error}>
+          <InputGroup>
+            <InputAddon>https://</InputAddon>
+            <Input {...control} placeholder="my-team" />
+            <InputAddon>.example.com</InputAddon>
+          </InputGroup>
+        </Field>
+      );
+    case 'radio-group':
+      return (
+        <RadioGroup
+          name="access-demo"
+          label="访问权限"
+          orientation={o.orientation}
+          value={choice}
+          onValueChange={setChoice}
+          disabled={disabled}
+          options={[
+            { value: 'team', label: '团队可见', description: '仅组织成员可以访问' },
+            { value: 'private', label: '仅自己', description: '邀请后再开放访问' },
+            { value: 'public', label: '公开访问', disabled: true },
+          ]}
+        />
+      );
+    case 'number-input':
+      return (
+        <Field
+          className="demo-form"
+          label="成员席位"
+          description="可以设置 1 至 20 个席位"
+          error={error}
+        >
+          <NumberInput
+            {...control}
+            value={quantity}
+            onValueChange={setQuantity}
+            min={1}
+            max={20}
+            step={1}
+          />
+        </Field>
+      );
+    case 'breadcrumb':
+      return (
+        <Breadcrumb
+          items={[
+            { label: '组件总览', href: '#/components' },
+            { label: '导航' },
+            { label: '面包屑' },
+          ]}
+        />
+      );
+    case 'pagination':
+      return (
+        <div className="demo-stack">
+          <Pagination
+            page={page}
+            total={128}
+            pageSize={10}
+            onPageChange={setPage}
+            disabled={disabled}
+          />
+          <p className="demo-muted" role="status">
+            第 {page} 页 · 共 128 条示例数据
+          </p>
+        </div>
+      );
+    case 'empty-state':
+      return (
+        <EmptyState
+          title="还没有项目"
+          description="创建第一个项目，开始与团队协作。"
+          action={
+            <Button
+              onClick={() => {
+                window.location.hash = '/lab';
+              }}
+            >
+              创建项目
+            </Button>
+          }
+        />
+      );
+    case 'spinner':
+      return <Spinner label="正在加载项目" size={o.size} />;
+    default:
+      return <ComponentDemo kind={kind} onAction={onAction} />;
+  }
 }

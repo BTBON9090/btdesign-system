@@ -85,7 +85,7 @@ import * as tokens from '@btdesign/tokens';
 import * as react from '@btdesign/react';
 import * as vue from '@btdesign/vue';
 
-const expectedNames = ['Button','Input','Textarea','Select','Checkbox','Switch','Badge','Card','Alert','Tabs','Dialog','Avatar','Separator','Table','Skeleton','Progress'];
+const expectedNames = ['Button','Input','Textarea','Select','Checkbox','Switch','Badge','Card','Alert','Tabs','Dialog','Avatar','Separator','Table','Skeleton','Progress','Field','InputGroup','InputAddon','RadioGroup','NumberInput','Breadcrumb','Pagination','EmptyState','Spinner','CardHeader','CardTitle','CardDescription','CardContent','CardFooter','TableCaption','TableHeader','TableBody','TableFooter','TableRow','TableHead','TableCell'];
 for (const name of expectedNames) {
   assert.ok(react[name], 'Missing React export ' + name);
   assert.ok(vue[name], 'Missing Vue export ' + name);
@@ -97,10 +97,31 @@ assert.match(renderToStaticMarkup(createElement(react.Button, {variant: 'seconda
 assert.match(renderToStaticMarkup(createElement(react.Input, {value: 'React input', readOnly: true})), /value="React input"/);
 assert.match(await renderToString(createSSRApp({render: () => h(vue.Button, {}, () => 'Vue package')})), /Vue package/);
 assert.match(await renderToString(createSSRApp({render: () => h(vue.Input, {value: 'Vue native value'})})), /value="Vue native value"/);
+const reactField = renderToStaticMarkup(createElement(react.Field, {id: 'react-budget', label: '预算', description: '每月限额', error: '请确认预算', required: true}, createElement(react.InputGroup, {}, createElement(react.InputAddon, {}, '¥'), createElement(react.NumberInput, {name: 'budget', value: 12.5, min: 0, max: 20, step: 0.5, controlSize: 'sm'}))));
+assert.match(reactField, /for="react-budget"/);
+assert.match(reactField, /aria-describedby="react-budget-description react-budget-error"/);
+assert.match(reactField, /aria-invalid="true"/);
+assert.match(reactField, /value="12.5"/);
+assert.match(reactField, /f-control--sm/);
+const vueField = await renderToString(createSSRApp({render: () => h(vue.Field, {id: 'vue-budget', label: '预算', description: '每月限额', error: '请确认预算', required: true}, {default: () => h(vue.InputGroup, {}, {default: () => [h(vue.InputAddon, {}, () => '¥'), h(vue.NumberInput, {name: 'budget', modelValue: 12.5, min: 0, max: 20, step: 0.5, controlSize: 'sm'})]})})}));
+assert.match(vueField, /for="vue-budget"/);
+assert.match(vueField, /aria-describedby="vue-budget-description vue-budget-error"/);
+assert.match(vueField, /aria-invalid="true"/);
+assert.match(vueField, /value="12.5"/);
+assert.match(vueField, /f-control--sm/);
+assert.match(renderToStaticMarkup(createElement(react.Pagination, {page: 2, total: 35, pageSize: 10})), /aria-current="page"/);
+assert.match(await renderToString(createSSRApp({render: () => h(vue.Pagination, {page: 2, total: 35, pageSize: 10})})), /aria-current="page"/);
+const reactTable = renderToStaticMarkup(createElement(react.Table, {}, createElement(react.TableCaption, {}, '成员'), createElement(react.TableHeader, {}, createElement(react.TableRow, {}, createElement(react.TableHead, {}, '姓名'))), createElement(react.TableBody, {}, createElement(react.TableRow, {}, createElement(react.TableCell, {}, '林晓')))));
+assert.match(reactTable, /<caption[^>]*>成员/);
+assert.match(reactTable, /scope="col"/);
+const vueTable = await renderToString(createSSRApp({render: () => h(vue.Table, {}, {default: () => [h(vue.TableCaption, {}, () => '成员'), h(vue.TableHeader, {}, () => h(vue.TableRow, {}, () => h(vue.TableHead, {}, () => '姓名'))), h(vue.TableBody, {}, () => h(vue.TableRow, {}, () => h(vue.TableCell, {}, () => '林晓')))]})}));
+assert.match(vueTable, /<caption[^>]*>成员/);
+assert.match(vueTable, /scope="col"/);
 const css = readFileSync(fileURLToPath(import.meta.resolve('@btdesign/tokens/styles.css')), 'utf8');
 assert.match(css, /--f-primary/);
 assert.ok(css.includes('.f-dialog'));
 assert.match(css, /--f-button-height/);
+for (const selector of ['.f-field', '.f-input-group', '.f-number-input', '.f-pagination']) assert.ok(css.includes(selector), 'Missing shared style ' + selector);
 for (const name of ['@btdesign/tokens', '@btdesign/react', '@btdesign/vue']) {
   const entryUrl = import.meta.resolve(name);
   const packageUrl = new URL('../package.json', entryUrl);
@@ -116,7 +137,7 @@ for (const name of ['@btdesign/tokens', '@btdesign/react', '@btdesign/vue']) {
     assert.equal((await import(probe.href)).defaultTheme, tokens.defaultTheme, 'All adapters must share the local token package');
   }
 }
-console.log('PASS: 16 React + 16 Vue exports, SSR, native input values, token overrides, CSS export, declarations, shared local token dependency.');
+console.log('PASS: ' + expectedNames.length + ' exports per framework, composed Field/Table SSR, numeric inputs, pagination, token overrides, CSS, declarations and shared local token dependency.');
 `,
   );
   writeFileSync(
@@ -124,8 +145,8 @@ console.log('PASS: 16 React + 16 Vue exports, SSR, native input values, token ov
     `
 import { createElement, type CSSProperties } from 'react';
 import { h } from 'vue';
-import { Button, Input, type ButtonProps } from '@btdesign/react';
-import { Button as VueButton, Input as VueInput } from '@btdesign/vue';
+import { Button, Input, Field, InputGroup, InputAddon, NumberInput, Pagination, Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter, Table, TableCaption, TableHeader, TableBody, TableRow, TableHead, TableCell, type ButtonProps, type NumberInputProps, type PaginationProps } from '@btdesign/react';
+import { Button as VueButton, Input as VueInput, Field as VueField, InputGroup as VueInputGroup, InputAddon as VueInputAddon, NumberInput as VueNumberInput, Pagination as VuePagination, Card as VueCard, CardHeader as VueCardHeader, CardTitle as VueCardTitle, CardDescription as VueCardDescription, CardContent as VueCardContent, CardFooter as VueCardFooter, Table as VueTable, TableCaption as VueTableCaption, TableHeader as VueTableHeader, TableBody as VueTableBody, TableRow as VueTableRow, TableHead as VueTableHead, TableCell as VueTableCell } from '@btdesign/vue';
 import { createTheme, applyThemePatch, defaultTheme, type ThemeConfig, type ThemePolicy } from '@btdesign/tokens';
 import '@btdesign/tokens/styles.css';
 
@@ -136,7 +157,13 @@ const buttonProps: ButtonProps = {variant: 'secondary', size: 'sm'};
 const reactExample = <section style={style}><Button {...buttonProps}>React</Button><Input value="test" readOnly /></section>;
 const vueExample = h(VueButton, {variant: 'secondary'}, () => 'Vue');
 const vueInput = h(VueInput, {modelValue: 'test', 'onUpdate:modelValue': (value: string) => { void value; }});
-void [createElement, reactExample, vueExample, vueInput];
+const numberProps: NumberInputProps = {value: 12.5, min: 0, max: 20, step: 0.5, controlSize: 'sm', onValueChange: next => { const result: number | '' = next; void result; }};
+const paginationProps: PaginationProps = {page: 2, total: 35, pageSize: 10, onPageChange: page => { const result: number = page; void result; }};
+const reactComposition = <Card><CardHeader><CardTitle>预算</CardTitle><CardDescription>团队配置</CardDescription></CardHeader><CardContent><Field id="budget" label="预算" description="每月额度" error="请确认" required><InputGroup><InputAddon>¥</InputAddon><NumberInput {...numberProps} /></InputGroup></Field><Input size={24} controlSize="lg" invalid /></CardContent><CardFooter><Pagination {...paginationProps} /></CardFooter></Card>;
+const reactTable = <Table><TableCaption>成员</TableCaption><TableHeader><TableRow><TableHead scope="col">姓名</TableHead></TableRow></TableHeader><TableBody><TableRow><TableCell colSpan={2}>林晓</TableCell></TableRow></TableBody></Table>;
+const vueComposition = h(VueCard, {}, {default: () => [h(VueCardHeader, {}, () => [h(VueCardTitle, {}, () => '预算'), h(VueCardDescription, {}, () => '团队配置')]), h(VueCardContent, {}, () => h(VueField, {id: 'budget', label: '预算', description: '每月额度', error: '请确认', required: true}, () => h(VueInputGroup, {}, () => [h(VueInputAddon, {}, () => '¥'), h(VueNumberInput, {modelValue: 12.5, min: 0, max: 20, step: 0.5, controlSize: 'sm', 'onUpdate:modelValue': (next: number | '') => { void next; }})]))), h(VueCardFooter, {}, () => h(VuePagination, {page: 2, total: 35, pageSize: 10, 'onUpdate:page': (page: number) => { void page; }}))]});
+const vueTable = h(VueTable, {}, () => [h(VueTableCaption, {}, () => '成员'), h(VueTableHeader, {}, () => h(VueTableRow, {}, () => h(VueTableHead, {scope: 'col'}, () => '姓名'))), h(VueTableBody, {}, () => h(VueTableRow, {}, () => h(VueTableCell, {colSpan: 2}, () => '林晓')))]);
+void [createElement, reactExample, vueExample, vueInput, reactComposition, reactTable, vueComposition, vueTable];
 `,
   );
   writeFileSync(

@@ -1,13 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
 import type { App, VNodeChild } from 'vue';
+import { defaultDemoOptions, type DemoOptions } from './catalog';
 
 export interface VueDemoProps {
   kind: string;
+  options?: DemoOptions;
   onAction?: (message: string) => void;
 }
 
 /** Each example mounts the actual Vue package in an isolated, disposable Vue app. */
-export function VueDemo({ kind, onAction }: VueDemoProps) {
+export function VueDemo({ kind, onAction, options }: VueDemoProps) {
   const host = useRef<HTMLDivElement>(null);
   const action = useRef(onAction);
   action.current = onAction;
@@ -45,12 +47,15 @@ export function VueDemo({ kind, onAction }: VueDemoProps) {
               const projectName = ref('品牌工作台');
               const progress = ref(64);
               const saved = ref(false);
+              const quantity = ref<number | ''>(4);
+              const page = ref(1);
+              const access = ref('team');
 
               const row = (children: VNodeChild[]) => h('div', { class: 'demo-row' }, children);
               const stack = (children: VNodeChild[]) => h('div', { class: 'demo-stack' }, children);
               const field = (label: string, control: VNodeChild) =>
                 h('label', { class: 'demo-field' }, [h('span', {}, label), control]);
-              const options = () => [
+              const selectOptions = () => [
                 h('option', { value: 'designer' }, '设计师'),
                 h('option', { value: 'developer' }, '开发者'),
                 h('option', { value: 'manager' }, '项目负责人'),
@@ -65,7 +70,7 @@ export function VueDemo({ kind, onAction }: VueDemoProps) {
                       saved.value = false;
                     },
                   },
-                  options,
+                  selectOptions,
                 );
               const save = (event: Event) => {
                 event.preventDefault();
@@ -74,54 +79,242 @@ export function VueDemo({ kind, onAction }: VueDemoProps) {
               };
               const membersTable = () =>
                 h(ui.Table, { 'aria-label': '团队成员示例' }, () => [
-                  h('caption', { class: 'sr-only' }, '团队成员示例数据'),
-                  h(
-                    'thead',
-                    {},
-                    h('tr', {}, [
-                      h('th', { scope: 'col' }, '成员'),
-                      h('th', { scope: 'col' }, '角色'),
-                      h('th', { scope: 'col' }, '状态'),
-                      h('th', { scope: 'col' }, '加入时间'),
-                    ]),
+                  h(ui.TableCaption, {}, () => '团队成员示例数据'),
+                  h(ui.TableHeader, {}, () =>
+                    h(ui.TableRow, {}, () =>
+                      ['成员', '角色', '状态', '加入时间'].map((label) =>
+                        h(ui.TableHead, { scope: 'col' }, () => label),
+                      ),
+                    ),
                   ),
-                  h(
-                    'tbody',
-                    {},
+                  h(ui.TableBody, {}, () =>
                     [
-                      ['林晓', 'lin@forma.design', '设计师', '已加入', '2026-11-01', '林'],
-                      ['Alex Chen', 'alex@forma.design', '开发者', '已加入', '2026-11-02', 'AC'],
-                      ['王宁', 'wang@forma.design', '产品经理', '待确认', '2026-11-08', '王'],
-                    ].map(([memberName, memberEmail, memberRole, memberStatus, date, fallback]) =>
-                      h('tr', { key: memberName }, [
-                        h(
-                          'td',
-                          {},
-                          h('div', { class: 'member' }, [
-                            h(ui.Avatar, { alt: memberName, fallback, size: 'sm' }),
-                            h('div', {}, [
-                              h('strong', {}, memberName),
-                              h('small', {}, memberEmail),
-                            ]),
-                          ]),
-                        ),
-                        h('td', {}, memberRole),
-                        h(
-                          'td',
-                          {},
+                      ['林晓', '设计师', '已加入', '2026-11-01'],
+                      ['Alex Chen', '开发者', '已加入', '2026-11-02'],
+                      ['王宁', '产品经理', '待确认', '2026-11-08'],
+                    ].map(([name, role, status, date]) =>
+                      h(ui.TableRow, { key: name }, () => [
+                        h(ui.TableCell, {}, () => name),
+                        h(ui.TableCell, {}, () => role),
+                        h(ui.TableCell, {}, () =>
                           h(
                             ui.Badge,
-                            { variant: memberStatus === '已加入' ? 'success' : 'warning' },
-                            () => memberStatus,
+                            { variant: status === '已加入' ? 'success' : 'warning' },
+                            () => status,
                           ),
                         ),
-                        h('td', {}, date),
+                        h(ui.TableCell, {}, () => date),
                       ]),
                     ),
                   ),
                 ]);
 
               return () => {
+                const o = options ?? defaultDemoOptions;
+                const disabled = o.state === 'disabled';
+                const invalid = o.state === 'invalid';
+                const control = { controlSize: o.size, disabled, invalid };
+                const error = invalid ? '请检查输入内容后重试。' : undefined;
+                const withField = (label: string, child: VNodeChild, description?: string) =>
+                  h(ui.Field, { label, description, error, class: 'demo-form' }, () => child);
+                if (
+                  options ||
+                  [
+                    'field',
+                    'input-group',
+                    'radio-group',
+                    'number-input',
+                    'breadcrumb',
+                    'pagination',
+                    'empty-state',
+                    'spinner',
+                  ].includes(kind)
+                ) {
+                  switch (kind) {
+                    case 'button':
+                      return h(
+                        ui.Button,
+                        {
+                          size: o.size,
+                          variant: o.variant as 'primary' | 'secondary' | 'ghost' | 'danger',
+                          disabled,
+                          loading: o.state === 'loading',
+                          onClick: () => emitAction('按钮示例已响应'),
+                        },
+                        () => '保存更改',
+                      );
+                    case 'input':
+                      return withField(
+                        '工作邮箱',
+                        h(ui.Input, { ...control, type: 'email', placeholder: 'you@company.com' }),
+                      );
+                    case 'textarea':
+                      return withField(
+                        '项目描述',
+                        h(ui.Textarea, { ...control, rows: 4, placeholder: '介绍一下你的项目…' }),
+                      );
+                    case 'select':
+                      return withField(
+                        '团队角色',
+                        h(
+                          ui.Select,
+                          {
+                            ...control,
+                            modelValue: role.value,
+                            'onUpdate:modelValue': (value: string) => (role.value = value),
+                          },
+                          selectOptions,
+                        ),
+                      );
+                    case 'checkbox':
+                      return h(ui.Checkbox, {
+                        label: '接收产品更新',
+                        disabled,
+                        modelValue: notifications.value,
+                        'onUpdate:modelValue': (value: boolean) => (notifications.value = value),
+                      });
+                    case 'switch':
+                      return h(ui.Switch, {
+                        label: '邮件通知',
+                        disabled,
+                        modelValue: notifications.value,
+                        'onUpdate:modelValue': (value: boolean) => (notifications.value = value),
+                      });
+                    case 'badge':
+                      return h(
+                        ui.Badge,
+                        {
+                          variant: o.variant as
+                            'default' | 'success' | 'warning' | 'danger' | 'info',
+                        },
+                        () => '项目状态',
+                      );
+                    case 'alert':
+                      return h(
+                        ui.Alert,
+                        {
+                          variant: o.variant as 'success' | 'warning' | 'danger' | 'info',
+                          title: '团队配置',
+                          class: 'full-width',
+                        },
+                        () => '这里显示与当前任务相关的信息。',
+                      );
+                    case 'avatar':
+                      return h(ui.Avatar, { name: '林晓', size: o.size });
+                    case 'separator':
+                      return h(
+                        'div',
+                        { class: 'demo-row', style: { width: '100%', minHeight: '64px' } },
+                        [
+                          h('span', {}, '项目设置'),
+                          h(ui.Separator, { orientation: o.orientation }),
+                          h('span', {}, '团队成员'),
+                        ],
+                      );
+                    case 'progress':
+                      return h(
+                        'div',
+                        { class: 'demo-form' },
+                        h(ui.Progress, { value: o.progress, label: '文件上传示例' }),
+                      );
+                    case 'field':
+                      return h(
+                        ui.Field,
+                        {
+                          class: 'demo-form',
+                          label: '工作邮箱',
+                          description: '用于接收团队邀请',
+                          error,
+                          required: true,
+                          disabled,
+                        },
+                        () =>
+                          h(ui.Input, {
+                            controlSize: o.size,
+                            type: 'email',
+                            placeholder: 'you@company.com',
+                          }),
+                      );
+                    case 'input-group':
+                      return withField(
+                        '工作空间地址',
+                        h(ui.InputGroup, {}, () => [
+                          h(ui.InputAddon, {}, () => 'https://'),
+                          h(ui.Input, { ...control, placeholder: 'my-team' }),
+                          h(ui.InputAddon, {}, () => '.example.com'),
+                        ]),
+                      );
+                    case 'radio-group':
+                      return h(ui.RadioGroup, {
+                        name: 'access-demo',
+                        label: '访问权限',
+                        orientation: o.orientation,
+                        disabled,
+                        modelValue: access.value,
+                        'onUpdate:modelValue': (value: string) => (access.value = value),
+                        options: [
+                          { value: 'team', label: '团队可见', description: '仅组织成员可以访问' },
+                          { value: 'private', label: '仅自己', description: '邀请后再开放访问' },
+                          { value: 'public', label: '公开访问', disabled: true },
+                        ],
+                      });
+                    case 'number-input':
+                      return withField(
+                        '成员席位',
+                        h(ui.NumberInput, {
+                          ...control,
+                          modelValue: quantity.value,
+                          'onUpdate:modelValue': (value: number | '') => (quantity.value = value),
+                          min: 1,
+                          max: 20,
+                          step: 1,
+                        }),
+                        '可以设置 1 至 20 个席位',
+                      );
+                    case 'breadcrumb':
+                      return h(ui.Breadcrumb, {
+                        items: [
+                          { label: '组件总览', href: '#/components' },
+                          { label: '导航' },
+                          { label: '面包屑' },
+                        ],
+                      });
+                    case 'pagination':
+                      return stack([
+                        h(ui.Pagination, {
+                          page: page.value,
+                          total: 128,
+                          pageSize: 10,
+                          disabled,
+                          'onUpdate:page': (value: number) => (page.value = value),
+                        }),
+                        h(
+                          'p',
+                          { class: 'demo-muted', role: 'status' },
+                          `第 ${page.value} 页 · 共 128 条示例数据`,
+                        ),
+                      ]);
+                    case 'empty-state':
+                      return h(
+                        ui.EmptyState,
+                        { title: '还没有项目', description: '创建第一个项目，开始与团队协作。' },
+                        {
+                          action: () =>
+                            h(
+                              ui.Button,
+                              {
+                                onClick: () => {
+                                  window.location.hash = '/lab';
+                                },
+                              },
+                              () => '创建项目',
+                            ),
+                        },
+                      );
+                    case 'spinner':
+                      return h(ui.Spinner, { label: '正在加载项目', size: o.size });
+                  }
+                }
                 switch (kind.toLowerCase()) {
                   case 'login':
                     return h(
@@ -438,20 +631,22 @@ export function VueDemo({ kind, onAction }: VueDemoProps) {
                     ]);
 
                   case 'card':
-                    return h(ui.Card, { class: 'demo-stack' }, () => [
-                      row([
-                        h(ui.Avatar, { alt: 'BTDESIGN 团队', fallback: 'F' }),
-                        h('h3', {}, '团队工作空间'),
+                    return h(ui.Card, { class: 'example-card' }, () => [
+                      h(ui.CardHeader, {}, () => [
+                        h(ui.CardTitle, {}, () => '团队工作空间'),
+                        h(ui.CardDescription, {}, () => '让设计与开发保持同步。'),
                       ]),
-                      h('p', {}, '让设计与开发保持同步，构建一致的产品体验。'),
-                      row([
-                        h(ui.Badge, { variant: 'success' }, () => '协作中'),
+                      h(ui.CardContent, {}, () => '共同维护品牌规则与组件。'),
+                      h(ui.CardFooter, {}, () =>
                         h(
                           ui.Button,
-                          { variant: 'secondary', onClick: () => emitAction('已打开工作空间示例') },
-                          () => '查看项目',
+                          {
+                            variant: 'secondary',
+                            onClick: () => emitAction('工作空间卡片示例已响应'),
+                          },
+                          () => '进入工作空间',
                         ),
-                      ]),
+                      ),
                     ]);
 
                   case 'alert':
@@ -627,7 +822,7 @@ export function VueDemo({ kind, onAction }: VueDemoProps) {
       cancelled = true;
       app?.unmount();
     };
-  }, [kind, attempt]);
+  }, [kind, attempt, options]);
 
   return (
     <div className="vue-demo-root">

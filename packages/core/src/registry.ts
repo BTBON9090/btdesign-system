@@ -1,7 +1,7 @@
 export const componentRegistry = {
   schemaVersion: 1,
   library: 'BTDESIGN',
-  version: '0.1.0',
+  version: '0.2.0',
   packages: { react: '@btdesign/react', vue: '@btdesign/vue', tokens: '@btdesign/tokens' },
   styles: ['@btdesign/tokens/styles.css', './theme.css', './app.css'],
   conventions: {
@@ -11,6 +11,8 @@ export const componentRegistry = {
     sizing:
       'Global radius/density feed component variables; component-specific overrides take precedence.',
     html: 'Retain labels, native form validation, captions, status text, focus behavior and keyboard interaction.',
+    composition:
+      'Compose Field with one labeled control. Card and Table parts retain native HTML semantics. Import every named part explicitly; keep data loading and validation in application code.',
   },
   semanticTokens: {
     action: ['--f-primary', '--f-on-primary', '--f-primary-hover', '--f-primary-soft'],
@@ -26,7 +28,24 @@ export const componentRegistry = {
       '--f-input-height',
       '--f-card-radius',
       '--f-card-padding',
+      '--f-field-gap',
+      '--f-field-label-size',
+      '--f-table-cell-padding',
+      '--f-table-row-height',
     ],
+  },
+  composition: {
+    Card: ['CardHeader', 'CardTitle', 'CardDescription', 'CardContent', 'CardFooter'],
+    Table: [
+      'TableCaption',
+      'TableHeader',
+      'TableBody',
+      'TableFooter',
+      'TableRow',
+      'TableHead',
+      'TableCell',
+    ],
+    InputGroup: ['InputAddon'],
   },
   components: [
     {
@@ -45,7 +64,14 @@ export const componentRegistry = {
     {
       name: 'Input',
       purpose: 'Single-line input',
-      props: { type: 'HTML input type', name: 'string', required: 'boolean', disabled: 'boolean' },
+      props: {
+        type: 'HTML input type',
+        name: 'string',
+        required: 'boolean',
+        disabled: 'boolean',
+        controlSize: ['sm', 'md', 'lg'],
+        invalid: 'boolean',
+      },
       react: { value: 'string | number', onChange: 'ChangeEventHandler' },
       vue: { modelValue: 'string | number', 'update:modelValue': 'string' },
       notes:
@@ -54,14 +80,24 @@ export const componentRegistry = {
     {
       name: 'Textarea',
       purpose: 'Multiline input',
-      props: { rows: 'number', maxLength: 'number' },
+      props: {
+        rows: 'number',
+        maxLength: 'number',
+        controlSize: ['sm', 'md', 'lg'],
+        invalid: 'boolean',
+      },
       react: { value: 'string', onChange: 'ChangeEventHandler' },
       vue: { modelValue: 'string', 'update:modelValue': 'string' },
     },
     {
       name: 'Select',
       purpose: 'Native single or multiple selection',
-      props: { multiple: 'boolean', disabled: 'boolean' },
+      props: {
+        multiple: 'boolean',
+        disabled: 'boolean',
+        controlSize: ['sm', 'md', 'lg'],
+        invalid: 'boolean',
+      },
       react: {
         value: 'string | number | readonly string[]',
         onChange: 'ChangeEventHandler',
@@ -161,7 +197,7 @@ export const componentRegistry = {
       react: { children: 'caption, thead, tbody' },
       vue: { slots: 'default (caption, thead, tbody children)' },
       notes:
-        'Native table wrapper with local horizontal scroll. Sorting, pagination, virtualization and selection are application concerns.',
+        'Native table wrapper with local horizontal scroll. Compose TableHeader/Body/Row/Head/Cell. Pagination supplies page controls only; sorting, fetching, virtualization and selection remain application concerns.',
     },
     {
       name: 'Skeleton',
@@ -175,6 +211,100 @@ export const componentRegistry = {
       props: { value: 'number', max: 'number, default 100', label: 'string' },
       notes:
         'React requires value; Vue defaults to zero. Values are clamped. Do not fabricate progress.',
+    },
+    {
+      name: 'Field',
+      purpose: 'Label, help and validation for one control',
+      props: {
+        id: 'string',
+        label: 'required text/content',
+        description: 'text/content',
+        error: 'text/content',
+        required: 'boolean',
+        disabled: 'boolean',
+      },
+      notes:
+        'Provides accessible label, description and error context to Input/Textarea/Select/NumberInput/RadioGroup. Explicit control attributes take precedence. Keep one logical control in each Field. Error text comes from real validation; never use placeholder as label.',
+    },
+    {
+      name: 'InputGroup',
+      purpose: 'Compose an input with prefix and suffix content',
+      react: { children: 'InputAddon + Input + InputAddon' },
+      vue: { slots: 'default: InputAddon + Input + InputAddon' },
+      notes:
+        'InputAddon is a span; it is not an interactive button and is not automatically an accessible description. Use Field for labels and associate meaningful units with aria-describedby.',
+    },
+    {
+      name: 'RadioGroup',
+      purpose: 'Choose exactly one visible option',
+      props: {
+        options: '{value:string,label:string,description?:string,disabled?:boolean}[]',
+        name: 'string',
+        label: 'string',
+        defaultValue: 'string',
+        orientation: ['horizontal', 'vertical'],
+      },
+      react: { value: 'string', onValueChange: '(value:string)=>void' },
+      vue: { modelValue: 'string', 'update:modelValue': 'string' },
+      notes:
+        'Native radios share a name for keyboard navigation and form submission. Inherits Field association and disabled/required state. Do not substitute a checkbox for mutually exclusive choices.',
+    },
+    {
+      name: 'NumberInput',
+      purpose: 'Editable numeric value with increment and decrement actions',
+      props: {
+        min: 'number',
+        max: 'number',
+        step: 'positive number, default 1',
+        defaultValue: 'number | empty string',
+        controlSize: ['sm', 'md', 'lg'],
+        disabled: 'boolean',
+        invalid: 'boolean',
+        name: 'string',
+      },
+      react: { value: 'number | empty string', onValueChange: '(value:number|empty string)=>void' },
+      vue: { modelValue: 'number | empty string', 'update:modelValue': 'number | empty string' },
+      notes:
+        'Keeps empty input distinct from zero. Stepping and blur clamp to bounds. Retains native number input semantics and Field labeling. Application validation still handles domain-specific rules.',
+    },
+    {
+      name: 'Breadcrumb',
+      purpose: 'Describe location in an information hierarchy',
+      props: { items: '{label:string,href?:string}[]', label: 'string' },
+      notes:
+        'Navigation landmark; final item is the current page. Supply actual destinations, not placeholder hrefs.',
+    },
+    {
+      name: 'Pagination',
+      purpose: 'Navigate pages of existing data',
+      props: {
+        page: 'required number',
+        total: 'total item count',
+        pageSize: 'positive number, default 10',
+        siblingCount: 'number, default 1',
+        disabled: 'boolean',
+        label: 'string',
+      },
+      react: { onPageChange: '(page:number)=>void' },
+      vue: { 'update:page': 'number' },
+      notes:
+        'Controlled page state. Clamps invalid values and uses bounded page ranges with ellipses. The caller slices or fetches records; this component does not load data.',
+    },
+    {
+      name: 'EmptyState',
+      purpose: 'Explain absence of data and offer a next step',
+      props: { title: 'required text/content', description: 'text/content' },
+      react: { icon: 'ReactNode', action: 'ReactNode', children: 'ReactNode' },
+      vue: { slots: 'icon, action, default' },
+      notes:
+        'Distinguish first use, no search results, missing permission and errors in application copy. Offer a relevant action with a real handler.',
+    },
+    {
+      name: 'Spinner',
+      purpose: 'Announce indeterminate activity',
+      props: { label: 'string, default 加载中', size: ['sm', 'md', 'lg'] },
+      notes:
+        'Status with a visible label; no invented percentage. Use one announcement per operation and respect reduced motion.',
     },
   ],
 } as const;

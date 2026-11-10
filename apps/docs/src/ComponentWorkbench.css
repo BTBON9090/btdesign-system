@@ -1,0 +1,217 @@
+.bt-workbench {
+  min-width: 0;
+}
+.bt-workbench-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+  padding: 14px 18px;
+  border: 1px solid var(--f-border);
+  border-bottom: 0;
+  border-radius: 8px 8px 0 0;
+  background: var(--f-surface);
+}
+.bt-workbench-controls label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--f-muted);
+  font-size: 11px;
+}
+.bt-workbench-controls select {
+  min-height: 30px;
+  max-width: 150px;
+  border: 1px solid var(--f-border);
+  background: var(--f-bg);
+  color: var(--f-text);
+  border-radius: 5px;
+  padding: 3px 25px 3px 8px;
+  font: inherit;
+}
+.bt-workbench-controls input[type='range'] {
+  width: 125px;
+  accent-color: var(--f-primary);
+}
+.bt-workbench-sync {
+  margin-left: auto;
+  font-size: 10px;
+  color: var(--f-muted);
+}
+.bt-workbench-controls + .component-example {
+  border-radius: 0;
+}
+.bt-workbench .component-example {
+  min-height: 260px;
+  overflow-x: auto;
+}
+.bt-workbench .vue-demo-root {
+  width: 100%;
+}
+.bt-workbench .vue-demo-root > div:first-child {
+  display: flex;
+  justify-content: center;
+}
+.bt-workbench .vue-demo-root > div:first-child > .demo-stack {
+  max-width: 100%;
+}
+.bt-workbench .f-input-group {
+  min-width: 0;
+}
+.bt-workbench .f-card-content {
+  font-size: 13px;
+  color: var(--f-muted);
+}
+.bt-component-anatomy {
+  margin-top: 34px;
+}
+.bt-anatomy-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.bt-anatomy-heading h2 {
+  font-size: 16px;
+  font-weight: 550;
+  margin: 0;
+}
+.bt-anatomy-heading > span {
+  font-size: 10px;
+  color: var(--f-muted);
+}
+.bt-anatomy-layout {
+  display: grid;
+  grid-template-columns: minmax(130px, 0.75fr) minmax(0, 2fr);
+  border-top: 1px solid var(--f-border);
+  border-bottom: 1px solid var(--f-border);
+}
+.bt-anatomy-parts {
+  display: flex;
+  flex-direction: column;
+  padding: 14px 14px 14px 0;
+  gap: 5px;
+  border-right: 1px solid var(--f-border);
+}
+.bt-anatomy-parts button {
+  display: flex;
+  align-items: baseline;
+  gap: 11px;
+  padding: 10px;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  text-align: left;
+  color: var(--f-muted);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+.bt-anatomy-parts button > span {
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+}
+.bt-anatomy-parts button[aria-pressed='true'] {
+  background: var(--f-primary-soft);
+  color: var(--f-primary);
+}
+.bt-anatomy-detail {
+  padding: 24px;
+  min-width: 0;
+}
+.bt-anatomy-detail > strong {
+  font-size: 13px;
+  font-weight: 550;
+}
+.bt-anatomy-detail p {
+  margin: 8px 0 18px;
+  color: var(--f-muted);
+  font-size: 12px;
+  line-height: 1.8;
+}
+.bt-anatomy-detail dl {
+  margin: 0;
+  display: grid;
+  gap: 12px;
+}
+.bt-anatomy-detail dl > div {
+  display: grid;
+  grid-template-columns: 66px minmax(0, 1fr);
+  gap: 8px;
+}
+.bt-anatomy-detail dt {
+  font-size: 10px;
+  color: var(--f-muted);
+  padding-top: 3px;
+}
+.bt-anatomy-detail dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.bt-anatomy-detail code {
+  font-size: 10px;
+  line-height: 1.7;
+}
+.bt-anatomy-tokens {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.bt-anatomy-tokens code {
+  background: var(--f-subtle);
+  padding: 2px 5px;
+  border-radius: 3px;
+}
+.bt-anatomy-detail > a {
+  display: inline-block;
+  font-size: 10px;
+  color: var(--f-primary);
+  margin-top: 20px;
+  line-height: 1.7;
+}
+.bt-workbench-controls select:focus-visible,
+.bt-anatomy-parts button:focus-visible {
+  outline: 2px solid var(--f-primary);
+  outline-offset: 3px;
+}
+@media (max-width: 640px) {
+  .bt-workbench-controls {
+    padding: 12px;
+    gap: 12px;
+  }
+  .bt-workbench-sync {
+    width: 100%;
+    margin-left: 0;
+  }
+  .bt-workbench .component-example {
+    padding: 24px 14px;
+  }
+  .bt-anatomy-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .bt-anatomy-parts {
+    flex-direction: row;
+    flex-wrap: wrap;
+    border-right: 0;
+    border-bottom: 1px solid var(--f-border);
+    padding: 10px 0;
+  }
+  .bt-anatomy-detail {
+    padding: 20px 0;
+  }
+}
+.bt-workbench-theme-note {
+  margin: 0;
+  padding: 9px 16px;
+  border-inline: 1px solid var(--f-border);
+  background: var(--f-subtle);
+  color: var(--f-muted);
+  font-size: 10px;
+  line-height: 1.7;
+}
+.bt-workbench .code-block {
+  margin-top: 0;
+  border-top: 0;
+  border-radius: 0 0 7px 7px;
+}

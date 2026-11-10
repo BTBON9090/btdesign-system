@@ -10,6 +10,12 @@ import {
   Checkbox,
   Dialog,
   Input,
+  Field,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
   Select,
   Switch,
   Table,
@@ -169,19 +175,17 @@ function ReactScene({
             <h1>{project.content.title}</h1>
             <p>{project.content.description}</p>
             <Mark kind="input">
-              <label className="sp-field">
-                工作邮箱
+              <Field className="sp-field" label="工作邮箱">
                 <Input
                   type="email"
                   required
                   placeholder="you@company.com"
                   autoComplete="username"
                 />
-              </label>
+              </Field>
             </Mark>
             <Mark kind="input">
-              <label className="sp-field">
-                密码
+              <Field className="sp-field" label="密码">
                 <Input
                   type="password"
                   required
@@ -189,7 +193,7 @@ function ReactScene({
                   placeholder="至少 8 位字符"
                   autoComplete="current-password"
                 />
-              </label>
+              </Field>
             </Mark>
             <div className="sp-login-options">
               <Checkbox data-bt-kind="input" label="保持登录" />
@@ -268,15 +272,15 @@ function ReactScene({
             <Mark kind="table" className="sp-members">
               <Table>
                 <caption className="sr-only">团队成员示例数据</caption>
-                <thead>
-                  <tr>
-                    <th scope="col">成员</th>
-                    <th scope="col">角色</th>
-                    <th scope="col">状态</th>
-                    <th scope="col">加入时间</th>
-                  </tr>
-                </thead>
-                <tbody>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead scope="col">成员</TableHead>
+                    <TableHead scope="col">角色</TableHead>
+                    <TableHead scope="col">状态</TableHead>
+                    <TableHead scope="col">加入时间</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                   {members
                     .filter(
                       (m) =>
@@ -284,8 +288,8 @@ function ReactScene({
                         (m.name + m.email).toLowerCase().includes(query.toLowerCase()),
                     )
                     .map((member) => (
-                      <tr key={member.email}>
-                        <td>
+                      <TableRow key={member.email}>
+                        <TableCell>
                           <div className={`sp-member sp-avatar-${member.color}`}>
                             <Avatar name={member.name} size="sm" />
                             <div>
@@ -293,17 +297,17 @@ function ReactScene({
                               <small>{member.email}</small>
                             </div>
                           </div>
-                        </td>
-                        <td>{member.role}</td>
-                        <td>
+                        </TableCell>
+                        <TableCell>{member.role}</TableCell>
+                        <TableCell>
                           <Badge variant={member.status === '已加入' ? 'success' : 'warning'}>
                             {member.status}
                           </Badge>
-                        </td>
-                        <td>11 月 {members.indexOf(member) + 1} 日</td>
-                      </tr>
+                        </TableCell>
+                        <TableCell>11 月 {members.indexOf(member) + 1} 日</TableCell>
+                      </TableRow>
                     ))}
-                </tbody>
+                </TableBody>
               </Table>
               {!members.some(
                 (m) =>
@@ -329,8 +333,7 @@ function ReactScene({
               >
                 <div className="sp-form-grid">
                   <Mark kind="input">
-                    <label className="sp-field">
-                      空间名称
+                    <Field className="sp-field" label="空间名称">
                       <Input
                         value={name}
                         required
@@ -339,17 +342,16 @@ function ReactScene({
                           setSaved(false);
                         }}
                       />
-                    </label>
+                    </Field>
                   </Mark>
                   <Mark kind="input">
-                    <label className="sp-field">
-                      团队类型
+                    <Field className="sp-field" label="团队类型">
                       <Select defaultValue="design" onChange={() => setSaved(false)}>
                         <option value="design">产品与设计</option>
                         <option>研发团队</option>
                         <option>品牌工作室</option>
                       </Select>
-                    </label>
+                    </Field>
                   </Mark>
                 </div>
                 <div className="sp-toggle-row">
@@ -489,8 +491,7 @@ function ReactScene({
             notify('示例成员已添加，没有发送邮件。');
           }}
         >
-          <label className="sp-field">
-            成员邮箱
+          <Field className="sp-field" label="成员邮箱">
             <Input
               name="invite-email"
               type="email"
@@ -498,7 +499,7 @@ function ReactScene({
               placeholder="colleague@company.com"
               autoFocus
             />
-          </label>
+          </Field>
           <div className="sp-dialog-actions">
             <Button variant="secondary" onClick={() => setInvite(false)}>
               取消
@@ -534,8 +535,7 @@ function ReactScene({
             notify('已在本次预览中创建项目。');
           }}
         >
-          <label className="sp-field">
-            项目名称
+          <Field className="sp-field" label="项目名称">
             <Input
               name="project-name"
               required
@@ -543,11 +543,10 @@ function ReactScene({
               placeholder="为项目起个名字"
               autoFocus
             />
-          </label>
-          <label className="sp-field sp-field-spaced">
-            项目描述
+          </Field>
+          <Field className="sp-field sp-field-spaced" label="项目描述">
             <Input name="project-description" maxLength={140} placeholder="这次希望完成什么？" />
-          </label>
+          </Field>
           <div className="sp-dialog-actions">
             <Button variant="secondary" onClick={() => setCreateOpen(false)}>
               取消
@@ -622,7 +621,7 @@ function VueScene({
         const mark = (kind: SceneSelection, child: VNodeChild, cls = '') =>
           h('div', { 'data-bt-kind': kind, class: cls }, [child]);
         const field = (label: string, child: VNodeChild) =>
-          h('label', { class: 'sp-field' }, [label, child]);
+          h(ui.Field, { class: 'sp-field', label }, { default: () => child });
         // Lucide geometry from the icon library; the Vue island renders native SVG nodes.
         const icon = (
           name: 'users' | 'search' | 'grid' | 'folder' | 'arrowUp' | 'arrow' | 'plus',

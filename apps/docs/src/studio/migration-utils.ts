@@ -214,30 +214,32 @@ export function parseThemeImport(text: string): ThemeImport {
       if (own(data, 'components')) {
         if (!object(data.components)) warnings.push('components 未导入：需要组件覆盖对象。');
         else {
-          unknown(data.components, ['button', 'input', 'card'], `${prefix}components.`);
-          for (const component of ['button', 'input', 'card']) {
+          const componentFields: Record<string, Record<string, [number, number]>> = {
+            button: { radius: [0, 20], height: [28, 56] },
+            input: { radius: [0, 20], height: [28, 56] },
+            card: { radius: [0, 20], padding: [8, 40] },
+            field: { gap: [4, 20], labelSize: [11, 16] },
+            table: { cellPadding: [6, 24], rowHeight: [28, 72] },
+          };
+          unknown(data.components, Object.keys(componentFields), `${prefix}components.`);
+          for (const [component, fields] of Object.entries(componentFields)) {
             const values = data.components[component];
             if (values === undefined) continue;
             if (!object(values)) {
               warnings.push(`components.${component} 未导入：需要对象。`);
               continue;
             }
-            const size = component === 'card' ? 'padding' : 'height';
-            unknown(values, ['radius', size], `${prefix}components.${component}.`);
-            if (own(values, 'radius'))
-              number(
-                `${prefix}components.${component}.radius`,
-                `components.${component}.radius`,
-                values.radius,
-              );
-            if (own(values, size))
-              number(
-                `${prefix}components.${component}.${size}`,
-                `components.${component}.${size}`,
-                values[size],
-                component === 'card' ? 8 : 28,
-                component === 'card' ? 40 : 56,
-              );
+            unknown(values, Object.keys(fields), `${prefix}components.${component}.`);
+            for (const [key, [min, max]] of Object.entries(fields)) {
+              if (own(values, key))
+                number(
+                  `${prefix}components.${component}.${key}`,
+                  `components.${component}.${key}`,
+                  values[key],
+                  min,
+                  max,
+                );
+            }
           }
         }
       }
@@ -269,6 +271,18 @@ export function parseThemeImport(text: string): ThemeImport {
       '--border': 'semantic.light.border',
       '--f-border': 'semantic.light.border',
     };
+    const dimensions: Record<string, [string, number, number]> = {
+      '--f-button-radius': ['components.button.radius', 0, 20],
+      '--f-button-height': ['components.button.height', 28, 56],
+      '--f-input-radius': ['components.input.radius', 0, 20],
+      '--f-input-height': ['components.input.height', 28, 56],
+      '--f-card-radius': ['components.card.radius', 0, 20],
+      '--f-card-padding': ['components.card.padding', 8, 40],
+      '--f-field-gap': ['components.field.gap', 4, 20],
+      '--f-field-label-size': ['components.field.labelSize', 11, 16],
+      '--f-table-cell-padding': ['components.table.cellPadding', 6, 24],
+      '--f-table-row-height': ['components.table.rowHeight', 28, 72],
+    };
     const seen = new Set<string>();
     for (const declaration of css.split(';')) {
       if (!declaration.trim()) continue;
@@ -276,18 +290,25 @@ export function parseThemeImport(text: string): ThemeImport {
       if (!match)
         throw new Error('发现非变量声明。仅接收 CSS 自定义属性，不执行 JavaScript 或样式代码。');
       const [, key, value] = match;
-      const target = targets[key];
+      const target = targets[key] ?? dimensions[key]?.[0];
       if (!target) {
         warnings.push(`${key} 未识别，未导入。`);
         continue;
       }
       if (seen.has(target)) throw new Error(`${key} 重复定义了 ${target}，请保留一个明确的值。`);
       seen.add(target);
-      if (target === 'radius') {
+      if (target === 'radius' || dimensions[key]) {
         const radius = /^(-?\d+(?:\.\d+)?)px$/.exec(value);
         if (radius || value === '0')
-          number(key, target, radius ? Number(radius[1]) : 0, 0, 20, value);
-        else warnings.push(`${key} 未导入：圆角需使用 px，例如 8px。`);
+          number(
+            key,
+            target,
+            radius ? Number(radius[1]) : 0,
+            dimensions[key]?.[1] ?? 0,
+            dimensions[key]?.[2] ?? 20,
+            value,
+          );
+        else warnings.push(`${key} 未导入：尺寸需使用 px，例如 8px。`);
       } else color(key, target, value);
     }
     if (own(patch, 'semantic'))

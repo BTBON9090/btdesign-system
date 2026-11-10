@@ -143,3 +143,37 @@ test('partial patches merge independent overrides and can explicitly reset a sec
   assert.equal(createTheme(patched)['--f-input-height'], '38px');
   assert.match(themeToCSS(patched), /--f-button-height: 44px/);
 });
+
+test('field and table rules survive normalization, partial edits, locks and CSS export', () => {
+  const theme = normalizeTheme({
+    ...defaultTheme,
+    components: {
+      field: { gap: 100, labelSize: 0, injected: 'bad' },
+      table: { cellPadding: 2, rowHeight: 100 },
+    },
+  });
+  assert.deepEqual(theme.components, {
+    field: { gap: 20, labelSize: 11 },
+    table: { cellPadding: 6, rowHeight: 72 },
+  });
+  const edited = applyThemePatch(theme, {
+    components: { field: { gap: 10 }, table: { cellPadding: 16 } },
+  });
+  assert.deepEqual(edited.components.field, { gap: 10, labelSize: 11 });
+  assert.deepEqual(edited.components.table, { cellPadding: 16, rowHeight: 72 });
+  assert.deepEqual(applyThemePatch(theme, { components: null }, { locked: ['components'] }), theme);
+  const reset = applyThemePatch(edited, { components: { field: { gap: null }, table: null } });
+  assert.deepEqual(reset.components, { field: { labelSize: 11 } });
+  assert.equal(createTheme(reset)['--f-field-gap'], '8px');
+  for (const mode of ['light', 'dark']) {
+    const values = createTheme(edited, mode);
+    assert.equal(values['--f-field-gap'], '10px');
+    assert.equal(values['--f-table-cell-padding'], '16px');
+    assert.equal(values['--f-table-row-height'], '72px');
+  }
+  assert.match(themeToCSS(edited), /--f-field-label-size: 11px/);
+  assert.equal(
+    createTheme({ ...defaultTheme, density: 'compact' })['--f-table-row-height'],
+    '36px',
+  );
+});

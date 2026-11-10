@@ -1371,7 +1371,7 @@ function RulesView({
             [
               'components',
               '组件定制',
-              '按钮 / 输入 / 容器',
+              '按钮 / 输入 / 字段 / 容器 / 表格',
               '局部调整有明确范围，其他组件继续遵循整体规则。',
             ],
           ] as [ThemeLock, string, string, string][]

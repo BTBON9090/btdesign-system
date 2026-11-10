@@ -20,6 +20,8 @@ export interface ComponentOverrides {
   button?: { radius?: number; height?: number };
   input?: { radius?: number; height?: number };
   card?: { radius?: number; padding?: number };
+  field?: { gap?: number; labelSize?: number };
+  table?: { cellPadding?: number; rowHeight?: number };
 }
 export type ThemeLock = 'primary' | 'radius' | 'density' | 'font' | 'semantic' | 'components';
 export interface ThemePolicy {
@@ -79,6 +81,18 @@ function componentOverrides(input: unknown): ComponentOverrides | undefined {
     };
     if (Object.keys(values).length) output[key] = values;
   }
+  for (const [section, fields] of [
+    ['field', { gap: [4, 20], labelSize: [11, 16] }],
+    ['table', { cellPadding: [6, 24], rowHeight: [28, 72] }],
+  ] as const) {
+    const candidate = record(source[section]);
+    const values: Record<string, number> = {};
+    for (const [key, [min, max]] of Object.entries(fields)) {
+      const value = bounded(candidate[key], min, max);
+      if (value !== undefined) values[key] = value;
+    }
+    if (Object.keys(values).length) output[section] = values;
+  }
   return Object.keys(output).length ? output : undefined;
 }
 /** Invalid external values fall back safely; numeric values are bounded. */
@@ -128,7 +142,8 @@ export function applyThemePatch(
     }
     const previous = record(cleanBase[key]);
     const incoming = record(source[key]);
-    const sections = key === 'semantic' ? ['light', 'dark'] : ['button', 'input', 'card'];
+    const sections =
+      key === 'semantic' ? ['light', 'dark'] : ['button', 'input', 'card', 'field', 'table'];
     const merged: Record<string, unknown> = { ...previous };
     for (const section of sections) {
       if (!Object.prototype.hasOwnProperty.call(incoming, section)) continue;
@@ -220,6 +235,10 @@ export function createTheme(input: ThemeConfig, mode: ThemeMode = 'light'): Reco
     '--f-input-height': `${config.components?.input?.height ?? (config.density === 'compact' ? 32 : 38)}px`,
     '--f-card-radius': `${config.components?.card?.radius ?? config.radius + 3}px`,
     '--f-card-padding': `${config.components?.card?.padding ?? (config.density === 'compact' ? 15 : 20)}px`,
+    '--f-field-gap': `${config.components?.field?.gap ?? (config.density === 'compact' ? 6 : 8)}px`,
+    '--f-field-label-size': `${config.components?.field?.labelSize ?? 13}px`,
+    '--f-table-cell-padding': `${config.components?.table?.cellPadding ?? (config.density === 'compact' ? 8 : 12)}px`,
+    '--f-table-row-height': `${config.components?.table?.rowHeight ?? (config.density === 'compact' ? 36 : 44)}px`,
     '--f-font': fonts[config.font],
     '--f-shadow': dark ? '0 4px 18px #00000030' : '0 4px 18px #20212708',
     '--f-focus':

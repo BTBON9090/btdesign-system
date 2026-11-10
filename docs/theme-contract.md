@@ -51,7 +51,9 @@ Studio 持久化和交付的是 `ProjectSpec`。场景、文案、目标框架�
     "components": {
       "button": { "radius": 6, "height": 40 },
       "input": { "radius": 4, "height": 40 },
-      "card": { "radius": 10, "padding": 24 }
+      "card": { "radius": 10, "padding": 24 },
+      "field": { "gap": 8, "labelSize": 13 },
+      "table": { "cellPadding": 12, "rowHeight": 44 }
     }
   },
   "policy": { "locked": ["primary", "font"] },
@@ -78,6 +80,8 @@ Studio 持久化和交付的是 `ProjectSpec`。场景、文案、目标框架�
 | 组件 | `components.button`                | `radius` 0–20 px，`height` 28–56 px                                                                |
 | 组件 | `components.input`                 | `radius` 0–20 px，`height` 28–56 px；Input 和 Select 共享高度，Textarea 保持适合多行内容的最小高度 |
 | 组件 | `components.card`                  | `radius` 0–20 px，`padding` 8–40 px                                                                |
+| 组件 | `components.field`                 | `gap` 4–20 px，`labelSize` 11–16 px；标签、控件与辅助信息共享字段间距                              |
+| 组件 | `components.table`                 | `cellPadding` 6–24 px，`rowHeight` 28–72 px；行高为最小高度，内容换行可继续撑开                    |
 
 `normalizeTheme(unknown)` 只保留已知字段。无效种子值使用默认配置；无效可选覆盖值被丢弃，空的 `semantic` 或 `components` 区段不进入输出。组件尺寸必须为有限数字；字符串 `"40px"` 不属于 JSON 配置契约。
 
@@ -85,18 +89,20 @@ Studio 持久化和交付的是 `ProjectSpec`。场景、文案、目标框架�
 
 ## 变量映射与覆盖优先级
 
-| 配置                                       | 输出变量                                 | 无局部覆盖时的来源                              |
-| ------------------------------------------ | ---------------------------------------- | ----------------------------------------------- |
-| `primary`                                  | `--f-primary`                            | 品牌种子                                        |
-| 自动前景计算                               | `--f-on-primary`                         | 在黑色和白色中选择与主色对比度较高者            |
-| `semantic[mode].background`                | `--f-bg`                                 | 模式的默认画布色                                |
-| `semantic[mode].surface`                   | `--f-surface`                            | 模式的默认组件表面色                            |
-| `semantic[mode].text` / `muted` / `border` | `--f-text` / `--f-muted` / `--f-border`  | 模式的默认语义色                                |
-| `radius`                                   | `--f-radius`                             | 全局圆角                                        |
-| `density`                                  | `--f-control-height`、`--f-space`        | 默认控件高度与基础间距                          |
-| `components.button`                        | `--f-button-radius`、`--f-button-height` | 全局圆角、密度对应高度                          |
-| `components.input`                         | `--f-input-radius`、`--f-input-height`   | 全局圆角、密度对应高度                          |
-| `components.card`                          | `--f-card-radius`、`--f-card-padding`    | 全局圆角 + 3 px；舒适 20 px / 紧凑 15 px 内边距 |
+| 配置                                       | 输出变量                                         | 无局部覆盖时的来源                                             |
+| ------------------------------------------ | ------------------------------------------------ | -------------------------------------------------------------- |
+| `primary`                                  | `--f-primary`                                    | 品牌种子                                                       |
+| 自动前景计算                               | `--f-on-primary`                                 | 在黑色和白色中选择与主色对比度较高者                           |
+| `semantic[mode].background`                | `--f-bg`                                         | 模式的默认画布色                                               |
+| `semantic[mode].surface`                   | `--f-surface`                                    | 模式的默认组件表面色                                           |
+| `semantic[mode].text` / `muted` / `border` | `--f-text` / `--f-muted` / `--f-border`          | 模式的默认语义色                                               |
+| `radius`                                   | `--f-radius`                                     | 全局圆角                                                       |
+| `density`                                  | `--f-control-height`、`--f-space`                | 默认控件高度与基础间距                                         |
+| `components.button`                        | `--f-button-radius`、`--f-button-height`         | 全局圆角、密度对应高度                                         |
+| `components.input`                         | `--f-input-radius`、`--f-input-height`           | 全局圆角、密度对应高度                                         |
+| `components.card`                          | `--f-card-radius`、`--f-card-padding`            | 全局圆角 + 3 px；舒适 20 px / 紧凑 15 px 内边距                |
+| `components.field`                         | `--f-field-gap`、`--f-field-label-size`          | 舒适 8 px / 紧凑 6 px 间距；标签 13 px                         |
+| `components.table`                         | `--f-table-cell-padding`、`--f-table-row-height` | 舒适 12 px / 紧凑 8 px 内边距；最小行高舒适 44 px / 紧凑 36 px |
 
 主题引擎还生成 primary 的 hover/soft 色、反馈状态色、字体、阴影和焦点色。当前 JSON API 没有为所有内部变量提供独立编辑入口。按钮的 `md` 使用主题高度；`sm` 使用主题高度减 8 px，最低 24 px；`lg` 使用主题高度加 6 px。三个尺寸都随密度或组件高度覆盖调整，同时保持各自的尺寸层级。
 
@@ -261,7 +267,7 @@ BTDESIGN 的变量和 class 使用 `--f-` / `f-` 前缀；它不会自动改写�
 
 不要对第三方库所有内部选择器做全局覆盖来模拟兼容；这样会把未声明的 DOM 结构变成隐含依赖。也不要将 BTDESIGN 的 `Button` 视为另一套组件库 Button 的无损替代：props、插槽、事件、图标位置和加载状态都需要显式核对。
 
-对于跨系统组件目录，可把业务组件的契约与具体实现分开管理，并记录 React/Vue 是否都有对应实现、支持状态和依赖的主题版本。当前仓库提供 16 类基础组件的两个框架实现；复杂树控件、日期选择器和虚拟化数据表等能力需要另行实现或通过包装层集成。
+对于跨系统组件目录，可把业务组件的契约与具体实现分开管理，并记录 React/Vue 是否都有对应实现、支持状态和依赖的主题版本。当前仓库提供 24 个组件族、37 个公开组件的两个框架实现；复杂树控件、日期选择器和虚拟化数据表等能力需要另行实现或通过包装层集成。
 
 ## 验证与发布
 

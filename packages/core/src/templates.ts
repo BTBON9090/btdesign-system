@@ -19,7 +19,7 @@ const data = (project: ProjectSpec) =>
   `const project: ProjectSpec = ${sourceJson({ name: project.name, scene: project.scene, content: project.content })};`;
 export function reactApp(project: ProjectSpec): string {
   return `import { useEffect, useState, type ReactNode } from 'react';
-import { Avatar, Badge, Button, Card, Checkbox, Dialog, Input, Select, Switch, Table } from '@btdesign/react';
+import { Avatar, Badge, Button, Card, Checkbox, Dialog, Input, Field, Select, Switch, Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@btdesign/react';
 import { ArrowRight, ArrowUpRight, Check, FolderOpen, Grid2X2, Plus, Search, Users } from 'lucide-react';
 import '@btdesign/tokens/styles.css';
 import './theme.css';

@@ -5,7 +5,9 @@ import type { Framework } from './catalog';
 export function Logo({ small = false }: { small?: boolean }) {
   return (
     <a href="#/" className={`logo ${small ? 'logo-small' : ''}`} aria-label="BTDESIGN 首页">
-      <span className="bt-wordmark-symbol" aria-hidden="true">bt<span>•</span></span>
+      <span className="bt-wordmark-symbol" aria-hidden="true">
+        bt<span>•</span>
+      </span>
       <span className="bt-wordmark-text">BTDESIGN</span>
     </a>
   );
@@ -98,7 +100,7 @@ export function Footer() {
       <a href="https://github.com/BTBON9090/btdesign-system" target="_blank" rel="noreferrer">
         GitHub <ArrowUpRight size={14} />
       </a>
-      <span className="footer-version">v0.1.0 · MIT</span>
+      <span className="footer-version">v0.2.0 · MIT</span>
     </footer>
   );
 }

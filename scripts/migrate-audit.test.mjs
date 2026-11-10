@@ -127,3 +127,64 @@ test('invalid framework and missing path produce failures', async () => {
   await assert.rejects(auditProject('.', 'angular'), /react 或 vue/);
   await assert.rejects(auditProject('/this-path-does-not-exist-forma-audit', 'react'));
 });
+
+test('granular migration candidates preserve explicit limits for number inputs, empty states and spinners', async (t) => {
+  const source = `import { InputNumber, Empty, Spin, Pagination, Breadcrumb, Radio, Form } from 'antd';
+const screen = <Form><InputNumber formatter={v => '$' + v} stringMode /><Spin spinning><Empty /></Spin><Radio.Group /><Pagination total={42} /></Form>;`;
+  const root = await fixture(t, { 'src/New.tsx': source });
+  const report = await auditProject(root, 'react');
+  const byName = Object.fromEntries(report.findings.map((item) => [item.imported, item]));
+  assert.equal(byName.InputNumber.target, 'NumberInput');
+  assert.equal(byName.Empty.target, 'EmptyState');
+  assert.equal(byName.Spin.target, 'Spinner');
+  assert.equal(byName.Radio.target, 'RadioGroup');
+  for (const name of ['InputNumber', 'Empty', 'Spin', 'Pagination', 'Breadcrumb', 'Radio']) {
+    assert.equal(byName[name].status, 'partial');
+    assert.equal(byName[name].automaticReplacement, false);
+  }
+  assert.match(byName.InputNumber.issues.join(' '), /formatter\/parser.*stringMode/);
+  assert.match(byName.Spin.issues.join(' '), /包裹内容.*delay/);
+  assert.match(byName.Pagination.issues.join(' '), /数据条数而非页数/);
+  assert.equal(byName.Form.target, null);
+  assert.equal(byName.Form.status, 'unsupported');
+  assert.match(byName.Form.issues.join(' '), /不等价/);
+  assert.equal(await fs.readFile(path.join(root, 'src/New.tsx'), 'utf8'), source);
+});
+
+test('same-name compound parts map to actual exports without claiming API compatibility', async (t) => {
+  const root = await fixture(t, {
+    'src/Composed.tsx': `import { CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
+import { TableCaption, TableHeader, TableBody, TableFooter, TableRow, TableHead, TableCell } from '@/components/ui/table';
+import { InputGroup, InputGroupAddon } from '@/components/ui/input-group';
+import { Field, FormField } from '@/components/ui/field';
+import { RadioGroup } from '@/components/ui/radio-group';`,
+  });
+  const report = await auditProject(root, 'react');
+  for (const item of report.findings.filter((item) => item.imported !== 'FormField')) {
+    assert.equal(item.target, item.imported === 'InputGroupAddon' ? 'InputAddon' : item.imported);
+    assert.equal(item.status, 'partial');
+    assert.equal(item.automaticReplacement, false);
+    assert.ok(item.issues.length > 0);
+    assert.ok(!item.issues.join(' ').includes('未导出同名子组件'));
+  }
+  assert.equal(report.findings.find((item) => item.imported === 'FormField').target, null);
+});
+
+test('Vue and deep imports recognize new candidate names and keep unsupported extensions honest', async (t) => {
+  const root = await fixture(t, {
+    'src/Page.vue': `<script setup>\nimport { ElInputNumber, ElEmpty, ElPagination, ElRadioGroup, ElFormItem } from 'element-plus';\nimport InputNumber from '@arco-design/web-vue/es/input-number';\nimport { DatePicker } from 'ant-design-vue';\n</script>`,
+  });
+  const report = await auditProject(root, 'vue');
+  assert.equal(report.findings.filter((item) => item.target === 'NumberInput').length, 2);
+  assert.equal(report.findings.find((item) => item.imported === 'ElEmpty').target, 'EmptyState');
+  assert.equal(
+    report.findings.find((item) => item.imported === 'ElRadioGroup').target,
+    'RadioGroup',
+  );
+  assert.equal(report.findings.find((item) => item.imported === 'ElFormItem').target, null);
+  assert.equal(
+    report.findings.find((item) => item.imported === 'DatePicker').status,
+    'unsupported',
+  );
+  assert.doesNotMatch(reportMarkdown(report), /当前 16 个/);
+});

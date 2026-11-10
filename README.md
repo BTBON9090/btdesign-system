@@ -4,7 +4,17 @@ BTDESIGN 是面向 UI 设计师、前端工程师与 AI 编程工具的设计工
 
 工作流程是：**表达意图 → 选择场景 → 理解设计与结构 → 确认共享规则 → 保存版本 → 交付给开发与 AI**。组件文档、开发指南、设计指南和最佳实践随时可查，创作入口围绕当前项目展开。
 
-在线使用：[design.btbon.cn](https://design.btbon.cn)。源码仓库：[BTBON9090/btdesign-system](https://github.com/BTBON9090/btdesign-system)。当前为 v0.1，Studio 与文档网站已部署至腾讯云 EdgeOne，React / Vue 组件包可从网站下载，尚未发布到 npm 公共注册表。DeepSeek 服务端密钥仍待配置。
+在线使用：[design.btbon.cn](https://design.btbon.cn)。源码仓库：[BTBON9090/btdesign-system](https://github.com/BTBON9090/btdesign-system)。当前为 v0.2，Studio 与文档网站已部署至腾讯云 EdgeOne，React / Vue 组件包可从网站下载，尚未发布到 npm 公共注册表。DeepSeek 服务端密钥仍待配置。
+
+## v0.2：更细的组件组合
+
+本轮提供 **24 个组件族、37 个公开组件**，React 与 Vue 使用相同的部件名称和设计规则。
+
+- 新增 8 个组件族：Field、InputGroup、RadioGroup、NumberInput、Breadcrumb、Pagination、EmptyState、Spinner。
+- 新增 13 个可组合子部件：InputAddon、5 个 Card 子部件、7 个 Table 子部件。标题、内容、操作区、表头、数据行与单元格可以按业务结构组合。
+- Field 自动关联标签、说明与错误，并向输入控件传递必填、禁用和校验状态，减少手工拼接可访问属性。
+- 组件实验台支持切换框架、尺寸、变体与状态，预览和示例代码同步；「理解每一层」连接设计用途、前端结构与主题变量。预览默认继承当前 Studio 项目主题。
+- Design Lab 新增字段间距、标签字号、单元格内边距与表格行高配置，随主题导出、导入和品牌锁约束共同生效。
 
 ## 在工作空间里做什么
 
@@ -16,15 +26,15 @@ BTDESIGN 是面向 UI 设计师、前端工程师与 AI 编程工具的设计工
 
 ## 当前实现与范围
 
-| 能力     | 当前实现                                                                                                                                                  |
-| -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 场景     | 3 个维护好的场景：团队工作台、项目协作、登录；两种框架均真实渲染                                                                                          |
-| AI 提案  | 服务端调用 DeepSeek，返回场景选择、名称、文案、主题种子与解释；校验后在浏览器预览与应用                                                                   |
-| 组件     | Button、Input、Textarea、Select、Checkbox、Switch、Badge、Card、Alert、Tabs、Dialog、Avatar、Separator、Table、Skeleton、Progress，16 类 React / Vue 实现 |
-| 设计规则 | 品牌主色、圆角、密度、字体；深浅色语义颜色；按钮、输入框、卡片的几何覆盖与品牌锁                                                                          |
-| 项目记录 | 一个本地活动项目、最多 20 个命名快照；当前会话最多 50 步撤销记录                                                                                          |
-| 迁入     | 风格映射预览、只读源码审计、报告筛选与处理建议                                                                                                            |
-| 交付     | `AGENTS.md`、机器可读项目与组件约定、主题 CSS、同源 React/Vue 页面代码、安装说明                                                                          |
+| 能力     | 当前实现                                                                                     |
+| -------- | -------------------------------------------------------------------------------------------- |
+| 场景     | 3 个维护好的场景：团队工作台、项目协作、登录；两种框架均真实渲染                             |
+| AI 提案  | 服务端调用 DeepSeek，返回场景选择、名称、文案、主题种子与解释；校验后在浏览器预览与应用      |
+| 组件     | 24 个组件族、37 个公开组件；React / Vue 均包含基础控件、字段组合、卡片与表格子部件           |
+| 设计规则 | 品牌主色、圆角、密度、字体；深浅色语义颜色；按钮、输入框、卡片、字段与表格的几何覆盖与品牌锁 |
+| 项目记录 | 一个本地活动项目、最多 20 个命名快照；当前会话最多 50 步撤销记录                             |
+| 迁入     | 风格映射预览、只读源码审计、报告筛选与处理建议                                               |
+| 交付     | `AGENTS.md`、机器可读项目与组件约定、主题 CSS、同源 React/Vue 页面代码、安装说明             |
 
 AI 当前在这三个场景中选择并配置内容与主题，不生成任意应用架构或新的组件实现。场景里的成员、项目、设置和登录操作是本地示例；认证、邮件、权限与持久化需接入业务服务。Table / Select 是原生语义基础组件，尚无高级数据表格、表单引擎、树、日期选择器或虚拟滚动。
 
@@ -59,7 +69,7 @@ cp .env.example .env
 ```text
 AGENTS.md                    给编程助手的设计与实现约定
 .btdesign/system.json         ProjectSpec：场景、内容、主题、策略与版本格式
-.btdesign/components.json     16 个组件的真实 API 与语义变量映射
+.btdesign/components.json     24 个组件族及可组合子部件的 API 与语义变量映射
 App.tsx 或 App.vue           当前场景的页面组件
 app.css / theme.css          页面样式与深浅色主题
 package.json / vite.config.ts 运行依赖与 Vite 配置
@@ -84,10 +94,10 @@ npm run pack:libs
 
 ```sh
 # 目标项目已安装 React / React DOM 18 或 19
-npm install ./btdesign-tokens-0.1.0.tgz ./btdesign-react-0.1.0.tgz
+npm install ./btdesign-tokens-0.2.0.tgz ./btdesign-react-0.2.0.tgz
 
 # 或目标项目已安装 Vue 3.4+、低于 4
-npm install ./btdesign-tokens-0.1.0.tgz ./btdesign-vue-0.1.0.tgz
+npm install ./btdesign-tokens-0.2.0.tgz ./btdesign-vue-0.2.0.tgz
 ```
 
 包提供 ESM 与 TypeScript 声明。基础使用示例：

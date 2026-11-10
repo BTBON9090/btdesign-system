@@ -72,20 +72,20 @@ export function Inspector({
       ? kind === 'button'
         ? `<Button variant="primary">\n  {${JSON.stringify(project.content.actionLabel)}}\n</Button>`
         : kind === 'input'
-          ? `<label htmlFor="name">名称</label>\n<Input id="name" value={name}\n  onChange={e => setName(e.target.value)} />`
+          ? `<Field label="名称" description="团队成员可见">\n  <Input value={name}\n    onChange={e => setName(e.target.value)} />\n</Field>`
           : kind === 'card'
-            ? `<Card>\n  <h2>内容标题</h2>\n  <p>相关信息与操作</p>\n</Card>`
+            ? `<Card>\n  <CardHeader>\n    <CardTitle>内容标题</CardTitle>\n  </CardHeader>\n  <CardContent>相关信息</CardContent>\n  <CardFooter><Button>查看详情</Button></CardFooter>\n</Card>`
             : kind === 'table'
-              ? `<Table>\n  <thead><tr><th>名称</th></tr></thead>\n  <tbody>{/* 业务数据 */}</tbody>\n</Table>`
+              ? `<Table>\n  <TableHeader><TableRow>\n    <TableHead>名称</TableHead>\n  </TableRow></TableHeader>\n  <TableBody>{/* TableRow / TableCell */}</TableBody>\n</Table>`
               : `<main style={createTheme(theme, mode)}>\n  <PageHeader />\n  <WorkspaceContent />\n</main>`
       : kind === 'button'
         ? `<Button variant="primary">\n  {{ actionLabel }}\n</Button>`
         : kind === 'input'
-          ? `<label for="name">名称</label>\n<Input id="name" v-model="name" />`
+          ? `<Field label="名称" description="团队成员可见">\n  <Input v-model="name" />\n</Field>`
           : kind === 'card'
-            ? `<Card>\n  <h2>内容标题</h2>\n  <p>相关信息与操作</p>\n</Card>`
+            ? `<Card>\n  <CardHeader>\n    <CardTitle>内容标题</CardTitle>\n  </CardHeader>\n  <CardContent>相关信息</CardContent>\n  <CardFooter><Button>查看详情</Button></CardFooter>\n</Card>`
             : kind === 'table'
-              ? `<Table>\n  <thead><tr><th>名称</th></tr></thead>\n  <tbody><!-- 业务数据 --></tbody>\n</Table>`
+              ? `<Table>\n  <TableHeader><TableRow>\n    <TableHead>名称</TableHead>\n  </TableRow></TableHeader>\n  <TableBody><!-- TableRow / TableCell --></TableBody>\n</Table>`
               : `<main :style="createTheme(theme, mode)">\n  <PageHeader />\n  <WorkspaceContent />\n</main>`;
   return (
     <aside className="bt-inspector" aria-label="设计与前端说明">
@@ -290,6 +290,68 @@ export function Inspector({
                 <small className="bt-impact">
                   <CornerDownRight size={11} />
                   应用到这套系统的全部{elementLabels[kind]}
+                </small>
+              </div>
+            )}
+            {(kind === 'input' || kind === 'table') && (
+              <div className="bt-inspector-section">
+                <div className="bt-section-label">
+                  <span>{kind === 'input' ? '字段结构' : '表格密度'}</span>
+                  <button
+                    aria-label={locks.includes('components') ? '解锁组件规则' : '锁定组件规则'}
+                    onClick={() => lock('components')}
+                  >
+                    {locks.includes('components') ? (
+                      <LockKeyhole size={12} />
+                    ) : (
+                      <Unlock size={12} />
+                    )}
+                  </button>
+                </div>
+                {(kind === 'input'
+                  ? ([
+                      ['field', 'gap', '标签与控件间距', '--f-field-gap', 4, 20],
+                      ['field', 'labelSize', '标签字号', '--f-field-label-size', 11, 16],
+                    ] as const)
+                  : ([
+                      ['table', 'cellPadding', '单元格内边距', '--f-table-cell-padding', 6, 24],
+                      ['table', 'rowHeight', '最小行高', '--f-table-row-height', 28, 72],
+                    ] as const)
+                ).map(([section, property, label, token, min, max]) => (
+                  <label className="bt-field" key={token}>
+                    <span>
+                      {label} · {vars[token]}
+                    </span>
+                    <input
+                      type="range"
+                      aria-label={label}
+                      min={min}
+                      max={max}
+                      value={parseInt(vars[token])}
+                      disabled={locks.includes('components')}
+                      onChange={(event) =>
+                        patchTheme({
+                          components: { [section]: { [property]: Number(event.target.value) } },
+                        })
+                      }
+                    />
+                  </label>
+                ))}
+                <button
+                  className="bt-inherit"
+                  disabled={
+                    locks.includes('components') ||
+                    !project.theme.components?.[kind === 'input' ? 'field' : 'table']
+                  }
+                  onClick={() =>
+                    patchTheme({ components: { [kind === 'input' ? 'field' : 'table']: null } })
+                  }
+                >
+                  <CornerDownRight size={11} />
+                  恢复继承系统规则
+                </button>
+                <small className="bt-impact">
+                  同步 React、Vue 与导出项目；锁定后，后续方案保留这些规则。
                 </small>
               </div>
             )}

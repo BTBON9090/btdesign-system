@@ -9,9 +9,7 @@ import {
   type HTMLAttributes,
   type InputHTMLAttributes,
   type ReactNode,
-  type SelectHTMLAttributes,
   type TableHTMLAttributes,
-  type TextareaHTMLAttributes,
 } from 'react';
 
 const cx = (...classes: (string | false | null | undefined)[]) => classes.filter(Boolean).join(' ');
@@ -50,26 +48,16 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
   );
 });
 
-export const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement>>(
-  function Input({ className, ...props }, ref) {
-    return <input {...props} ref={ref} className={cx('f-input', className)} />;
-  },
-);
-export const Textarea = forwardRef<
-  HTMLTextAreaElement,
-  TextareaHTMLAttributes<HTMLTextAreaElement>
->(function Textarea({ className, ...props }, ref) {
-  return <textarea {...props} ref={ref} className={cx('f-textarea', className)} />;
-});
-export const Select = forwardRef<HTMLSelectElement, SelectHTMLAttributes<HTMLSelectElement>>(
-  function Select({ className, children, ...props }, ref) {
-    return (
-      <select {...props} ref={ref} className={cx('f-select', className)}>
-        {children}
-      </select>
-    );
-  },
-);
+export { Field, Input, Textarea, Select, InputGroup, InputAddon } from './fields.js';
+export type {
+  FieldProps,
+  InputProps,
+  TextareaProps,
+  SelectProps,
+  ControlProps,
+  ControlSize,
+} from './fields.js';
+export * from './composition.js';
 
 export interface CheckboxProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'type'> {
   label?: ReactNode;

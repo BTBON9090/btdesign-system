@@ -29,6 +29,21 @@ const providers = [
   { name: 'ant-design-vue', framework: 'vue' },
   { name: 'element-plus', framework: 'vue' },
 ];
+const compoundParts = {
+  InputAddon: 'InputGroup',
+  CardHeader: 'Card',
+  CardTitle: 'Card',
+  CardDescription: 'Card',
+  CardContent: 'Card',
+  CardFooter: 'Card',
+  TableCaption: 'Table',
+  TableHeader: 'Table',
+  TableBody: 'Table',
+  TableFooter: 'Table',
+  TableRow: 'Table',
+  TableHead: 'Table',
+  TableCell: 'Table',
+};
 const supported = new Set([
   'Button',
   'Input',
@@ -46,6 +61,15 @@ const supported = new Set([
   'Table',
   'Skeleton',
   'Progress',
+  'Field',
+  'InputGroup',
+  'RadioGroup',
+  'NumberInput',
+  'Breadcrumb',
+  'Pagination',
+  'EmptyState',
+  'Spinner',
+  ...Object.keys(compoundParts),
 ]);
 const aliases = {
   Modal: 'Dialog',
@@ -53,6 +77,11 @@ const aliases = {
   Tag: 'Badge',
   TextArea: 'Textarea',
   InputTextArea: 'Textarea',
+  InputNumber: 'NumberInput',
+  Empty: 'EmptyState',
+  Spin: 'Spinner',
+  Radio: 'RadioGroup',
+  InputGroupAddon: 'InputAddon',
 };
 const limitations = {
   Button: [
@@ -60,11 +89,15 @@ const limitations = {
   ],
   Input: ['确认受控值/事件类型、前后缀、清除按钮、密码和搜索输入；BTDESIGN Input 是原生 input。'],
   Textarea: ['确认受控值/事件类型及字数限制；自动高度和字数显示需应用层实现。'],
-  Select: ['BTDESIGN Select 是原生 select；搜索、远程加载、虚拟列表、标签模式和自定义弹层尚不具备。'],
+  Select: [
+    'BTDESIGN Select 是原生 select；搜索、远程加载、虚拟列表、标签模式和自定义弹层尚不具备。',
+  ],
   Checkbox: ['检查 checked / v-model 和表单提交；组选择、校验上下文需应用层适配。'],
   Switch: ['检查 checked / v-model、事件和表单 name；设置可访问标签。'],
   Badge: ['BTDESIGN Badge 是文本状态标签；数字计数、角标定位和 dot 模式需另行实现。'],
-  Card: ['BTDESIGN Card 是内容容器；标题、封面、actions、嵌套样式需应用层组合。'],
+  Card: [
+    'BTDESIGN Card 提供 Header/Title/Description/Content/Footer 子部件；第三方 title、extra、cover、actions、loading 等属性需显式组合和复核布局。',
+  ],
   Alert: ['映射 title、variant 与内容；可关闭通知和全局 message/notification 尚未实现。'],
   Tabs: [
     '转换为 items[value,label,content]，映射 value / v-model；可编辑标签、拖动和垂直布局尚未实现。',
@@ -75,11 +108,57 @@ const limitations = {
   Avatar: ['映射 name、src、size；头像组和徽标需应用层组合。'],
   Separator: ['映射 orientation；带标题分隔线需应用层组合。'],
   Table: [
-    'BTDESIGN Table 是语义化原生表格外壳；columns/dataSource、排序、筛选、分页、选择、固定列和虚拟滚动均需保留现有实现或重建。',
+    'BTDESIGN Table 是语义化原生表格外壳；columns/dataSource、排序、筛选、选择、固定列和虚拟滚动需保留现有实现或重建；Pagination 仅控制页码，仍需自行切片/请求数据。',
   ],
   Skeleton: ['转换为 width/height 和组合布局；现有复杂骨架结构需要重新组合。'],
   Progress: ['映射 value/max；圆形、分段、渐变和步骤进度尚未实现。'],
+  Field: [
+    'Field 仅关联一个控件的 label、description、error、required 和 disabled；不提供表单状态、提交、异步验证或 Form/Form.Item 的规则引擎。',
+  ],
+  InputGroup: [
+    '将前后缀组合为 InputAddon 与一个原生控件；需保留可访问名称、描述关联、交互按钮类型和键盘行为，不能直接复制第三方 addon/affix 属性。',
+  ],
+  RadioGroup: [
+    '转换为 options 数组并映射 value/onValueChange 或 v-model；原生单选项语义保留，单个 Radio、Radio.Button、嵌套布局、按钮样式需重组。',
+  ],
+  NumberInput: [
+    '映射 value/onValueChange 或 v-model；空值使用空字符串，边界在失焦/步进时处理。formatter/parser、stringMode、高精度金额、precision、前后缀与回调参数需单独适配。',
+  ],
+  Breadcrumb: [
+    '转换为 items[label,href]；末项为当前页面。路由 Link 组件、自定义分隔符、下拉导航和点击回调需应用层保留或适配。',
+  ],
+  Pagination: [
+    'total 为数据条数而非页数；映射受控 page、pageSize、onPageChange 或 v-model。分页器不请求/切片数据，pageSize 选择器、跳页和第三方回调参数需适配。',
+  ],
+  EmptyState: [
+    '将 description、image 和操作区转换为 title、description、icon、action/插槽；第三方默认插图、尺寸和自定义状态语义不自动复用。',
+  ],
+  Spinner: [
+    'Spinner 是独立加载状态并需有意义的 label；Spin 的包裹内容、spinning 开关、delay、percent 与遮罩需应用层组合，不能直接替换。',
+  ],
 };
+for (const [part, family] of Object.entries(compoundParts)) {
+  limitations[part] = [
+    `BTDESIGN 导出 ${part}，但仍需核对原生标签、作用域、属性/插槽与样式；同名不保证 asChild、ref、事件或上下文兼容。`,
+    ...limitations[family],
+  ];
+}
+const partialComponents = new Set([
+  'Select',
+  'Table',
+  'Dialog',
+  'Tabs',
+  'Badge',
+  'Field',
+  'InputGroup',
+  'RadioGroup',
+  'NumberInput',
+  'Breadcrumb',
+  'Pagination',
+  'EmptyState',
+  'Spinner',
+  ...Object.keys(compoundParts),
+]);
 
 function providerFor(specifier) {
   const provider = providers.find(
@@ -116,11 +195,18 @@ function componentMapping(imported) {
   if (supported.has(target))
     return {
       target,
-      status: ['Select', 'Table', 'Dialog', 'Tabs', 'Badge'].includes(target)
-        ? 'partial'
-        : 'candidate',
+      status: partialComponents.has(target) ? 'partial' : 'candidate',
       confidence: 'high',
       issues: limitations[target],
+    };
+  if (/^Form(?:[A-Z]|$)/.test(imported))
+    return {
+      target: null,
+      status: 'unsupported',
+      confidence: 'high',
+      issues: [
+        'Form/Form.Item 负责表单状态、验证和提交；BTDESIGN Field 只是单控件标签与说明的组合，二者不等价。保留原表单状态方案，逐个替换视觉控件。',
+      ],
     };
   for (const prefix of ['Dialog', 'AlertDialog', 'Select', 'Table', 'Card', 'Tabs', 'Avatar']) {
     if (imported.startsWith(prefix)) {
@@ -149,7 +235,7 @@ function componentMapping(imported) {
     target: null,
     status: 'unsupported',
     confidence: 'high',
-    issues: ['当前 16 个 BTDESIGN 组件没有直接对应能力；保留原组件或先实现扩展包，再迁移。'],
+    issues: ['当前 BTDESIGN 组件没有直接对应能力；保留原组件或先实现扩展包，再迁移。'],
   };
 }
 

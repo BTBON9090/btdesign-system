@@ -25,7 +25,7 @@ npm run build
 
 BTDESIGN 使用独立子域名 `design.btbon.cn`，保留 `www.btbon.cn` 的个人作品集。使用独立 EdgeOne Pages / Makers 项目，不更改作品集的仓库、部署或 DNS 记录。
 
-截至 2026-11-10：
+首次上线记录（v0.1，2026-11-10）：
 
 - 已创建 EdgeOne 项目 `btdesign`（项目 ID：`makers-ltsnqerkhnbf`），连接本仓库的 `main` 分支。
 - 已发布部署 `dp6pg47jjowu`，对应提交 [`79c4ff9`](https://github.com/BTBON9090/btdesign-system/commit/79c4ff9)；同一提交的 [GitHub CI](https://github.com/BTBON9090/btdesign-system/actions/runs/42780783478) 已全部通过。
