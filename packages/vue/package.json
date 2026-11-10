@@ -1,7 +1,7 @@
 {
-  "name": "@forma-ui/vue",
+  "name": "@btdesign/vue",
   "version": "0.1.0",
-  "description": "Vue 3 components for the Forma UI design system",
+  "description": "Vue 3 components for the BTDESIGN design system",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -26,7 +26,7 @@
     "vue": ">=3.4.0 <4"
   },
   "dependencies": {
-    "@forma-ui/tokens": "0.1.0"
+    "@btdesign/tokens": "0.1.0"
   },
   "devDependencies": {
     "@vue/server-renderer": "^3.5.0",

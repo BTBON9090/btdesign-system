@@ -1,7 +1,7 @@
 {
-  "name": "@forma-ui/tokens",
+  "name": "@btdesign/tokens",
   "version": "0.1.0",
-  "description": "Framework-independent design tokens and shared component styles for Forma UI",
+  "description": "Framework-independent design tokens and shared component styles for BTDESIGN",
   "type": "module",
   "private": false,
   "main": "./dist/index.js",

@@ -24,7 +24,7 @@ export interface TabItem {
 }
 
 export const Button = defineComponent({
-  name: 'FormaButton',
+  name: 'BTDESIGNButton',
   inheritAttrs: false,
   props: {
     variant: { type: String as PropType<ButtonVariant>, default: 'primary' },
@@ -52,7 +52,7 @@ export const Button = defineComponent({
 });
 
 export const Input = defineComponent({
-  name: 'FormaInput',
+  name: 'BTDESIGNInput',
   inheritAttrs: false,
   props: { modelValue: { type: [String, Number], default: undefined }, invalid: Boolean },
   emits: ['update:modelValue'],
@@ -72,7 +72,7 @@ export const Input = defineComponent({
 });
 
 export const Textarea = defineComponent({
-  name: 'FormaTextarea',
+  name: 'BTDESIGNTextarea',
   inheritAttrs: false,
   props: { modelValue: { type: String, default: undefined }, invalid: Boolean },
   emits: ['update:modelValue'],
@@ -92,7 +92,7 @@ export const Textarea = defineComponent({
 });
 
 export const Select = defineComponent({
-  name: 'FormaSelect',
+  name: 'BTDESIGNSelect',
   inheritAttrs: false,
   props: {
     modelValue: {
@@ -146,7 +146,7 @@ export const Select = defineComponent({
 });
 
 export const Checkbox = defineComponent({
-  name: 'FormaCheckbox',
+  name: 'BTDESIGNCheckbox',
   inheritAttrs: false,
   props: {
     modelValue: { type: Boolean, default: undefined },
@@ -191,7 +191,7 @@ export const Checkbox = defineComponent({
 });
 
 export const Switch = defineComponent({
-  name: 'FormaSwitch',
+  name: 'BTDESIGNSwitch',
   inheritAttrs: false,
   props: {
     modelValue: Boolean,
@@ -232,7 +232,7 @@ export const Switch = defineComponent({
 });
 
 export const Badge = defineComponent({
-  name: 'FormaBadge',
+  name: 'BTDESIGNBadge',
   inheritAttrs: false,
   props: { variant: { type: String as PropType<Tone | 'default'>, default: 'default' } },
   setup(props, { attrs, slots }) {
@@ -246,7 +246,7 @@ export const Badge = defineComponent({
 });
 
 export const Card = defineComponent({
-  name: 'FormaCard',
+  name: 'BTDESIGNCard',
   inheritAttrs: false,
   setup(_, { attrs, slots }) {
     return () => h('div', mergeProps(attrs, { class: 'f-card' }), slots.default?.());
@@ -254,7 +254,7 @@ export const Card = defineComponent({
 });
 
 export const Alert = defineComponent({
-  name: 'FormaAlert',
+  name: 'BTDESIGNAlert',
   inheritAttrs: false,
   props: { variant: { type: String as PropType<Tone>, default: 'info' }, title: String },
   setup(props, { attrs, slots }) {
@@ -274,7 +274,7 @@ export const Alert = defineComponent({
 
 let idSequence = 0;
 export const Tabs = defineComponent({
-  name: 'FormaTabs',
+  name: 'BTDESIGNTabs',
   inheritAttrs: false,
   props: {
     items: { type: Array as PropType<TabItem[]>, required: true },
@@ -373,7 +373,7 @@ export const Tabs = defineComponent({
 });
 
 export const Dialog = defineComponent({
-  name: 'FormaDialog',
+  name: 'BTDESIGNDialog',
   inheritAttrs: false,
   props: {
     modelValue: Boolean,
@@ -468,7 +468,7 @@ export const Dialog = defineComponent({
 });
 
 export const Avatar = defineComponent({
-  name: 'FormaAvatar',
+  name: 'BTDESIGNAvatar',
   inheritAttrs: false,
   props: {
     src: String,
@@ -519,7 +519,7 @@ export const Avatar = defineComponent({
 });
 
 export const Separator = defineComponent({
-  name: 'FormaSeparator',
+  name: 'BTDESIGNSeparator',
   inheritAttrs: false,
   props: {
     orientation: { type: String as PropType<'horizontal' | 'vertical'>, default: 'horizontal' },
@@ -538,7 +538,7 @@ export const Separator = defineComponent({
 });
 
 export const Table = defineComponent({
-  name: 'FormaTable',
+  name: 'BTDESIGNTable',
   inheritAttrs: false,
   setup(_, { attrs, slots }) {
     return () =>
@@ -556,7 +556,7 @@ export const Table = defineComponent({
 });
 
 export const Skeleton = defineComponent({
-  name: 'FormaSkeleton',
+  name: 'BTDESIGNSkeleton',
   inheritAttrs: false,
   props: { width: [String, Number], height: [String, Number] },
   setup(props, { attrs }) {
@@ -578,7 +578,7 @@ export const Skeleton = defineComponent({
 });
 
 export const Progress = defineComponent({
-  name: 'FormaProgress',
+  name: 'BTDESIGNProgress',
   inheritAttrs: false,
   props: {
     value: { type: Number, default: 0 },
@@ -631,7 +631,7 @@ const components = {
   Skeleton,
   Progress,
 };
-export const FormaPlugin = {
+export const BTDESIGNPlugin = {
   install(app: App) {
     for (const [name, component] of Object.entries(components))
       app.component(`F${name}`, component);

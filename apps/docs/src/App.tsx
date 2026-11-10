@@ -1,12 +1,12 @@
 import { lazy, Suspense, useEffect, useRef, useState, type CSSProperties } from 'react';
 import { ArrowRight, Command, GitBranch, Menu, Moon, Search, Sun, X } from 'lucide-react';
-import { Dialog, Input } from '@forma-ui/react';
-import { createTheme, defaultTheme, type ThemeMode } from '@forma-ui/tokens';
+import { Dialog, Input } from '@btdesign/react';
+import { createTheme, defaultTheme, type ThemeMode } from '@btdesign/tokens';
 import { catalog } from './catalog';
 import { Footer, Logo } from './shared';
-import { Home } from './Home';
+
 const Docs = lazy(() => import('./Docs').then((m) => ({ default: m.Docs })));
-const DesignLab = lazy(() => import('./DesignLab').then((m) => ({ default: m.DesignLab })));
+const Studio = lazy(() => import('./studio/Studio').then((m) => ({ default: m.Studio })));
 function currentPath() {
   return location.hash.replace(/^#/, '') || '/';
 }
@@ -19,6 +19,7 @@ function savedMode(): ThemeMode {
 }
 export function App() {
   const [path, setPath] = useState(currentPath);
+  const isStudio = ['/', '/lab', '/studio'].includes(path);
   const [mode, setMode] = useState<ThemeMode>(savedMode);
   const [menu, setMenu] = useState(false);
   const [search, setSearch] = useState(false);
@@ -61,19 +62,18 @@ export function App() {
     } catch {}
   }, [mode]);
   useEffect(() => {
-    document.title =
-      path === '/lab'
-        ? 'Design Lab · Forma UI'
-        : path.startsWith('/components')
-          ? '组件 · Forma UI'
-          : path === '/'
-            ? 'Forma UI — 让好的设计成为共同语言'
-            : '指南 · Forma UI';
+    document.title = ['/', '/lab', '/studio'].includes(path)
+      ? 'BTDESIGN · 设计与开发的共同工作空间'
+      : path.startsWith('/components')
+        ? '组件 · BTDESIGN'
+        : path === '/'
+          ? 'BTDESIGN — 让好的设计成为共同语言'
+          : '指南 · BTDESIGN';
   }, [path]);
   const searchItems = [
     { title: '快速开始', detail: '安装与配置', url: '/guides/development' },
     { title: '设计指南', detail: '色彩、排版与语义变量', url: '/guides/design' },
-    { title: 'Design Lab', detail: '定制与 AI 生成', url: '/lab' },
+    { title: '创作空间', detail: '自然语言、设计规则与开发交付', url: '/' },
     { title: '最佳实践', detail: '从组件到系统', url: '/practices' },
     { title: '系统迁移', detail: '渐进替换与兼容架构', url: '/migration' },
     ...catalog.map((c) => ({ title: c.name, detail: c.cn, url: `/components/${c.id}` })),
@@ -81,6 +81,7 @@ export function App() {
   const isKnown =
     path === '/' ||
     path === '/lab' ||
+    path === '/studio' ||
     path === '/components' ||
     path === '/practices' ||
     path === '/migration' ||
@@ -100,69 +101,71 @@ export function App() {
       >
         跳到主要内容
       </a>
-      <header className="site-header">
-        <div className="header-inner">
-          <Logo />
-          <span className="header-version">v0.1</span>
-          <nav className={`desktop-nav ${menu ? 'mobile-open' : ''}`} aria-label="主导航">
-            <a
-              href="#/guides/development"
-              className={path === '/guides/development' ? 'active' : ''}
-            >
-              开发指南
-            </a>
-            <a href="#/guides/design" className={path === '/guides/design' ? 'active' : ''}>
-              设计指南
-            </a>
-            <a href="#/components" className={path.startsWith('/components') ? 'active' : ''}>
-              组件
-            </a>
-            <a href="#/practices" className={path === '/practices' ? 'active' : ''}>
-              最佳实践
-            </a>
-            <a href="#/lab" className={`nav-lab ${path === '/lab' ? 'active' : ''}`}>
-              Design Lab<span>AI</span>
-            </a>
-          </nav>
-          <div className="header-actions">
-            <button
-              aria-label="搜索文档"
-              className="search-trigger"
-              onClick={() => setSearch(true)}
-            >
-              <Search size={14} />
-              <span>搜索文档…</span>
-              <kbd>⌘ K</kbd>
-            </button>
-            <span className="header-divider" />
-            <a
-              className="icon-button github-link"
-              aria-label="GitHub 仓库"
-              href="https://github.com/BTBON9090/btdesign-system"
-              target="_blank"
-              rel="noreferrer"
-            >
-              <GitBranch size={18} />
-            </a>
-            <button
-              className="icon-button"
-              aria-label={mode === 'light' ? '切换深色模式' : '切换浅色模式'}
-              title={mode === 'light' ? '切换深色模式' : '切换浅色模式'}
-              onClick={() => setMode((m) => (m === 'light' ? 'dark' : 'light'))}
-            >
-              {mode === 'light' ? <Moon size={17} /> : <Sun size={17} />}
-            </button>
-            <button
-              className="icon-button mobile-menu-button"
-              aria-label="展开导航"
-              aria-expanded={menu}
-              onClick={() => setMenu(!menu)}
-            >
-              {menu ? <X size={19} /> : <Menu size={19} />}
-            </button>
+      {!isStudio && (
+        <header className="site-header">
+          <div className="header-inner">
+            <Logo />
+            <span className="header-version">v0.1</span>
+            <nav className={`desktop-nav ${menu ? 'mobile-open' : ''}`} aria-label="主导航">
+              <a
+                href="#/guides/development"
+                className={path === '/guides/development' ? 'active' : ''}
+              >
+                开发指南
+              </a>
+              <a href="#/guides/design" className={path === '/guides/design' ? 'active' : ''}>
+                设计指南
+              </a>
+              <a href="#/components" className={path.startsWith('/components') ? 'active' : ''}>
+                组件
+              </a>
+              <a href="#/practices" className={path === '/practices' ? 'active' : ''}>
+                最佳实践
+              </a>
+              <a href="#/lab" className={`nav-lab ${path === '/lab' ? 'active' : ''}`}>
+                进入创作空间<span>AI</span>
+              </a>
+            </nav>
+            <div className="header-actions">
+              <button
+                aria-label="搜索文档"
+                className="search-trigger"
+                onClick={() => setSearch(true)}
+              >
+                <Search size={14} />
+                <span>搜索文档…</span>
+                <kbd>⌘ K</kbd>
+              </button>
+              <span className="header-divider" />
+              <a
+                className="icon-button github-link"
+                aria-label="GitHub 仓库"
+                href="https://github.com/BTBON9090/btdesign-system"
+                target="_blank"
+                rel="noreferrer"
+              >
+                <GitBranch size={18} />
+              </a>
+              <button
+                className="icon-button"
+                aria-label={mode === 'light' ? '切换深色模式' : '切换浅色模式'}
+                title={mode === 'light' ? '切换深色模式' : '切换浅色模式'}
+                onClick={() => setMode((m) => (m === 'light' ? 'dark' : 'light'))}
+              >
+                {mode === 'light' ? <Moon size={17} /> : <Sun size={17} />}
+              </button>
+              <button
+                className="icon-button mobile-menu-button"
+                aria-label="展开导航"
+                aria-expanded={menu}
+                onClick={() => setMenu(!menu)}
+              >
+                {menu ? <X size={19} /> : <Menu size={19} />}
+              </button>
+            </div>
           </div>
-        </div>
-      </header>
+        </header>
+      )}
       <Suspense
         fallback={
           <main id="main" className="route-loading">
@@ -170,17 +173,19 @@ export function App() {
           </main>
         }
       >
-        {path === '/' ? (
-          <Home notify={notify} />
-        ) : path === '/lab' ? (
-          <DesignLab notify={notify} />
+        {isStudio ? (
+          <Studio
+            notify={notify}
+            mode={mode}
+            onModeChange={() => setMode((m) => (m === 'light' ? 'dark' : 'light'))}
+          />
         ) : isKnown ? (
           <Docs path={path} notify={notify} />
         ) : (
           <main id="main" className="not-found">
             <span>404</span>
             <h1>这一页还不存在。</h1>
-            <p>回到首页，继续探索 Forma UI。</p>
+            <p>回到首页，继续探索 BTDESIGN。</p>
             <a className="button-link solid" href="#/">
               返回首页
               <ArrowRight size={15} />
@@ -188,11 +193,11 @@ export function App() {
           </main>
         )}
       </Suspense>
-      <Footer />
+      {!isStudio && <Footer />}
       <Dialog
         open={search}
         onOpenChange={setSearch}
-        title="搜索 Forma UI"
+        title="搜索 BTDESIGN"
         className="search-dialog"
       >
         <div className="search-box">

@@ -9,5 +9,5 @@ const server = createServer((request, response) => {
 server.requestTimeout = 40_000;
 server.headersTimeout = 10_000;
 server.listen(port, host, () => {
-  console.log(`Forma AI API listening on http://${host}:${port}`);
+  console.log(`BTDESIGN AI API listening on http://${host}:${port}`);
 });

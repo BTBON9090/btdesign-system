@@ -7,6 +7,9 @@
   "functions": {
     "api/generate.ts": {
       "maxDuration": 40
+    },
+    "api/compose.ts": {
+      "maxDuration": 40
     }
   }
 }

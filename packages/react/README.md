@@ -1,10 +1,10 @@
-# @forma-ui/react
+# @btdesign/react
 
-React 18+ components backed by the same semantic CSS used by `@forma-ui/vue`.
+React 18+ components backed by the same semantic CSS used by `@btdesign/vue`.
 
 ```tsx
-import '@forma-ui/tokens/styles.css';
-import { Button, Input, Card, Switch } from '@forma-ui/react';
+import '@btdesign/tokens/styles.css';
+import { Button, Input, Card, Switch } from '@btdesign/react';
 
 function Preferences() {
   return (
@@ -41,6 +41,6 @@ function Preferences() {
 
 ## Themes
 
-Import shared styles once, and then import the CSS exported from Design Lab. Set `data-theme="light"` or `data-theme="dark"` on a wrapper or the document element. For live configuration, apply `createTheme(config, mode)` from `@forma-ui/tokens` as inline CSS variables to a wrapper. Inline variables take priority over theme selectors.
+Import shared styles once, and then import the CSS exported from Design Lab. Set `data-theme="light"` or `data-theme="dark"` on a wrapper or the document element. For live configuration, apply `createTheme(config, mode)` from `@btdesign/tokens` as inline CSS variables to a wrapper. Inline variables take priority over theme selectors.
 
 The library is a foundation: it does not yet include complex data-grid virtualization, date pickers, or a tree component. Accessibility depends on labels, content, colors, application interactions, and testing in the consuming product; these primitives do not certify whole-product conformance.

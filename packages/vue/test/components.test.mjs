@@ -19,7 +19,7 @@ import {
   Table,
   Skeleton,
   Progress,
-  FormaPlugin,
+  BTDESIGNPlugin,
 } from '../dist/index.js';
 
 const render = (component, props = {}, children) =>
@@ -142,7 +142,7 @@ test('all remaining components render semantic content and plugin registers name
   assert.match(html, /role="region" aria-label="成员"/);
   assert.match(html, /<table/);
   const names = [];
-  FormaPlugin.install({
+  BTDESIGNPlugin.install({
     component: (name) => {
       names.push(name);
     },

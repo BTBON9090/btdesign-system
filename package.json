@@ -1,5 +1,5 @@
 {
-  "name": "forma-ui-workspace",
+  "name": "btdesign-workspace",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -12,10 +12,10 @@
   },
   "scripts": {
     "dev": "npm run build:packages && node scripts/package-library.mjs && node scripts/dev.mjs",
-    "build:packages": "npm run build -w @forma-ui/tokens && npm run build -w @forma-ui/react && npm run build -w @forma-ui/vue",
-    "build": "npm run build:packages && npm run build -w @forma-ui/api && node scripts/package-library.mjs && npm run build -w @forma-ui/docs",
-    "test": "npm run build:packages && npm run test -w @forma-ui/tokens && npm run test -w @forma-ui/react && npm run test -w @forma-ui/vue && npm run test -w @forma-ui/api && node --test scripts/migrate-audit.test.mjs",
-    "typecheck": "npm run build:packages && npm run typecheck -w @forma-ui/docs",
+    "build:packages": "npm run build -w @btdesign/tokens && npm run build -w @btdesign/react && npm run build -w @btdesign/vue && npm run build -w @btdesign/core",
+    "build": "npm run build:packages && npm run build -w @btdesign/api && node scripts/package-library.mjs && npm run build -w @btdesign/docs",
+    "test": "npm run build:packages && npm run test -w @btdesign/tokens && npm run test -w @btdesign/react && npm run test -w @btdesign/vue && npm run test -w @btdesign/core && npm run test -w @btdesign/api && node --test scripts/migrate-audit.test.mjs && node --import tsx --test apps/docs/test/*.test.ts",
+    "typecheck": "npm run build:packages && npm run typecheck -w @btdesign/docs",
     "pack:libs": "npm run build:packages && node scripts/package-library.mjs",
     "migrate:audit": "node scripts/migrate-audit.mjs",
     "verify:packages": "node scripts/verify-packages.mjs",

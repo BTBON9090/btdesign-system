@@ -19,20 +19,20 @@ export function VueDemo({ kind, onAction }: VueDemoProps) {
     let app: App | undefined;
     setStatus('loading');
 
-    void Promise.all([import('vue'), import('@forma-ui/vue')])
+    void Promise.all([import('vue'), import('@btdesign/vue')])
       .then(([vue, ui]) => {
         if (cancelled || !host.current) return;
         const { createApp, defineComponent, h, ref } = vue;
         const emitAction = (message: string) => action.current?.(message);
         app = createApp(
           defineComponent({
-            name: 'FormaVueDemo',
+            name: 'BTDESIGNVueDemo',
             setup() {
               const email = ref('linxiao@company.com');
               const loginEmail = ref('');
               const password = ref('');
               const remember = ref(false);
-              const workspaceName = ref('Forma Design Team');
+              const workspaceName = ref('BTDESIGN Team');
               const teamType = ref('design');
               const inviteOpen = ref(false);
               const inviteEmail = ref('');
@@ -363,7 +363,7 @@ export function VueDemo({ kind, onAction }: VueDemoProps) {
                       ),
                       field(
                         '组织名称',
-                        h(ui.Input, { disabled: true, modelValue: 'Forma Design Team' }),
+                        h(ui.Input, { disabled: true, modelValue: 'BTDESIGN Team' }),
                       ),
                     ]);
 
@@ -440,7 +440,7 @@ export function VueDemo({ kind, onAction }: VueDemoProps) {
                   case 'card':
                     return h(ui.Card, { class: 'demo-stack' }, () => [
                       row([
-                        h(ui.Avatar, { alt: 'Forma 团队', fallback: 'F' }),
+                        h(ui.Avatar, { alt: 'BTDESIGN 团队', fallback: 'F' }),
                         h('h3', {}, '团队工作空间'),
                       ]),
                       h('p', {}, '让设计与开发保持同步，构建一致的产品体验。'),
@@ -559,7 +559,7 @@ export function VueDemo({ kind, onAction }: VueDemoProps) {
                     return row([
                       h(ui.Avatar, { alt: '林晓', fallback: '林', size: 'sm' }),
                       h(ui.Avatar, { alt: 'Alex Chen', fallback: 'AC' }),
-                      h(ui.Avatar, { alt: 'Forma Design', fallback: 'FD', size: 'lg' }),
+                      h(ui.Avatar, { alt: 'BTDESIGN', fallback: 'FD', size: 'lg' }),
                     ]);
 
                   case 'separator':

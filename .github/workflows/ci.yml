@@ -30,6 +30,6 @@ jobs:
       - name: Build packages and documentation
         run: npm run build
       - name: Check Vercel API entry points
-        run: npm exec -- tsc --noEmit --module NodeNext --moduleResolution NodeNext --target ES2022 --strict --skipLibCheck --types node api/generate.ts api/health.ts
+        run: npm exec -- tsc --noEmit --module NodeNext --moduleResolution NodeNext --target ES2022 --strict --skipLibCheck --types node api/generate.ts api/health.ts api/compose.ts
       - name: Verify distributable packages
         run: node scripts/verify-packages.mjs --skip-pack

@@ -17,7 +17,7 @@ import {
   Table,
   Tabs,
   Textarea,
-} from '@forma-ui/react';
+} from '@btdesign/react';
 import type { ComponentId } from './catalog';
 export function ComponentDemo({
   kind,
@@ -69,7 +69,7 @@ export function ComponentDemo({
           </label>
           <label className="demo-field">
             项目名称
-            <Input defaultValue="Forma Design System" />
+            <Input defaultValue="BTDESIGN System" />
           </label>
           <label className="demo-field">
             不可编辑
@@ -363,7 +363,7 @@ export function WorkspaceDemo({
           <div className="form-two">
             <label className="demo-field">
               工作空间名称
-              <Input defaultValue="Forma Design Team" required />
+              <Input defaultValue="BTDESIGN Team" required />
             </label>
             <label className="demo-field">
               团队类型

@@ -1,17 +1,6 @@
 import { useState } from 'react';
-import {
-  ArrowRight,
-  ArrowUpRight,
-  Check,
-  ChevronRight,
-  Code2,
-  Layers3,
-  Palette,
-  Search,
-  ShieldCheck,
-  Sparkles,
-} from 'lucide-react';
-import { Alert, Badge, Button } from '@forma-ui/react';
+import { ArrowRight, ArrowUpRight, Check, ChevronRight, Search, Sparkles } from 'lucide-react';
+import { Alert, Badge } from '@btdesign/react';
 import { catalog, componentCode, type ComponentId, type Framework } from './catalog';
 import { ComponentDemo } from './ComponentDemo';
 import { VueDemo } from './VueDemo';
@@ -44,7 +33,7 @@ export function Docs({ path, notify }: { path: string; notify: (s: string) => vo
         ))}
         <a href="#/lab" className="sidebar-lab">
           <Sparkles size={14} />
-          Design Lab
+          创作空间
           <ArrowUpRight size={12} />
         </a>
         <div className="sidebar-group">
@@ -72,12 +61,12 @@ export function Docs({ path, notify }: { path: string; notify: (s: string) => vo
         ))}
         <div className="sidebar-foot">
           <span className="status-dot" />
-          Forma UI v0.1.0
+          BTDESIGN v0.1.0
         </div>
       </aside>
       <div className="docs-main">
         <div className="breadcrumbs">
-          <a href="#/">Forma UI</a>
+          <a href="#/">BTDESIGN</a>
           <ChevronRight size={12} />
           <span>
             {selected
@@ -141,8 +130,8 @@ export function Docs({ path, notify }: { path: string; notify: (s: string) => vo
               <div>
                 <h3>跟随整体主题</h3>
                 <p>
-                  通过 Design Lab
-                  调整全局或组件变量。不要在业务页面写死颜色和尺寸，避免破坏企业风格与深浅色适配。
+                  在创作空间选择一个元素，查看它继承的设计规则。调整品牌、语义或组件变量，让各页面与
+                  React / Vue 实现共同遵循一份主题。
                 </p>
               </div>
             </div>
@@ -186,7 +175,7 @@ export function Docs({ path, notify }: { path: string; notify: (s: string) => vo
                 <ArrowRight size={15} />
               </a>
               <a href="#/lab">
-                在 Design Lab 定制
+                在创作空间中理解与调整
                 <Sparkles size={14} />
               </a>
             </div>
@@ -267,7 +256,7 @@ export function Docs({ path, notify }: { path: string; notify: (s: string) => vo
           <div>
             <Sparkles size={18} />
             <p>让它成为你的风格。</p>
-            <a href="#/lab">进入 Design Lab →</a>
+            <a href="#/lab">进入创作空间 →</a>
           </div>
         </aside>
       )}
@@ -411,10 +400,27 @@ function Guide({
       <article className="guide-article">
         <PageLead
           eyebrow="DESIGN FOUNDATIONS"
-          title="秩序之上，自由表达。"
-          description="Forma 的设计语言由清晰、一致和适度表达组成。把重复决策交给系统，把注意力留给用户与业务。"
+          title="让设计决策，看得见、带得走。"
+          description="从使用者与任务开始，在真实界面里观察规则的影响，再把这些决定交给团队和 AI 继续使用。"
         />
-        <h2>01 · 先建立层级，再选择颜色</h2>
+        <h2>01 · 用简报确定方向</h2>
+        <p>
+          在创作空间描述谁会使用系统、要完成什么任务，以及希望传达的感受。比如「为创意工作室做项目协作界面，方便查看进度；清爽、有秩序，保留一点活力」。
+          连接 DeepSeek 后可生成设计提案；也可以直接选择团队工作台、项目协作或账户登录，手动开始。
+        </p>
+        <p>
+          生成结果会先作为提案展示。检查场景、文案与主题，比较调整前后，再选择应用或放弃。当前 AI
+          在这三个场景中配置设计，不生成任意新组件或完整业务系统。
+        </p>
+        <h2>02 · 在画布里理解设计与结构</h2>
+        <p>
+          点击「选择并理解界面」，再选页面、按钮、输入框、容器或表格。「设计」面板说明当前元素的意图并提供主题调整；「前端结构」展示组件语义、结构示意与关联变量。也可以用画布下方的类别按钮选择。
+        </p>
+        <p>
+          对按钮、输入框和容器的修改作用于该类组件规则，而非某一个实例。关闭检查模式即可实际操作界面。切换
+          React / Vue、深浅色与移动端画布，观察同一设计在不同条件下的表现。
+        </p>
+        <h2>03 · 先建立层级，再选择颜色</h2>
         <p>
           通过字号、字重、间距和位置表达主次。颜色用于标识品牌、操作与状态，不承担全部的信息含义。相同语义在不同页面保持相同表达。
         </p>
@@ -432,7 +438,7 @@ function Guide({
             <p>精确的标签、适当的留白与及时的反馈，让复杂的工作更加从容。</p>
           </div>
         </div>
-        <h2>02 · 三层变量，一条清晰的继承关系</h2>
+        <h2>04 · 三层变量，一条清晰的继承关系</h2>
         <div className="token-flow">
           <div>
             <span>01</span>
@@ -458,7 +464,7 @@ function Guide({
         <p>
           默认使用继承值，需要差异时使用明确的组件变量覆盖。主题模式、界面密度和组件状态是独立维度，不要用深色模式同时改变内容密度。
         </p>
-        <h2>03 · 用角色定义颜色</h2>
+        <h2>05 · 用角色定义颜色</h2>
         <div className="semantic-swatches">
           {[
             ['品牌', 'var(--f-primary)'],
@@ -476,12 +482,12 @@ function Guide({
         <p>
           深浅色由同一组语义角色生成。品牌按钮自动选择黑色或白色前景；额外定制语义颜色时仍需验证正文、边框、焦点和状态提示的对比度。
         </p>
-        <h2>04 · 布局与空间</h2>
+        <h2>06 · 布局与空间</h2>
         <p>
           界面使用 4 px 为基础的空间节奏：紧密相关的内容采用 4–8 px，控件组使用 12–16 px，区块使用
           24–32 px。密集系统可以缩小控件高度，但不应牺牲文字可读性与点击区域。
         </p>
-        <h2>05 · 可访问性是日常工作</h2>
+        <h2>07 · 可访问性是日常工作</h2>
         <ul>
           <li>为每个输入提供可见标签，为图标按钮提供可读取名称。</li>
           <li>键盘可以到达所有操作；标签页支持方向键，对话框支持 Escape。</li>
@@ -493,7 +499,7 @@ function Guide({
           WCAG。需要结合页面内容与用户任务继续验证。
         </Notice>
         <a className="text-link" href="#/lab">
-          在 Design Lab 中实践这些原则
+          打开创作空间，实践这些原则
           <ArrowRight size={15} />
         </a>
       </article>
@@ -506,6 +512,21 @@ function Guide({
           title="让系统，真正成为系统。"
           description="一套组件的价值，来自它在真实业务、团队协作和长期演进中的一致表现。"
         />
+        <h2>让设计、实现与 AI 使用同一份上下文</h2>
+        <p>
+          先在画布里确定目标场景与内容，再到「设计规则」核对共享主题。在「开发交付」查看文件，复制给
+          AI 的上下文，或下载项目包。让编程助手先读取项目规范与组件约定，再继续扩展业务界面。
+        </p>
+        <CodeBlock
+          label="交付约定"
+          code={
+            'AGENTS.md                    设计与实现约定\n.btdesign/system.json         场景、文案、主题与品牌策略\n.btdesign/components.json     真实组件 API 与语义变量\nApp.tsx / App.vue            与画布同源的场景实现\ntheme.css / app.css          深浅色主题与页面样式'
+          }
+        />
+        <p>
+          预览与导出的页面主体使用同一份场景定义和样式。结构面板里的短代码用于解释组合方式；完整可运行的页面代码在「开发交付」中。扩展功能时保留这份规则，新增复杂能力前核对组件实际
+          API。
+        </p>
         <h2>从真实任务组织界面</h2>
         <p>
           后台系统按用户的工作流组织信息：查看状态、筛选对象、完成操作、确认结果。用表格对照结构化数据；用表单完成明确任务；让当前状态和下一步始终可见。
@@ -556,17 +577,29 @@ function Guide({
         <h2>把企业风格约束写进配置</h2>
         <p>
           先由品牌负责人确定基础主题，再锁定品牌色、字体或语义配置。产品团队可以在允许的范围内调节密度和组件尺寸。AI
-          输出与导入主题都通过相同的补丁函数。
+          提案和导入的主题补丁都通过相同的约束函数。打开一个完整项目则会载入该项目自己的主题与策略。
         </p>
         <CodeBlock
           label="TypeScript"
-          code={`import { applyThemePatch, type ThemePolicy } from '@forma-ui/tokens';\n\nconst policy: ThemePolicy = { locked: ['primary', 'font'] };\nconst next = applyThemePatch(companyTheme, proposedTheme, policy);\n// locked 中的字段继续使用 companyTheme 的值。`}
+          code={`import { applyThemePatch, type ThemePolicy } from '@btdesign/tokens';\n\nconst policy: ThemePolicy = { locked: ['primary', 'font'] };\nconst next = applyThemePatch(companyTheme, proposedTheme, policy);\n// locked 中的字段继续使用 companyTheme 的值。`}
         />
         <Notice>
-          Lab 的锁定是主题编辑约束。CSS
+          工作空间的锁定是主题编辑约束。CSS
           本身可被业务代码覆盖；正式的多企业服务还应在服务端保存、校验组织策略，并通过 CI
           检查绕过主题变量的代码。
         </Notice>
+        <h2>给重要决定留下版本</h2>
+        <p>
+          当前项目自动保存在本机浏览器；关键调整前使用「保存版本」命名快照，再比较或恢复。最多保留
+          20 个命名版本，当前会话支持最多 50 步撤销。重要版本及时导出项目 JSON，便于备份和转交。
+        </p>
+        <p>
+          版本记录保存场景、内容、主题和规则。画布里的示例成员、项目状态与表单输入是临时交互数据，不属于设计版本，也不会随交付包导出。当前没有云端协作、跨设备同步或组织审批。
+        </p>
+        <h2>把演示行为接入真实服务</h2>
+        <p>
+          示例中的邀请、项目创建、设置和登录仅在本地演示。接入业务后端时补充认证与权限、持久化、加载和错误状态；收到服务端成功结果后再展示成功反馈。不要把本地校验通过当成真实登录或邮件送达。
+        </p>
         <h2>保持组件 API 的可预测性</h2>
         <p>
           React 使用标准事件、props 和组合；Vue 使用 attrs、插槽和
@@ -591,16 +624,27 @@ function Guide({
         <PageLead
           eyebrow="MIGRATION"
           title="让迁移，保持可控。"
-          description="从统一主题开始，按页面与组件逐步迁移。保留业务行为，显式处理框架差异。"
+          description="先带入熟悉的品牌风格，再识别旧系统的组件与差异，按业务页面逐步迁入同一套规则。"
         />
         <Alert variant="info" title="兼容的边界">
-          Forma v0.1 支持 React 18 / 19 与 Vue 3.4+。现有 Ant Design、Arco、shadcn/ui 等组件的 API
-          需要逐项适配，并非替换包名即可完成。
+          BTDESIGN v0.1 支持 React 18 / 19 与 Vue 3.4+。现有 Ant Design、Arco、shadcn/ui 等组件的
+          API 需要逐项适配，并非替换包名即可完成。
         </Alert>
-        <h2>1. 先做依赖清点</h2>
+        <h2>1. 带入已有的品牌风格</h2>
         <p>
-          迁移审计工具静态读取源代码，列出已有第三方组件、Forma
-          候选映射，以及不能自动确认的用法。它不会修改业务代码。
+          在创作空间打开「迁入」，选择「带入现有风格」。粘贴 Ant Design token JSON、BTDESIGN 主题
+          JSON，或受支持的 CSS 变量，例如 --primary、--radius、--background、--foreground。颜色使用
+          HEX，圆角使用 px。
+        </p>
+        <p>
+          先「检查映射」，逐项查看识别字段与差异提示，再应用到当前项目。只更新识别出的字段，当前已锁定的品牌规则继续生效。HSL、OKLCH
+          等颜色表达式需先转换为支持的格式。
+        </p>
+        <h2>2. 在本地清点组件依赖</h2>
+        <p>
+          迁移审计工具静态读取源代码，列出已有第三方组件、BTDESIGN
+          候选映射，以及不能自动确认的用法。支持识别 Ant Design、Arco、Ant Design Vue、Element Plus
+          和常见 shadcn 本地导入。候选表示需要评估的对应关系，不代表已完成迁移。
         </p>
         <CodeBlock
           label="Terminal"
@@ -608,11 +652,19 @@ function Guide({
             'npm run migrate:audit -- /path/to/your-app --framework react --out ./migration-report\n# Vue 项目使用 --framework vue'
           }
         />
-        <h2>2. 建立品牌主题</h2>
         <p>
-          将现有主色、圆角、字体和密度录入 Design
-          Lab。检查实际页面后锁定品牌规则。旧系统可先消费导出的 CSS
-          变量，让主题先统一，再逐步替换组件。
+          在 BTDESIGN
+          仓库根目录运行命令，把路径替换为业务项目的绝对路径；包含空格时加引号，输出目录使用尚未生成过报告的位置。然后在「迁移现有代码」中打开生成的
+          migration-report.json，按「可评估替换」「需补齐能力」「暂无对应」等状态筛选处理。
+        </p>
+        <Notice>
+          审计工具只读扫描业务源代码，另行写入报告；浏览器只在本地读取报告，不上传报告或源码。自动导入、全局注册和自定义包装仍需人工核查，零记录不代表迁移完成。
+        </Notice>
+        <h2>3. 让新旧界面共用设计规则</h2>
+        <p>
+          在画布验证品牌主题的深浅色表现，锁定共享规则后导出
+          theme.css。旧系统先通过兼容样式消费同一组语义变量，新页面再使用 BTDESIGN
+          组件。将兼容样式限定在业务作用域内，逐步减少旧依赖。
         </p>
         <CodeBlock
           label="CSS"
@@ -620,7 +672,7 @@ function Guide({
             '.legacy-primary-button {\n  color: var(--f-on-primary);\n  background: var(--f-primary);\n  border-radius: var(--f-button-radius);\n}\n\n.legacy-panel {\n  color: var(--f-text);\n  background: var(--f-surface);\n  border-color: var(--f-border);\n}'
           }
         />
-        <h2>3. 从简单、独立的组件开始</h2>
+        <h2>4. 从简单、独立的组件开始</h2>
         <p>
           先迁移 Button、Input、Badge、Card，再迁移表单与弹窗。为第三方复杂 API
           编写临时兼容包装层，逐步消除旧依赖。通过组件前缀与作用域主题让新旧界面共存。
@@ -643,7 +695,7 @@ function Guide({
             </tr>
             <tr>
               <td>高级表格 / Form</td>
-              <td>保留成熟业务层；Forma Table 仅提供原生表格样式与语义</td>
+              <td>保留成熟业务层；BTDESIGN Table 仅提供原生表格样式与语义</td>
             </tr>
             <tr>
               <td>树、复杂日期、上传、虚拟列表</td>
@@ -651,7 +703,11 @@ function Guide({
             </tr>
           </tbody>
         </table>
-        <h2>4. 验证与分批上线</h2>
+        <Notice>
+          特别检查按钮的 type：Ant Design / Arco 中它可能代表视觉样式，BTDESIGN 中它是原生 button /
+          submit / reset。视觉样式使用 variant；不要直接复制属性后跳过行为验证。
+        </Notice>
+        <h2>5. 验证与分批上线</h2>
         <p>
           对关键路径做行为回归；比较键盘焦点、校验、异步状态和深浅色。使用功能开关逐页启用，保留旧版本以便回退。迁移完成度以真实业务验收为准。
         </p>
@@ -670,52 +726,83 @@ function Guide({
     <article className="guide-article">
       <PageLead
         eyebrow="GET STARTED"
-        title="从这里，开始构建。"
-        description="选择你的框架，让设计与工程从第一行代码起保持一致。"
+        title="从想法，到可以继续开发的界面。"
+        description="在同一个工作空间表达需求、理解设计、确认规则，把可运行的场景和上下文一起带进 React 或 Vue 项目。"
       />
       <div className="guide-framework">
         <FrameworkToggle value={framework} onChange={setFramework} />
         <span>Node.js ≥ 22.12 · TypeScript · ESM</span>
       </div>
-      <h2>1. 获取并启动项目</h2>
+      <h2>1. 在工作空间确定设计</h2>
+      <ol>
+        <li>
+          写下使用者、任务和期望的风格，连接 DeepSeek
+          生成提案；或直接选择团队工作台、项目协作、账户登录。
+        </li>
+        <li>在画布切换框架、深浅色与移动端。选中元素，在「设计」与「前端结构」中理解并调整它。</li>
+        <li>到「设计规则」确认主题与锁定项。应用提案后保存命名版本，比较需要保留的改动。</li>
+        <li>进入「开发交付」，检查完整源代码与规则，再复制给 AI 或下载项目包。</li>
+      </ol>
+      <p>
+        手动调整、场景预览和交付无需连接
+        AI。当前提案只选择与配置上述三个场景；场景中的成员、项目和表单使用本地示例数据。
+      </p>
+      <a className="text-link" href="#/studio">
+        进入创作空间
+        <ArrowRight size={15} />
+      </a>
+      <h2>2. 获取并启动源码项目</h2>
       <p>当前版本通过源码仓库和本地安装包分发，尚未发布到 npm 公共注册表。</p>
       <CodeBlock
         label="Terminal"
         code={
-          'git clone https://github.com/BTBON9090/btdesign-system.git\ncd btdesign-system\nnpm install\nnpm run dev'
+          'git clone https://github.com/BTBON9090/btdesign-system.git\ncd btdesign-system\nnpm ci\nnpm run dev'
         }
       />
-      <h2>2. 在已有项目中安装</h2>
+      <h2>3. 将交付包接入已有项目</h2>
       <p>
-        运行打包命令生成带有类型声明的组件安装包，再将 tokens 与对应框架包复制到目标项目安装。Design
-        Lab 也可以直接导出安装包。
+        在「开发交付」下载项目包，可选包含 tokens 与当前框架的组件安装包。将 App.tsx 或
+        App.vue、theme.css、app.css 放入同一源码目录，把 App 作为页面组件引用。React 场景还需安装
+        lucide-react。目标项目需已具备 React 18 / 19 或 Vue 3.4+、低于 4 的运行环境。
       </p>
       <CodeBlock
-        label="Terminal"
-        code={`# 在 Forma 仓库中\nnpm run pack:libs\n\n# 在目标项目中，替换为实际文件路径\nnpm install /path/to/forma-ui-tokens-0.1.0.tgz \\\n  /path/to/forma-ui-${framework}-0.1.0.tgz`}
+        label="项目包内容"
+        code={
+          'AGENTS.md\n.btdesign/system.json\n.btdesign/components.json\nApp.tsx 或 App.vue\ntheme.css / app.css\nREADME.md\nbtdesign-project.json\npackages/*.tgz（可选）'
+        }
       />
-      <h2>3. 使用组件</h2>
+      <p>
+        保留 AGENTS.md 和 .btdesign 目录，让 AI 编程工具读取设计约束与真实组件 API
+        后再修改页面。btdesign-project.json 用于重新打开 Studio
+        项目；交付包提供页面组件，不包含完整构建脚手架、路由或业务后端。
+      </p>
+      <p>也可以在仓库运行打包命令，再将安装包复制到目标项目：</p>
+      <CodeBlock
+        label="Terminal"
+        code={`# 在 BTDESIGN 仓库中\nnpm run pack:libs\n\n# 在目标项目中，替换为实际文件路径\nnpm install /path/to/btdesign-tokens-0.1.0.tgz \\\n  /path/to/btdesign-${framework}-0.1.0.tgz${framework === 'react' ? '\n\n# 使用导出的 React 场景时\nnpm install lucide-react' : ''}`}
+      />
+      <h2>4. 单独使用组件</h2>
       <CodeBlock
         label={framework === 'react' ? 'App.tsx' : 'App.vue'}
         code={
           framework === 'react'
-            ? `import { Button, Card } from '@forma-ui/react';\nimport '@forma-ui/tokens/styles.css';\n\nexport default function App() {\n  return <Card>\n    <h2>你好，Forma。</h2>\n    <Button onClick={() => console.log('开始构建')}>开始构建</Button>\n  </Card>;\n}`
-            : `<script setup>\nimport { Button, Card } from '@forma-ui/vue';\nimport '@forma-ui/tokens/styles.css';\n</script>\n\n<template>\n  <Card>\n    <h2>你好，Forma。</h2>\n    <Button @click="console.log('开始构建')">开始构建</Button>\n  </Card>\n</template>`
+            ? `import { Button, Card } from '@btdesign/react';\nimport '@btdesign/tokens/styles.css';\n\nexport default function App() {\n  return <Card>\n    <h2>你好，BTDESIGN。</h2>\n    <Button onClick={() => console.log('开始构建')}>开始构建</Button>\n  </Card>;\n}`
+            : `<script setup>\nimport { Button, Card } from '@btdesign/vue';\nimport '@btdesign/tokens/styles.css';\n</script>\n\n<template>\n  <Card>\n    <h2>你好，BTDESIGN。</h2>\n    <Button @click="console.log('开始构建')">开始构建</Button>\n  </Card>\n</template>`
         }
       />
-      <h2>4. 接入品牌主题与深色模式</h2>
+      <h2>5. 接入主题与深色模式</h2>
       <p>
-        在 Lab 中导出 theme.css，在组件基础样式之后加载。使用 data-theme 切换深浅色，也可以通过
-        createTheme 给局部容器赋值。
+        按基础组件样式、theme.css、业务页面样式的顺序加载。使用 data-theme 切换深浅色，也可以通过
+        createTheme 给局部容器赋值。Studio 的外壳明暗与画布预览模式分别控制。
       </p>
       <CodeBlock
         label="TypeScript"
-        code={`import '@forma-ui/tokens/styles.css';\nimport './theme.css';\n\ndocument.documentElement.dataset.theme = 'dark';\n// 切回浅色：'light'`}
+        code={`import '@btdesign/tokens/styles.css';\nimport './theme.css';\n\ndocument.documentElement.dataset.theme = 'dark';\n// 切回浅色：'light'`}
       />
-      <h2>5. 启用 DeepSeek</h2>
+      <h2>6. 启用 DeepSeek 设计提案</h2>
       <p>
-        在根目录创建 .env，参考 .env.example 设置服务端密钥。重启 npm run dev 后，Design Lab
-        会连接本地 API。密钥不会进入前端构建。
+        在根目录创建 .env，参考 .env.example 填写服务端密钥并重启 npm run dev。服务端调用
+        DeepSeek，返回场景、名称、文案、主题种子与解释，校验后作为待确认提案显示。模型密钥保留在服务端。
       </p>
       <CodeBlock
         label=".env"
@@ -724,10 +811,11 @@ function Guide({
         }
       />
       <Notice>
-        AI
-        根据描述生成主题配置，由主题引擎应用到已有组件。它不会自动生成任意新交互组件。对外提供多企业服务前，还需接入组织登录、策略存储和共享限流。
+        公开部署还需要独立的 LAB_API_TOKEN，在工作空间的「AI 连接设置」输入访问令牌；这里不填写
+        DeepSeek
+        密钥。未配置或请求失败会显示真实状态，手动工作仍然可用。多企业服务的组织登录、策略存储与共享限流需另行接入。
       </Notice>
-      <h2>6. 构建与发布</h2>
+      <h2>7. 构建与发布</h2>
       <CodeBlock
         label="Terminal"
         code={
@@ -744,7 +832,7 @@ function Guide({
           <ArrowRight size={15} />
         </a>
         <a href="#/lab">
-          定制主题
+          继续创作
           <Sparkles size={15} />
         </a>
       </div>

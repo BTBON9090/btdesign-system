@@ -1,18 +1,12 @@
 import { useState, type ReactNode } from 'react';
 import { Check, Copy, ArrowUpRight } from 'lucide-react';
-import { Button } from '@forma-ui/react';
+import { Button } from '@btdesign/react';
 import type { Framework } from './catalog';
 export function Logo({ small = false }: { small?: boolean }) {
   return (
-    <a href="#/" className={`logo ${small ? 'logo-small' : ''}`} aria-label="Forma UI 首页">
-      <span className="brand-mark" aria-hidden="true">
-        <i />
-        <i />
-        <i />
-      </span>
-      <span>
-        forma<span className="logo-ui">ui</span>
-      </span>
+    <a href="#/" className={`logo ${small ? 'logo-small' : ''}`} aria-label="BTDESIGN 首页">
+      <span className="bt-wordmark-symbol" aria-hidden="true">bt<span>•</span></span>
+      <span className="bt-wordmark-text">BTDESIGN</span>
     </a>
   );
 }

@@ -190,27 +190,27 @@ export const catalog = [
 ] as const;
 export type ComponentId = (typeof catalog)[number]['id'];
 const reactExamples: Record<ComponentId, string> = {
-  button: `import { Button } from '@forma-ui/react';\n\n<Button variant="primary">创建项目</Button>\n<Button variant="secondary">取消</Button>\n<Button loading>正在保存</Button>`,
-  input: `import { Input } from '@forma-ui/react';\n\n<label htmlFor="email">邮箱</label>\n<Input id="email" type="email" placeholder="you@company.com" />`,
-  textarea: `import { Textarea } from '@forma-ui/react';\n\n<label htmlFor="description">项目描述</label>\n<Textarea id="description" rows={4} placeholder="介绍一下你的项目…" />`,
-  select: `import { Select } from '@forma-ui/react';\n\n<Select aria-label="团队角色" defaultValue="designer">\n  <option value="designer">设计师</option>\n  <option value="developer">开发者</option>\n</Select>`,
-  checkbox: `import { Checkbox } from '@forma-ui/react';\n\n<Checkbox label="接收产品更新" defaultChecked />`,
-  switch: `import { Switch } from '@forma-ui/react';\n\n<Switch label="邮件通知" defaultChecked />`,
-  badge: `import { Badge } from '@forma-ui/react';\n\n<Badge variant="success">已发布</Badge>\n<Badge variant="warning">审核中</Badge>`,
-  card: `import { Card, Button } from '@forma-ui/react';\n\n<Card>\n  <h3>团队工作空间</h3>\n  <p>让设计与开发保持同步。</p>\n  <Button>进入工作空间</Button>\n</Card>`,
-  alert: `import { Alert } from '@forma-ui/react';\n\n<Alert variant="success" title="保存成功">\n  当前配置已保存，可继续编辑或导出。\n</Alert>`,
-  tabs: `import { Tabs } from '@forma-ui/react';\n\n<Tabs defaultValue="design" items={[\n  { value: 'design', label: '设计', content: '设计规范与资源' },\n  { value: 'develop', label: '开发', content: '组件 API 与示例' }\n]} />`,
-  dialog: `import { useState } from 'react';\nimport { Button, Dialog } from '@forma-ui/react';\n\nexport function Example() {\n  const [open, setOpen] = useState(false);\n  return <>\n    <Button onClick={() => setOpen(true)}>新建项目</Button>\n    <Dialog open={open} onOpenChange={setOpen} title="新建项目">\n      <p>为团队开启一个新的工作空间。</p>\n      <Button onClick={() => setOpen(false)}>完成</Button>\n    </Dialog>\n  </>;\n}`,
-  avatar: `import { Avatar } from '@forma-ui/react';\n\n<Avatar name="林晓" />\n<Avatar name="Alex Chen" size="lg" />`,
-  separator: `import { Separator } from '@forma-ui/react';\n\n<p>项目设置</p>\n<Separator />\n<p>团队成员</p>`,
-  table: `import { Table } from '@forma-ui/react';\n\n<Table>\n  <caption>团队成员</caption>\n  <thead><tr><th>姓名</th><th>角色</th></tr></thead>\n  <tbody><tr><td>林晓</td><td>设计师</td></tr></tbody>\n</Table>`,
-  skeleton: `import { Skeleton } from '@forma-ui/react';\n\n<div aria-label="正在加载内容" role="status">\n  <Skeleton width="100%" height={20} />\n  <Skeleton width="60%" height={20} />\n</div>`,
-  progress: `import { Progress } from '@forma-ui/react';\n\n<Progress value={64} max={100} label="文件上传" />`,
+  button: `import { Button } from '@btdesign/react';\n\n<Button variant="primary">创建项目</Button>\n<Button variant="secondary">取消</Button>\n<Button loading>正在保存</Button>`,
+  input: `import { Input } from '@btdesign/react';\n\n<label htmlFor="email">邮箱</label>\n<Input id="email" type="email" placeholder="you@company.com" />`,
+  textarea: `import { Textarea } from '@btdesign/react';\n\n<label htmlFor="description">项目描述</label>\n<Textarea id="description" rows={4} placeholder="介绍一下你的项目…" />`,
+  select: `import { Select } from '@btdesign/react';\n\n<Select aria-label="团队角色" defaultValue="designer">\n  <option value="designer">设计师</option>\n  <option value="developer">开发者</option>\n</Select>`,
+  checkbox: `import { Checkbox } from '@btdesign/react';\n\n<Checkbox label="接收产品更新" defaultChecked />`,
+  switch: `import { Switch } from '@btdesign/react';\n\n<Switch label="邮件通知" defaultChecked />`,
+  badge: `import { Badge } from '@btdesign/react';\n\n<Badge variant="success">已发布</Badge>\n<Badge variant="warning">审核中</Badge>`,
+  card: `import { Card, Button } from '@btdesign/react';\n\n<Card>\n  <h3>团队工作空间</h3>\n  <p>让设计与开发保持同步。</p>\n  <Button>进入工作空间</Button>\n</Card>`,
+  alert: `import { Alert } from '@btdesign/react';\n\n<Alert variant="success" title="保存成功">\n  当前配置已保存，可继续编辑或导出。\n</Alert>`,
+  tabs: `import { Tabs } from '@btdesign/react';\n\n<Tabs defaultValue="design" items={[\n  { value: 'design', label: '设计', content: '设计规范与资源' },\n  { value: 'develop', label: '开发', content: '组件 API 与示例' }\n]} />`,
+  dialog: `import { useState } from 'react';\nimport { Button, Dialog } from '@btdesign/react';\n\nexport function Example() {\n  const [open, setOpen] = useState(false);\n  return <>\n    <Button onClick={() => setOpen(true)}>新建项目</Button>\n    <Dialog open={open} onOpenChange={setOpen} title="新建项目">\n      <p>为团队开启一个新的工作空间。</p>\n      <Button onClick={() => setOpen(false)}>完成</Button>\n    </Dialog>\n  </>;\n}`,
+  avatar: `import { Avatar } from '@btdesign/react';\n\n<Avatar name="林晓" />\n<Avatar name="Alex Chen" size="lg" />`,
+  separator: `import { Separator } from '@btdesign/react';\n\n<p>项目设置</p>\n<Separator />\n<p>团队成员</p>`,
+  table: `import { Table } from '@btdesign/react';\n\n<Table>\n  <caption>团队成员</caption>\n  <thead><tr><th>姓名</th><th>角色</th></tr></thead>\n  <tbody><tr><td>林晓</td><td>设计师</td></tr></tbody>\n</Table>`,
+  skeleton: `import { Skeleton } from '@btdesign/react';\n\n<div aria-label="正在加载内容" role="status">\n  <Skeleton width="100%" height={20} />\n  <Skeleton width="60%" height={20} />\n</div>`,
+  progress: `import { Progress } from '@btdesign/react';\n\n<Progress value={64} max={100} label="文件上传" />`,
 };
 function reactCode(id: ComponentId) {
   const example = reactExamples[id];
   const boundary = example.indexOf('\n\n');
-  const imports = `${example.slice(0, boundary)}\nimport '@forma-ui/tokens/styles.css';`;
+  const imports = `${example.slice(0, boundary)}\nimport '@btdesign/tokens/styles.css';`;
   const body = example.slice(boundary + 2);
   if (body.startsWith('export function'))
     return `${imports}\n\n${body.replace('export function', 'export default function')}`;
@@ -255,5 +255,5 @@ export function componentCode(id: ComponentId, framework: Framework) {
       : id === 'dialog'
         ? '\nconst open = ref(false);'
         : '';
-  return `<script setup lang="ts">\n${state ? "import { ref } from 'vue';\n" : ''}import { ${catalog.find((c) => c.id === id)!.name}${id === 'dialog' ? ', Button' : ''} } from '@forma-ui/vue';\nimport '@forma-ui/tokens/styles.css';${state}\n</script>\n\n<template>\n${templates[id]}\n</template>`;
+  return `<script setup lang="ts">\n${state ? "import { ref } from 'vue';\n" : ''}import { ${catalog.find((c) => c.id === id)!.name}${id === 'dialog' ? ', Button' : ''} } from '@btdesign/vue';\nimport '@btdesign/tokens/styles.css';${state}\n</script>\n\n<template>\n${templates[id]}\n</template>`;
 }

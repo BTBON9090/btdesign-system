@@ -1,6 +1,6 @@
 import { spawn } from 'node:child_process';
 const children = [
-  spawn('npm', ['run', 'dev', '-w', '@forma-ui/docs'], { stdio: 'inherit' }),
+  spawn('npm', ['run', 'dev', '-w', '@btdesign/docs'], { stdio: 'inherit' }),
   spawn(
     process.execPath,
     ['--env-file-if-exists=.env', '--import', 'tsx', 'apps/api/src/server.ts'],

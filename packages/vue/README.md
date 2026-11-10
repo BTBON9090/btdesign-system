@@ -1,12 +1,12 @@
-# @forma-ui/vue
+# @btdesign/vue
 
-Forma UI 的 Vue 3 组件实现。需要 Vue 3.4 或更新版本，使用与 React 包一致的语义变量和 CSS。
+BTDESIGN 的 Vue 3 组件实现。需要 Vue 3.4 或更新版本，使用与 React 包一致的语义变量和 CSS。
 
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue';
-import { Button, Input, Switch } from '@forma-ui/vue';
-import '@forma-ui/tokens/styles.css';
+import { Button, Input, Switch } from '@btdesign/vue';
+import '@btdesign/tokens/styles.css';
 
 const name = ref('Acme');
 const notifications = ref(true);
@@ -44,8 +44,8 @@ Tabs 支持左右方向键、Home、End 和自动激活。服务端渲染场景�
 可选全局注册：
 
 ```ts
-import { FormaPlugin } from '@forma-ui/vue';
-app.use(FormaPlugin); // FButton、FInput 等 16 个组件
+import { BTDESIGNPlugin } from '@btdesign/vue';
+app.use(BTDESIGNPlugin); // FButton、FInput 等 16 个组件
 ```
 
-主题配置通过 `@forma-ui/tokens` 的 `createTheme(config, mode)` 设置在组件共同祖先的 CSS 变量上，或导出 CSS 文件。Vue 包不自动覆盖页面主题。
+主题配置通过 `@btdesign/tokens` 的 `createTheme(config, mode)` 设置在组件共同祖先的 CSS 变量上，或导出 CSS 文件。Vue 包不自动覆盖页面主题。

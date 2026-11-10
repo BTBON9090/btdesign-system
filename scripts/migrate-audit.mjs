@@ -56,15 +56,15 @@ const aliases = {
 };
 const limitations = {
   Button: [
-    '映射 variant、size 和事件；Ant/Arco 的 type 表示视觉，而 Forma type 是原生表单类型。链接按钮、图标插槽和 asChild 需另行处理。',
+    '映射 variant、size 和事件；Ant/Arco 的 type 表示视觉，而 BTDESIGN type 是原生表单类型。链接按钮、图标插槽和 asChild 需另行处理。',
   ],
-  Input: ['确认受控值/事件类型、前后缀、清除按钮、密码和搜索输入；Forma Input 是原生 input。'],
+  Input: ['确认受控值/事件类型、前后缀、清除按钮、密码和搜索输入；BTDESIGN Input 是原生 input。'],
   Textarea: ['确认受控值/事件类型及字数限制；自动高度和字数显示需应用层实现。'],
-  Select: ['Forma Select 是原生 select；搜索、远程加载、虚拟列表、标签模式和自定义弹层尚不具备。'],
+  Select: ['BTDESIGN Select 是原生 select；搜索、远程加载、虚拟列表、标签模式和自定义弹层尚不具备。'],
   Checkbox: ['检查 checked / v-model 和表单提交；组选择、校验上下文需应用层适配。'],
   Switch: ['检查 checked / v-model、事件和表单 name；设置可访问标签。'],
-  Badge: ['Forma Badge 是文本状态标签；数字计数、角标定位和 dot 模式需另行实现。'],
-  Card: ['Forma Card 是内容容器；标题、封面、actions、嵌套样式需应用层组合。'],
+  Badge: ['BTDESIGN Badge 是文本状态标签；数字计数、角标定位和 dot 模式需另行实现。'],
+  Card: ['BTDESIGN Card 是内容容器；标题、封面、actions、嵌套样式需应用层组合。'],
   Alert: ['映射 title、variant 与内容；可关闭通知和全局 message/notification 尚未实现。'],
   Tabs: [
     '转换为 items[value,label,content]，映射 value / v-model；可编辑标签、拖动和垂直布局尚未实现。',
@@ -75,7 +75,7 @@ const limitations = {
   Avatar: ['映射 name、src、size；头像组和徽标需应用层组合。'],
   Separator: ['映射 orientation；带标题分隔线需应用层组合。'],
   Table: [
-    'Forma Table 是语义化原生表格外壳；columns/dataSource、排序、筛选、分页、选择、固定列和虚拟滚动均需保留现有实现或重建。',
+    'BTDESIGN Table 是语义化原生表格外壳；columns/dataSource、排序、筛选、分页、选择、固定列和虚拟滚动均需保留现有实现或重建。',
   ],
   Skeleton: ['转换为 width/height 和组合布局；现有复杂骨架结构需要重新组合。'],
   Progress: ['映射 value/max；圆形、分段、渐变和步骤进度尚未实现。'],
@@ -130,7 +130,7 @@ function componentMapping(imported) {
         status: 'partial',
         confidence: 'medium',
         issues: [
-          `${original} 是复合组件的一部分；Forma 未导出同名子组件，需要重组插槽/子节点。`,
+          `${original} 是复合组件的一部分；BTDESIGN 未导出同名子组件，需要重组插槽/子节点。`,
           ...limitations[mapped],
         ],
       };
@@ -149,7 +149,7 @@ function componentMapping(imported) {
     target: null,
     status: 'unsupported',
     confidence: 'high',
-    issues: ['当前 16 个 Forma 组件没有直接对应能力；保留原组件或先实现扩展包，再迁移。'],
+    issues: ['当前 16 个 BTDESIGN 组件没有直接对应能力；保留原组件或先实现扩展包，再迁移。'],
   };
 }
 
@@ -425,7 +425,7 @@ const escapeCell = (value) =>
     .replace(/[\r\n]/g, ' ');
 export function reportMarkdown(report) {
   const lines = [
-    '# Forma UI 迁移审计',
+    '# BTDESIGN 迁移审计',
     '',
     `扫描目标：\`${report.sourceRoot}\``,
     '',
@@ -433,7 +433,7 @@ export function reportMarkdown(report) {
     '',
     '**源项目未被修改。当前结果不代表 API 可直接替换。**',
     '',
-    '| 文件:行 | 来源 | 导入组件 | Forma 候选 | 状态 | 映射置信度 |',
+    '| 文件:行 | 来源 | 导入组件 | BTDESIGN 候选 | 状态 | 映射置信度 |',
     '| --- | --- | --- | --- | --- | --- |',
     ...report.findings.map(
       (item) =>

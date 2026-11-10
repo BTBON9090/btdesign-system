@@ -22,7 +22,7 @@ if (!flags.has('--skip-pack')) run(npm, ['run', 'pack:libs'], root);
 
 const downloads = join(root, 'apps/docs/public/downloads');
 const manifest = JSON.parse(readFileSync(join(downloads, 'manifest.json'), 'utf8'));
-const names = ['@forma-ui/tokens', '@forma-ui/react', '@forma-ui/vue'];
+const names = ['@btdesign/tokens', '@btdesign/react', '@btdesign/vue'];
 assert.deepEqual(
   manifest.map((entry) => entry.name).sort(),
   [...names].sort(),
@@ -81,9 +81,9 @@ import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { createSSRApp, h } from 'vue';
 import { renderToString } from '@vue/server-renderer';
-import * as tokens from '@forma-ui/tokens';
-import * as react from '@forma-ui/react';
-import * as vue from '@forma-ui/vue';
+import * as tokens from '@btdesign/tokens';
+import * as react from '@btdesign/react';
+import * as vue from '@btdesign/vue';
 
 const expectedNames = ['Button','Input','Textarea','Select','Checkbox','Switch','Badge','Card','Alert','Tabs','Dialog','Avatar','Separator','Table','Skeleton','Progress'];
 for (const name of expectedNames) {
@@ -97,11 +97,11 @@ assert.match(renderToStaticMarkup(createElement(react.Button, {variant: 'seconda
 assert.match(renderToStaticMarkup(createElement(react.Input, {value: 'React input', readOnly: true})), /value="React input"/);
 assert.match(await renderToString(createSSRApp({render: () => h(vue.Button, {}, () => 'Vue package')})), /Vue package/);
 assert.match(await renderToString(createSSRApp({render: () => h(vue.Input, {value: 'Vue native value'})})), /value="Vue native value"/);
-const css = readFileSync(fileURLToPath(import.meta.resolve('@forma-ui/tokens/styles.css')), 'utf8');
+const css = readFileSync(fileURLToPath(import.meta.resolve('@btdesign/tokens/styles.css')), 'utf8');
 assert.match(css, /--f-primary/);
 assert.ok(css.includes('.f-dialog'));
 assert.match(css, /--f-button-height/);
-for (const name of ['@forma-ui/tokens', '@forma-ui/react', '@forma-ui/vue']) {
+for (const name of ['@btdesign/tokens', '@btdesign/react', '@btdesign/vue']) {
   const entryUrl = import.meta.resolve(name);
   const packageUrl = new URL('../package.json', entryUrl);
   const pkg = JSON.parse(readFileSync(packageUrl, 'utf8'));
@@ -109,10 +109,10 @@ for (const name of ['@forma-ui/tokens', '@forma-ui/react', '@forma-ui/vue']) {
   const declaration = readFileSync(new URL(pkg.types, packageUrl), 'utf8');
   assert.ok(declaration.length > 0, name + ' must ship declarations');
   assert.equal(pkg.exports['.'].types, pkg.types, name + ' must expose declarations through exports');
-  if (name !== '@forma-ui/tokens') {
-    assert.equal(pkg.dependencies['@forma-ui/tokens'], ${JSON.stringify(manifest.find((entry) => entry.name === '@forma-ui/tokens').version)});
+  if (name !== '@btdesign/tokens') {
+    assert.equal(pkg.dependencies['@btdesign/tokens'], ${JSON.stringify(manifest.find((entry) => entry.name === '@btdesign/tokens').version)});
     const probe = new URL('__forma-smoke.mjs', packageUrl);
-    writeFileSync(probe, 'export { defaultTheme } from "@forma-ui/tokens";');
+    writeFileSync(probe, 'export { defaultTheme } from "@btdesign/tokens";');
     assert.equal((await import(probe.href)).defaultTheme, tokens.defaultTheme, 'All adapters must share the local token package');
   }
 }
@@ -124,10 +124,10 @@ console.log('PASS: 16 React + 16 Vue exports, SSR, native input values, token ov
     `
 import { createElement, type CSSProperties } from 'react';
 import { h } from 'vue';
-import { Button, Input, type ButtonProps } from '@forma-ui/react';
-import { Button as VueButton, Input as VueInput } from '@forma-ui/vue';
-import { createTheme, applyThemePatch, defaultTheme, type ThemeConfig, type ThemePolicy } from '@forma-ui/tokens';
-import '@forma-ui/tokens/styles.css';
+import { Button, Input, type ButtonProps } from '@btdesign/react';
+import { Button as VueButton, Input as VueInput } from '@btdesign/vue';
+import { createTheme, applyThemePatch, defaultTheme, type ThemeConfig, type ThemePolicy } from '@btdesign/tokens';
+import '@btdesign/tokens/styles.css';
 
 const policy: ThemePolicy = {locked: ['primary']};
 const theme: ThemeConfig = applyThemePatch(defaultTheme, {components: {button: {height: 44}}}, policy);

@@ -1,10 +1,10 @@
-# @forma-ui/tokens
+# @btdesign/tokens
 
 Shared CSS and a deterministic, framework-independent theme engine.
 
 ```ts
-import '@forma-ui/tokens/styles.css';
-import { defaultTheme, createTheme, themeToCSS } from '@forma-ui/tokens';
+import '@btdesign/tokens/styles.css';
+import { defaultTheme, createTheme, themeToCSS } from '@btdesign/tokens';
 
 const theme = { ...defaultTheme, primary: '#2563EB', radius: 6 };
 // Set the returned variables on a wrapper or document.documentElement.
@@ -20,7 +20,7 @@ const css = themeToCSS(theme);
 ## Enterprise overrides and policy
 
 ```ts
-import { applyThemePatch } from '@forma-ui/tokens';
+import { applyThemePatch } from '@btdesign/tokens';
 
 const draft = applyThemePatch(
   theme,

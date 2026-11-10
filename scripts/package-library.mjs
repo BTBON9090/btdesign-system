@@ -8,11 +8,11 @@ const packages = ['tokens', 'react', 'vue'].map((name) => {
   const result = JSON.parse(
     execFileSync(
       'npm',
-      ['pack', '--workspace', `@forma-ui/${name}`, '--pack-destination', dest, '--json'],
+      ['pack', '--workspace', `@btdesign/${name}`, '--pack-destination', dest, '--json'],
       { encoding: 'utf8' },
     ),
   );
-  return { name: `@forma-ui/${name}`, file: result[0].filename, version: result[0].version };
+  return { name: `@btdesign/${name}`, file: result[0].filename, version: result[0].version };
 });
 writeFileSync(resolve(dest, 'manifest.json'), JSON.stringify(packages, null, 2));
 console.log('Packaged libraries:', packages.map((p) => p.file).join(', '));

@@ -1,50 +1,78 @@
-# Forma UI 架构
+# BTDESIGN 架构
 
-Forma UI 将品牌规则、组件行为和文档工具分开维护。React 与 Vue 使用同一份序列化主题配置和 CSS 变量，各自保留框架原生的状态与事件方式。当前提供 16 个基础组件，是可运行的组件库起点；它不包含完整的企业业务组件套件。
+BTDESIGN 以一份可移植的项目规范连接意图、设计规则、真实组件和开发交付。Studio 中的当前项目是工作对象：使用者从需求或场景开始，在界面中理解设计理由与实现结构，确认规则、保存版本，再把上下文与源代码交给开发或 AI 编程工具。
 
-## 包与依赖方向
+当前维护团队工作台、项目协作和登录三个场景，以及 16 类基础组件的 React / Vue 3 实现。AI 在受约束的结构中提出场景、文案与主题建议；组件行为来自仓库中维护的代码。
 
-```text
-packages/tokens     ThemeConfig → CSS 变量 + 共享组件样式
-      ↑                    ↑
-packages/react      packages/vue
-      ↑                    ↑
-      └────── apps/docs ────┘
-               ↓
-          apps/api（AI 配置建议）
+## 包与运行时职责
+
+```mermaid
+flowchart LR
+  Studio[Studio 项目工作空间] --> Core[@btdesign/core]
+  Core --> Tokens[@btdesign/tokens]
+  Studio --> React[@btdesign/react]
+  Studio --> Vue[@btdesign/vue]
+  React --> Tokens
+  Vue --> Tokens
+  Studio --> API[服务端 DeepSeek API]
 ```
 
-- `@forma-ui/tokens` 不依赖 React 或 Vue；配置为纯 JSON，主题计算可在服务端或浏览器执行。
-- `@forma-ui/react` 和 `@forma-ui/vue` 只负责各自的组件 DOM、状态和交互，不彼此依赖，也不依赖文档站或 AI 服务。
-- 文档站使用 React；Vue 示例单独挂载真实 Vue 组件。网站框架不决定组件库的消费框架。
-- AI 服务返回经过校验的主题配置建议。应用主题不需要 AI 服务，现有主题可离线计算与导出。
+| 模块                                | 职责                                                                                           |
+| ----------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `@btdesign/tokens`                  | 校验与合并 ThemeConfig，解析深浅主题，生成 CSS 变量与共享组件样式；不依赖框架                  |
+| `@btdesign/core`                    | ProjectSpec、项目更新、组件 API 注册表、设计知识说明、AI 上下文与交付文件；运行时只依赖 tokens |
+| `@btdesign/react` / `@btdesign/vue` | 各自原生的 DOM、状态、事件、键盘与表单行为；两包不互相依赖                                     |
+| `apps/docs`                         | Studio、真实场景预览、检查器、版本与迁入面板、组件和指南文档                                   |
+| `apps/api`                          | 调用 DeepSeek、校验输入与输出、处理认证及错误；不保存权威项目或企业规则                        |
 
-## 三层主题合同
+网站使用 React，Vue 场景通过独立 Vue 应用挂载真实组件。切换框架改变场景实现，保留项目中的内容与主题；网站的技术栈不限制使用者选择哪个组件包。
 
-1. **品牌基础**：主色、全局圆角、密度、字体族。
-2. **语义层**：light / dark 下的背景、表面、正文、次要正文和边框。
-3. **组件层**：按钮与输入框的圆角/高度、卡片的圆角/内边距。
+## 项目是设计与代码之间的契约
 
-`normalizeTheme` 只接受已定义字段，校验颜色并约束数值范围；`createTheme` 将结果转换为 `--f-*` CSS 自定义属性。两端组件使用相同语义变量，因此同一配置可驱动 React 和 Vue。具体字段、边界和锁定行为见 [主题合同](./theme-contract.md)。
+`ProjectSpec` 使用 `schemaVersion: 1`，包含项目标识与名称、需求描述、场景、目标框架、主题、锁定策略、主标题/描述/主操作文案以及更新时间。完整字段见 [主题与项目契约](./theme-contract.md)。
 
-自定义范围有明确边界：当前 Lab 不支持任意布局 DSL、任意 JS、完整字体文件管理、任意动效时间线或每个组件所有内部节点的设计参数。`className` / `class`、`style`、React children 和 Vue slots 可用于应用层组合；这类覆盖可能超出 Lab 的控制，应纳入企业项目自己的回归检查。
+`normalizeProject` 拒绝未知格式版本、场景和框架，并限制文本及主题字段。`updateProject` 保留项目标识，合并内容，并通过现有 policy 约束主题补丁。切换场景时文案回到对应场景默认值，可在同一补丁中提供新文案。
 
-## Design Lab 与企业约束
+检查器消费 core 的 `selectionKnowledge`，针对 page、button、input、card、table 展示设计意图、实现机制、变量和指导原则。设计师可以从布局与动作了解原生结构，工程师可以从 API 与变量了解设计原因。结构标签页的短代码是解释用示意；开发交付面板提供完整的当前场景源码。
 
-Lab 作为主要设计入口，负责预设、实时编辑、深浅模式预览、主题保存和导出。应用保存的是配置数据，避免为每家企业复制一套 React/Vue 实现。
+## 从自然语言到可确认的提案
 
-`applyThemePatch(base, patch, policy)` 在应用人工或 AI 变更前保留被锁定的设计决策。`ThemePolicy.locked` 可以锁定主色、全局圆角、密度、字体、语义层或组件层。锁定是**本地设计工作流约束**，不是权限控制：代码调用方可以绕过函数，CSS 也可以覆盖结果。企业若需要强制执行，需在自己的配置服务中重新校验 policy、鉴权并记录版本；当前项目不提供组织账号、审批系统或远程主题注册表。
+Studio 将需求文字和当前项目的场景、文案、名称、主题种子发送至 `/api/compose`。服务端要求模型返回固定 JSON：名称、三个场景之一、文案、主题种子、解释；不接收模型生成的 HTML、JavaScript、组件实现或外部插件。
 
-AI 仅提出配置值，组件行为仍来自经过维护的库代码。当前 AI 生成支持哪些字段、生产环境认证和模型配置，以 [AI 接口文档](./ai-api.md) 为准；AI 输出不得直接当作程序执行。
+返回结果经过服务端字段与范围校验，再由 core 的 `updateProject` 按当前品牌锁应用为待确认提案。使用者可以比较、编辑、应用或放弃；失败或取消不应被描述为生成成功。基础主题、场景和导出可在没有模型连接时使用。
 
-## 在现有项目中逐步接入
+仓库不提供可用的 DeepSeek 凭据。模型密钥由服务端环境变量提供，生产 API 另需访问令牌；这套访问保护不等于企业账号、租户权限或项目授权。具体请求与错误见 [AI 接口](./ai-api.md)。
 
-可以在现有 React/Vue 路由中加入 Forma 组件，保留原有路由、状态管理、请求层和业务逻辑。框架匹配只解决运行环境问题；组件 API、表单校验、数据表格行为与第三方库并不自动兼容。
+## 预览与交付使用同一份场景定义
 
-共存期建议只在迁移区域设置主题变量，避免立刻修改应用根节点：
+真实 React 场景、Vue render 定义与场景 CSS 位于 `apps/docs/src/studio/ScenePreview.tsx` 和同名 CSS。core 的构建脚本解析这份源文件，抽取场景、数据、辅助函数和样式，生成可随包分发的静态源码字符串。
+
+这是构建时依赖；浏览器中的 core 不读取文件、不动态执行源码字符串，也不需要加载第二份框架组件。`getProjectFiles(project)` 将项目文案安全序列化到相同的场景定义中，返回：
+
+- `.btdesign/system.json`：机器可读项目规范。
+- `.btdesign/components.json`：16 个真实组件的 API、能力边界和语义变量。
+- `AGENTS.md`：设计规则、原生语义、品牌锁、状态反馈和业务接入约定。
+- `App.tsx` 或 `App.vue`、`app.css`、`theme.css` 与安装说明。
+- Vite + TypeScript 的 `package.json`、`index.html`、启动入口、构建配置、类型配置与页面基线样式。
+
+导出页面主体与预览共享结构和行为；独立页面额外提供模式切换和状态反馈，移除检查器。CSS 在 `.btdesign-demo` 下作用，React 页面使用 Lucide 图标，Vue 页面使用同源 render 函数。项目 ZIP 可附带本地 tokens / 框架安装包；脚手架通过 `file:./packages/*.tgz` 引用它们，其他依赖在 package.json 中声明。包齐备后执行 `npm install`、`npm run dev` 启动，`npm run build` 先检查类型再构建。运行页面不需要 core 包，也不会自带业务后端。
+
+修改 canonical 场景后需要重建 core。源码指纹测试检查导出是否过期；生成的 React 页面与 Vue render 函数均针对实际组件 API 做 TypeScript 检查，Vue SFC 另做编译检查；两种完整脚手架还会执行各自的 Vite 生产构建。
+
+## 规则、版本与本地状态
+
+主题分为品牌基础、深浅色语义层、组件局部几何三个层级。React 和 Vue 消费同一组 `--f-*` 变量，组件覆盖不会要求复制整套实现。详见 [主题契约](./theme-contract.md)。
+
+当前项目与最多 20 个命名快照保存在浏览器 `localStorage`。撤销/重做保存当前会话最多 50 步记录，刷新不会恢复这条撤销栈；命名快照可以比较或恢复。版本名称用于记录设计决定，项目 JSON 用于备份、转交和继续编辑。
+
+这里只管理一个活动项目及本地快照，没有云端多项目目录、实时协作者或服务端冲突解决。品牌锁是编辑约束；可以由当前使用者主动解除，也不能阻止直接修改 CSS。企业如需权威策略、审计或共享版本，需在自己的服务中增加身份、权限、存储及写入校验。
+
+## 接入与扩展
+
+已有项目可保留路由、状态管理、请求层和业务逻辑，先在一条路由中使用 BTDESIGN，再通过业务包装组件逐步扩大范围。主题迁入只是字段映射，代码审计只是用法清单；框架匹配不代表组件 API 或业务行为自动兼容。详见 [迁移流程](./migration.md)。
 
 ```tsx
-import { createTheme } from '@forma-ui/tokens';
+import { createTheme } from '@btdesign/tokens';
 import type { CSSProperties } from 'react';
 
 <section data-theme="light" style={createTheme(theme, 'light') as CSSProperties}>
@@ -52,18 +80,8 @@ import type { CSSProperties } from 'react';
 </section>;
 ```
 
-```vue
-<section :data-theme="mode" :style="createTheme(theme, mode)">
-  <NewForm />
-</section>
-```
+共享样式使用 `f-` 类名，默认主题与 `themeToCSS` 包含 `:root` / `[data-theme]` 选择器。这不是 Shadow DOM 隔离；共存期需检查 reset、变量层叠与弹层，必要时使用局部行内主题变量。
 
-共享样式使用 `f-` 类名。默认样式和 `themeToCSS` 的输出仍包含 `:root` / `[data-theme]` 选择器，不属于 Shadow DOM 隔离；与其他全局 reset、同名 data 属性或高优先级 CSS 共存时需要检查层叠。企业项目可使用局部 inline 变量，或在构建流程中生成有明确容器选择器的主题 CSS。不要将全站样式无差别重命名。
+业务扩展可通过 children、slots 和企业包装包组合基础组件。复杂表格、日期、树、表单引擎等能力可以先保留现有实现并明确适配契约。新增框架适配器需要实现对应行为与验证，并扩展项目、导出和场景契约；当前运行时支持的是 React 与 Vue 3。
 
-## 扩展与版本
-
-业务组件应在单独的企业扩展包中组合基础组件，例如权限选择、审批表单、资源列表。现有复杂 Table/Select 可以暂时保留原库，并通过应用适配层统一主题与数据接口。
-
-仓库当前构建 ESM 和 TypeScript 声明，可生成本地 `.tgz` 包；是否已发布到 npm 或 Git，以真实发布状态为准。建议锁定同版本的 tokens / framework 包，在升级主题字段或交互行为时同时更新迁移说明。
-
-后续可扩展方向包括表单引擎、数据表格、日期组件、无样式行为层、远程主题版本与权限服务。这些属于后续工作，不是当前组件库的已实现能力。
+包产物为 ESM 与 TypeScript 声明，使用本地 `.tgz` 分发。主题与组件升级应一起记录版本和迁移说明；当前未实现的多租户、远程版本或任意应用生成能力，不能通过界面文案代替实际服务。

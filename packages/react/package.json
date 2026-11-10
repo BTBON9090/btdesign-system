@@ -1,7 +1,7 @@
 {
-  "name": "@forma-ui/react",
+  "name": "@btdesign/react",
   "version": "0.1.0",
-  "description": "Accessible React components for Forma UI",
+  "description": "Accessible React components for BTDESIGN",
   "type": "module",
   "private": false,
   "main": "./dist/index.js",
@@ -26,7 +26,7 @@
     "react-dom": ">=18.0.0"
   },
   "dependencies": {
-    "@forma-ui/tokens": "0.1.0"
+    "@btdesign/tokens": "0.1.0"
   },
   "license": "MIT"
 }

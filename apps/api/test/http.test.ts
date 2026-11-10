@@ -21,13 +21,15 @@ test('HTTP adapter exposes health, rejects bad JSON, and bounds a chunked reques
   assert.equal(health.status, 200);
   assert.equal(health.headers.get('cache-control'), 'no-store');
   assert.equal(typeof (await health.json()).configured, 'boolean');
-  const invalid = await fetch(`${base}/api/generate`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: '{',
-  });
-  assert.equal(invalid.status, 400);
-  assert.equal((await invalid.json()).code, 'INVALID_JSON');
+  for (const route of ['generate', 'compose']) {
+    const invalid = await fetch(`${base}/api/${route}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: '{',
+    });
+    assert.equal(invalid.status, 400);
+    assert.equal((await invalid.json()).code, 'INVALID_JSON');
+  }
   const oversized = await new Promise<{ status: number; body: string }>((resolve, reject) => {
     const request = httpRequest(
       `${base}/api/generate`,

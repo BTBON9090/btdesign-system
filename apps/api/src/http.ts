@@ -64,7 +64,7 @@ export async function handleHttp(
   for (const [name, value] of Object.entries(request.headers))
     headers[name] = Array.isArray(value) ? value[0] : value;
   let body: unknown;
-  if (request.method === 'POST' && pathname === '/api/generate') {
+  if (request.method === 'POST' && ['/api/generate', '/api/compose'].includes(pathname)) {
     try {
       body = await readBody(request);
     } catch (cause) {

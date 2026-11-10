@@ -1,6 +1,6 @@
 # 发布到个人网站
 
-仓库提供静态文档站、Node AI 服务和 Vercel 函数入口。本文说明可使用的部署方式；当前尚未绑定个人域名，也不代表网站已经上线。
+仓库提供Studio 与文档网站、Node AI 服务和 Vercel 函数入口。本文说明可使用的部署方式；当前尚未绑定个人域名，也不代表网站已经上线。
 
 ## 构建与交付产物
 
@@ -12,12 +12,12 @@ npm test
 npm run build
 ```
 
-| 产物        | 位置                               | 用途                                                               |
-| ----------- | ---------------------------------- | ------------------------------------------------------------------ |
-| 静态网站    | `apps/docs/dist/`                  | 文档、组件示例、Design Lab 前端                                    |
-| Node API    | `apps/api/dist/`                   | 自有服务器上的 DeepSeek 服务                                       |
-| Vercel 入口 | `api/health.ts`、`api/generate.ts` | Vercel 构建时自动处理的 Node 函数                                  |
-| 安装包      | `apps/docs/public/downloads/*.tgz` | tokens、React 与 Vue 的本地分发包，构建时也进入网站 downloads 目录 |
+| 产物        | 位置                                                 | 用途                                                               |
+| ----------- | ---------------------------------------------------- | ------------------------------------------------------------------ |
+| 静态网站    | `apps/docs/dist/`                                    | Studio、设计/开发指南与组件示例                                    |
+| Node API    | `apps/api/dist/`                                     | 自有服务器上的 DeepSeek 服务                                       |
+| Vercel 入口 | `api/health.ts`、`api/compose.ts`、`api/generate.ts` | Vercel 构建时自动处理的 Node 函数                                  |
+| 安装包      | `apps/docs/public/downloads/*.tgz`                   | tokens、React 与 Vue 的本地分发包，构建时也进入网站 downloads 目录 |
 
 网站使用 hash 路由，例如 `/#/lab`。内部页面刷新不会要求服务器处理 `/lab` 路径，因此不需要把所有请求重写为 `index.html`；尤其不要把 `/api/*` 重写成 HTML。
 
@@ -43,7 +43,7 @@ BASE_PATH=/design-system/ VITE_API_BASE_URL=/design-system/api npm run build
 ```
 
 - `BASE_PATH` 必须与实际静态资源路径一致，建议以 `/` 开头并以 `/` 结尾。
-- `VITE_API_BASE_URL` 是 API 前缀，包含 `/api`，不要包含 `/health` 或 `/generate`。建议使用同源路径，避免浏览器跨域问题。
+- `VITE_API_BASE_URL` 是 API 前缀，包含 `/api`，不要包含 `/health` 、`/compose` 或 `/generate`。建议使用同源路径，避免浏览器跨域问题。
 - 这两个值在构建时确定。使用 shell 环境或部署平台的构建变量，不要假设根目录的服务端 `.env` 会自动被文档站读取。
 - 将 `apps/docs/dist/` **内部文件**复制到个人网站对应目录，例如 `/srv/www/design-system/`。
 
@@ -54,7 +54,7 @@ BASE_PATH=/design-system/ VITE_API_BASE_URL=/design-system/api npm run build
 在服务器保留该仓库和安装依赖，完成构建后，将 `.env.example` 复制为 `.env` 并在服务器填写密钥和访问令牌。然后运行：
 
 ```sh
-NODE_ENV=production npm run start --workspace=@forma-ui/api
+NODE_ENV=production npm run start --workspace=@btdesign/api
 ```
 
 服务默认监听 `127.0.0.1:8787`。用服务器的进程管理器维持运行、重启和日志；不要直接把开发模式 Vite 服务作为生产网站。需要容器网络监听时，可显式设置 `API_HOST=0.0.0.0`，同时由部署网络限制外部访问。
