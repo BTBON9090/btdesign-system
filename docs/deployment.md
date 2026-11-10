@@ -1,6 +1,6 @@
 # 发布到个人网站
 
-仓库提供Studio 与文档网站、Node AI 服务和 Vercel 函数入口。本文说明可使用的部署方式；当前尚未绑定个人域名，也不代表网站已经上线。
+仓库提供 Studio 与文档网站、Node AI 服务和 Vercel 函数入口。本文说明可使用的部署方式；当前尚未绑定个人域名，也不代表网站已经上线。
 
 ## 构建与交付产物
 
@@ -20,6 +20,24 @@ npm run build
 | 安装包      | `apps/docs/public/downloads/*.tgz`                   | tokens、React 与 Vue 的本地分发包，构建时也进入网站 downloads 目录 |
 
 网站使用 hash 路由，例如 `/#/lab`。内部页面刷新不会要求服务器处理 `/lab` 路径，因此不需要把所有请求重写为 `index.html`；尤其不要把 `/api/*` 重写成 HTML。
+
+## 目标站点：design.btbon.cn（EdgeOne）
+
+BTDESIGN 使用独立子域名 `design.btbon.cn`，保留 `www.btbon.cn` 的个人作品集。使用独立 EdgeOne Pages / Makers 项目，不更改作品集的仓库、部署或 DNS 记录。
+
+仓库根目录的 `edgeone.json` 设置安装、构建与输出目录，并选择 Node 22.21.1。平台预装版本以 [EdgeOne 构建指南](https://pages.edgeone.ai/document/build-guide) 为准；不要使用不满足 Vite 要求的 Node 22.11。
+
+从 GitHub 导入本仓库时：
+
+1. 选择 `BTBON9090/btdesign-system` 的 `main` 分支，根目录为仓库根目录。
+2. 使用 `npm ci`、`npm run build`，静态输出 `apps/docs/dist`，保留默认根路径 `/`。
+3. `/cloud-functions/api/` 中的三个 Node Functions 入口提供 `/api/health`、`/api/compose`、`/api/generate`；不能只把 Vercel `api/` 当作 EdgeOne 的函数目录。
+4. 先验证平台提供的项目 URL，再绑定 `design.btbon.cn`，按平台返回的实际 CNAME 与验证记录配置 DNS；不要猜测 CNAME 值。
+5. 检查 HTTPS、静态资源、安装包下载与 `/api/health`。AI 的服务端密钥和访问令牌在 EdgeOne 环境变量中配置；未配置时其余 Studio 功能仍可使用。
+
+Cloud Functions 适配器复用同一套输入校验、生产认证、超时与限流逻辑。请求身份只使用平台 `context.clientIp`，请求体在读取流时限制体积；不依赖客户端自填的转发 IP 头。适配依据 [EdgeOne Node Functions](https://pages.edgeone.ai/document/node-functions)。
+
+这里记录目标和配置，并不代表域名已完成绑定；实际发布状态以平台与线上检查结果为准。
 
 ## 方案一：Vercel
 

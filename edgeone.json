@@ -1,0 +1,12 @@
+{
+  "name": "btdesign",
+  "installCommand": "npm ci",
+  "buildCommand": "npm run build",
+  "outputDirectory": "apps/docs/dist",
+  "nodeVersion": "22.21.1",
+  "cloudFunctions": {
+    "nodejs": {
+      "maxDuration": 40
+    }
+  }
+}
