@@ -1,6 +1,6 @@
 # BTDESIGN 主题契约
 
-本文件描述 Studio 项目中的主题格式、覆盖规则和集成边界。项目规范的权威来源是 `packages/core/src/index.ts`，主题计算与样式来自 `packages/tokens/src/index.ts` 和 `packages/tokens/styles.css`。React 和 Vue 组件消费同一套 `--f-*` CSS 变量；它们不分别维护一份颜色或尺寸表。
+本文件描述 v0.3 Studio 项目中的主题格式、覆盖规则和集成边界。项目规范的权威来源是 `packages/core/src/index.ts`，主题计算与样式来自 `packages/tokens/src/index.ts` 和 `packages/tokens/styles.css`。44 个组件族、63 个公开组件的 React / Vue 实现消费同一套 `--f-*` CSS 变量；它们不分别维护一份颜色或尺寸表。`@btdesign/engine` 共享行为与数据契约，不定义视觉主题。
 
 ## 一份主题，三个层级
 
@@ -53,7 +53,14 @@ Studio 持久化和交付的是 `ProjectSpec`。场景、文案、目标框架�
       "input": { "radius": 4, "height": 40 },
       "card": { "radius": 10, "padding": 24 },
       "field": { "gap": 8, "labelSize": 13 },
-      "table": { "cellPadding": 12, "rowHeight": 44 }
+      "table": { "cellPadding": 12, "rowHeight": 44 },
+      "form": { "gap": 20, "sectionGap": 32 },
+      "choice": { "size": 18, "gap": 12 },
+      "calendar": { "cellSize": 36, "gap": 4 },
+      "tree": { "rowHeight": 38, "indent": 20 },
+      "navigation": { "itemHeight": 40, "padding": 12 },
+      "list": { "rowPadding": 16, "gap": 4 },
+      "overlay": { "radius": 6, "padding": 12 }
     }
   },
   "policy": { "locked": ["primary", "font"] },
@@ -82,8 +89,17 @@ Studio 持久化和交付的是 `ProjectSpec`。场景、文案、目标框架�
 | 组件 | `components.card`                  | `radius` 0–20 px，`padding` 8–40 px                                                                |
 | 组件 | `components.field`                 | `gap` 4–20 px，`labelSize` 11–16 px；标签、控件与辅助信息共享字段间距                              |
 | 组件 | `components.table`                 | `cellPadding` 6–24 px，`rowHeight` 28–72 px；行高为最小高度，内容换行可继续撑开                    |
+| 组件 | `components.form`                  | `gap` 8–32 px，`sectionGap` 12–48 px；表单字段与分组间距                                           |
+| 组件 | `components.choice`                | `size` 14–24 px，`gap` 4–20 px；单选、多选与组合选项                                               |
+| 组件 | `components.calendar`              | `cellSize` 28–48 px，`gap` 0–8 px；日期选择器与日历                                                |
+| 组件 | `components.tree`                  | `rowHeight` 28–56 px，`indent` 12–32 px；树节点、层级选择与表格树行缩进                            |
+| 组件 | `components.navigation`            | `itemHeight` 30–56 px，`padding` 8–24 px；侧边、顶部导航与菜单                                     |
+| 组件 | `components.list`                  | `rowPadding` 8–24 px，`gap` 0–16 px；列表与文件列表                                                |
+| 组件 | `components.overlay`               | `radius` 0–20 px，`padding` 8–24 px；日期、层级选择和菜单浮层                                      |
 
 `normalizeTheme(unknown)` 只保留已知字段。无效种子值使用默认配置；无效可选覆盖值被丢弃，空的 `semantic` 或 `components` 区段不进入输出。组件尺寸必须为有限数字；字符串 `"40px"` 不属于 JSON 配置契约。
+
+新增七类的范围、舒适/紧凑默认值及变量名统一定义在导出的 `componentGeometry`。Lab 直接读取这份描述生成滑块，归一化与主题导出使用相同定义。旧主题可以不提供这些可选字段，升级后按密度与全局圆角继承。
 
 `font: 'inter'` 选择 `"Inter Variable", Inter` 字体栈，不下载字体。文档站已打包 `@fontsource-variable/inter`；组件库使用方需要自行提供字体资源，未提供时使用系统回退。CSS 变量导出和主题校验不执行远程字体或任意样式。
 
@@ -103,10 +119,19 @@ Studio 持久化和交付的是 `ProjectSpec`。场景、文案、目标框架�
 | `components.card`                          | `--f-card-radius`、`--f-card-padding`            | 全局圆角 + 3 px；舒适 20 px / 紧凑 15 px 内边距                |
 | `components.field`                         | `--f-field-gap`、`--f-field-label-size`          | 舒适 8 px / 紧凑 6 px 间距；标签 13 px                         |
 | `components.table`                         | `--f-table-cell-padding`、`--f-table-row-height` | 舒适 12 px / 紧凑 8 px 内边距；最小行高舒适 44 px / 紧凑 36 px |
+| `components.form`                          | `--f-form-gap`、`--f-form-section-gap`           | 舒适 20 / 32 px；紧凑 12 / 20 px                               |
+| `components.choice`                        | `--f-choice-size`、`--f-choice-gap`              | 舒适 18 / 12 px；紧凑 16 / 8 px                                |
+| `components.calendar`                      | `--f-calendar-cell-size`、`--f-calendar-gap`     | 舒适 36 / 4 px；紧凑 30 / 2 px                                 |
+| `components.tree`                          | `--f-tree-row-height`、`--f-tree-indent`         | 舒适 38 / 20 px；紧凑 30 / 16 px                               |
+| `components.navigation`                    | `--f-nav-item-height`、`--f-nav-padding`         | 舒适 40 / 12 px；紧凑 32 / 8 px                                |
+| `components.list`                          | `--f-list-row-padding`、`--f-list-gap`           | 舒适 16 / 4 px；紧凑 10 / 0 px                                 |
+| `components.overlay`                       | `--f-overlay-radius`、`--f-overlay-padding`      | 圆角继承全局 radius；内边距舒适 12 px / 紧凑 8 px              |
 
 主题引擎还生成 primary 的 hover/soft 色、反馈状态色、字体、阴影和焦点色。当前 JSON API 没有为所有内部变量提供独立编辑入口。按钮的 `md` 使用主题高度；`sm` 使用主题高度减 8 px，最低 24 px；`lg` 使用主题高度加 6 px。三个尺寸都随密度或组件高度覆盖调整，同时保持各自的尺寸层级。
 
 共享 CSS 使用组件变量，并在其不存在时回退到全局变量。动态 `createTheme()` 会输出解析后的全部变量。业务方直接在元素上设置同名 CSS 变量或 `style`，仍能改变结果；这种直接覆盖不经过主题策略校验。
+
+Studio 的组件画布与文档实验台共用真实 React / Vue 组件。可以在画布中选择表单、日期、树、导航或高级表格，切换状态、尺寸和框架，再用 Lab 的「更多组件规则」修改对应类别。重置单类覆盖后恢复继承，锁定组件规则后该区段的编辑和补丁都会保留已有值。组件层规则共同作用于主体与细分部件，导出的 CSS 和项目 JSON 保留相同配置。
 
 ## 项目更新与提案应用
 
@@ -252,7 +277,7 @@ const teamName = ref('Acme');
 </template>
 ```
 
-React 使用原生 `value`/`onChange`，Vue 使用 `v-model`/`update:modelValue`。共享的是视觉与功能语义，不是强行统一两种框架的事件语法。表单的可见标签、错误提示、业务校验和提交行为由调用方提供。Button 默认 `type="button"`，需要提交时显式指定。
+React 基础输入使用原生 `value`/`onChange`，复合选择控件使用 `value`/`onValueChange`；Vue 使用 `v-model`/`update:modelValue`。共享的是视觉与功能语义，两种框架保留各自事件语法。Form / FormField 可管理同步规则、字段值、错误与提交；业务异步校验、服务端验证与保存仍由应用提供。Button 默认 `type="button"`，需要提交时显式指定。安装时需同时提供 `@btdesign/engine`、`@btdesign/tokens` 和所选框架包；详见 [企业组件指南](./enterprise-components.md)。
 
 ## 与现有第三方组件逐步共存
 
@@ -267,7 +292,7 @@ BTDESIGN 的变量和 class 使用 `--f-` / `f-` 前缀；它不会自动改写�
 
 不要对第三方库所有内部选择器做全局覆盖来模拟兼容；这样会把未声明的 DOM 结构变成隐含依赖。也不要将 BTDESIGN 的 `Button` 视为另一套组件库 Button 的无损替代：props、插槽、事件、图标位置和加载状态都需要显式核对。
 
-对于跨系统组件目录，可把业务组件的契约与具体实现分开管理，并记录 React/Vue 是否都有对应实现、支持状态和依赖的主题版本。当前仓库提供 24 个组件族、37 个公开组件的两个框架实现；复杂树控件、日期选择器和虚拟化数据表等能力需要另行实现或通过包装层集成。
+对于跨系统组件目录，可把业务组件的契约与具体实现分开管理，并记录 React/Vue 是否都有对应实现、支持状态和依赖的主题版本。当前仓库提供 44 个组件族、63 个公开组件的两个框架实现，包含本地树与级联、日期与范围、表单、多级高级表格。时间选择、远程节点加载、虚拟化、拖动列宽或任意单元格合并等能力需要另行实现或保留已有组件；主题相同不代表第三方 API、数据格式与业务行为等价。
 
 ## 验证与发布
 

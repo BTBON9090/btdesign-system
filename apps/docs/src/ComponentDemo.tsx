@@ -1,3 +1,5 @@
+import { EnterpriseDemo } from './EnterpriseDemo';
+import { isEnterpriseId } from './enterprise-catalog';
 import { useState } from 'react';
 import { ArrowRight, Plus, Mail, Check, Folder, MoreHorizontal } from 'lucide-react';
 import {
@@ -50,6 +52,15 @@ export function ComponentDemo({
 }) {
   const [open, setOpen] = useState(false);
   const [checked, setChecked] = useState(true);
+  if (isEnterpriseId(kind))
+    return (
+      <EnterpriseDemo
+        key={`${kind}:${options?.multiple}:${options?.cascade}`}
+        kind={kind}
+        options={options ?? defaultDemoOptions}
+        onAction={onAction}
+      />
+    );
   if (
     options ||
     [
@@ -208,7 +219,7 @@ export function ComponentDemo({
             {
               value: 'history',
               label: '更新记录',
-              content: <p>v0.2.0 — {catalog.length} 个组件族与可组合子部件。</p>,
+              content: <p>v0.3.0 — {catalog.length} 个组件族与可组合子部件。</p>,
             },
           ]}
         />

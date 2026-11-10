@@ -100,7 +100,7 @@ export function Footer() {
       <a href="https://github.com/BTBON9090/btdesign-system" target="_blank" rel="noreferrer">
         GitHub <ArrowUpRight size={14} />
       </a>
-      <span className="footer-version">v0.2.0 · MIT</span>
+      <span className="footer-version">v0.3.0 · MIT</span>
     </footer>
   );
 }

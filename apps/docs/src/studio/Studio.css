@@ -2175,3 +2175,77 @@
   min-width: 0;
   text-align: right;
 }
+
+.bt-component-canvas {
+  padding: 36px;
+  min-width: 0;
+  overflow-y: auto;
+}
+.bt-component-canvas > header {
+  margin-bottom: 24px;
+}
+.bt-component-canvas > header h1 {
+  margin: 10px 0;
+  font-size: 28px;
+  font-weight: 550;
+  letter-spacing: -0.8px;
+}
+.bt-component-canvas > header p {
+  color: var(--f-muted);
+  font-size: 12px;
+  line-height: 1.8;
+}
+.bt-component-canvas-select {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 28px;
+  font-size: 12px;
+}
+.bt-component-canvas-select label {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.bt-component-canvas-select select {
+  max-width: 240px;
+  min-height: 34px;
+  border: 1px solid var(--f-border);
+  border-radius: 6px;
+  background: var(--f-surface);
+  color: var(--f-text);
+  padding: 5px 26px 5px 10px;
+  font: inherit;
+}
+.bt-component-canvas-select a {
+  color: var(--f-muted);
+  text-decoration: none;
+}
+.bt-component-canvas .example-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+.bt-component-canvas .example-heading h2 {
+  font-size: 14px;
+  margin: 0;
+}
+.bt-component-canvas .component-example {
+  padding: 24px;
+}
+.bt-enterprise-rules .bt-field + .bt-field {
+  margin-top: 12px;
+}
+@media (max-width: 760px) {
+  .bt-component-canvas {
+    padding: 20px 16px;
+  }
+  .bt-component-canvas .component-example {
+    padding: 18px 12px;
+  }
+  .bt-stage-tabs {
+    flex-wrap: wrap;
+  }
+}

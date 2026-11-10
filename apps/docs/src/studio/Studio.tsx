@@ -61,6 +61,7 @@ import {
 import { zipSync, strToU8 } from 'fflate';
 import { ScenePreview, type SceneSelection } from './ScenePreview';
 import { Inspector } from './Inspector';
+import { ComponentCanvas } from './ComponentCanvas';
 import { MigrationPanel } from './MigrationPanel';
 import {
   loadStudio,
@@ -134,7 +135,7 @@ export function Studio({
   }
   const currentProject = useRef(project);
   currentProject.current = project;
-  const [stage, setStage] = useState<'canvas' | 'rules' | 'handoff'>('canvas');
+  const [stage, setStage] = useState<'canvas' | 'components' | 'rules' | 'handoff'>('canvas');
   const [selection, setSelection] = useState<SceneSelection | null>('page');
   const [inspect, setInspect] = useState(false);
   const [viewport, setViewport] = useState<'auto' | 'mobile'>('auto');
@@ -336,7 +337,10 @@ export function Studio({
           throw Error('安装包不可用，请运行 npm run pack:libs 后重试，或取消包含安装包。');
         const manifest = (await response.json()) as { name: string; file: string }[];
         for (const entry of manifest.filter(
-          (p) => p.name === '@btdesign/tokens' || p.name === `@btdesign/${project.framework}`,
+          (p) =>
+            p.name === '@btdesign/tokens' ||
+            p.name === '@btdesign/engine' ||
+            p.name === `@btdesign/${project.framework}`,
         )) {
           const res = await fetch(`${import.meta.env.BASE_URL}downloads/${entry.file}`);
           if (!res.ok) throw Error('组件包下载失败，请重试。');
@@ -661,6 +665,7 @@ export function Studio({
                 {(
                   [
                     ['canvas', '画布'],
+                    ['components', '组件画布'],
                     ['rules', '设计规则'],
                     ['handoff', '开发交付'],
                   ] as const
@@ -891,6 +896,14 @@ export function Studio({
                   </span>
                 </div>
               </>
+            ) : stage === 'components' ? (
+              <ComponentCanvas
+                project={shown}
+                mode={previewMode}
+                onModeChange={() => setPreviewMode(previewMode === 'light' ? 'dark' : 'light')}
+                onPatch={patch}
+                notify={notify}
+              />
             ) : stage === 'rules' ? (
               <RulesView project={shown} mode={previewMode} onLock={toggleLock} onPatch={patch} />
             ) : (
@@ -1371,7 +1384,7 @@ function RulesView({
             [
               'components',
               '组件定制',
-              '按钮 / 输入 / 字段 / 容器 / 表格',
+              '基础控件 / 表单 / 日期 / 树 / 导航 / 列表 / 表格',
               '局部调整有明确范围，其他组件继续遵循整体规则。',
             ],
           ] as [ThemeLock, string, string, string][]

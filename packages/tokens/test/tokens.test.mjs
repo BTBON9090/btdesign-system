@@ -177,3 +177,42 @@ test('field and table rules survive normalization, partial edits, locks and CSS 
     '36px',
   );
 });
+
+test('enterprise geometry shares density defaults, bounds, locks and reset across both modes', () => {
+  const theme = normalizeTheme({
+    ...defaultTheme,
+    components: {
+      form: { gap: 999, sectionGap: 2 },
+      choice: { size: 22, gap: 10 },
+      calendar: { cellSize: 40, gap: 6 },
+      tree: { rowHeight: 44, indent: 28 },
+      navigation: { itemHeight: 46, padding: 18 },
+      list: { rowPadding: 20, gap: 8 },
+      overlay: { radius: 12, padding: 20 },
+      unknown: { size: 100 },
+    },
+  });
+  assert.deepEqual(theme.components.form, { gap: 32, sectionGap: 12 });
+  assert.equal(theme.components.unknown, undefined);
+  for (const mode of ['light', 'dark']) {
+    const vars = createTheme(theme, mode);
+    assert.equal(vars['--f-tree-indent'], '28px');
+    assert.equal(vars['--f-calendar-cell-size'], '40px');
+    assert.equal(vars['--f-nav-item-height'], '46px');
+    assert.equal(vars['--f-list-row-padding'], '20px');
+    assert.equal(vars['--f-choice-size'], '22px');
+    assert.equal(vars['--f-overlay-radius'], '12px');
+  }
+  const locked = applyThemePatch(
+    theme,
+    { components: { tree: { indent: 12 }, calendar: null } },
+    { locked: ['components'] },
+  );
+  assert.deepEqual(locked.components, theme.components);
+  const patched = applyThemePatch(theme, { components: { tree: { indent: 16 }, calendar: null } });
+  assert.deepEqual(patched.components.tree, { rowHeight: 44, indent: 16 });
+  assert.equal(patched.components.calendar, undefined);
+  assert.equal(createTheme({ ...patched, density: 'compact' })['--f-calendar-cell-size'], '30px');
+  assert.equal(createTheme({ ...defaultTheme, radius: 15 })['--f-overlay-radius'], '15px');
+  assert.match(themeToCSS(theme), /--f-form-gap: 32px/);
+});

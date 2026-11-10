@@ -202,7 +202,7 @@ test('browser report parser accepts actual CLI reports and their five status typ
   t.after(() => fs.rm(root, { recursive: true, force: true }));
   await fs.writeFile(
     path.join(root, 'App.tsx'),
-    "import { Button, Table, DatePicker } from 'antd';\nimport 'antd/dist/reset.css';\nconst lazy = import('antd');\nthrow new Error('must not run');",
+    "import { Button, Table, ColorPicker } from 'antd';\nimport 'antd/dist/reset.css';\nconst lazy = import('antd');\nthrow new Error('must not run');",
   );
   await fs.writeFile(
     path.join(root, 'package.json'),
@@ -245,7 +245,7 @@ test('report validation rejects invented success states, altered counts and malf
       r.findings[0].target = ['Button'];
     },
     (r: typeof original) => {
-      r.findings[0].target = 'DatePicker';
+      r.findings[0].target = 'ColorPicker';
     },
     (r: typeof original) => {
       r.findings[0].line = 0;
@@ -304,4 +304,28 @@ test('granular component geometry imports from JSON and CSS without resetting ot
   const bounded = parseThemeImport('--f-field-label-size: 99px;');
   assert.equal(bounded.patch.components?.field?.labelSize, 16);
   assert.equal(bounded.warnings.length, 1);
+});
+
+test('enterprise component rules import from JSON and CSS through the common bounds contract', () => {
+  const result = parseThemeImport(
+    JSON.stringify({
+      components: {
+        form: { gap: 24 },
+        calendar: { cellSize: 40 },
+        tree: { indent: 30 },
+        navigation: { itemHeight: 48 },
+        list: { rowPadding: 20 },
+        choice: { size: 20 },
+        overlay: { padding: 18 },
+      },
+    }),
+  );
+  assert.deepEqual(result.warnings, []);
+  assert.equal(result.patch.components?.tree?.indent, 30);
+  assert.equal(result.patch.components?.calendar?.cellSize, 40);
+  const css = parseThemeImport(
+    '--f-form-gap:24px;--f-tree-indent:30px;--f-calendar-cell-size:40px;--f-nav-item-height:48px;--f-list-row-padding:20px;--f-choice-size:20px;--f-overlay-padding:18px;',
+  );
+  assert.deepEqual(css.patch.components, result.patch.components);
+  assert.equal(parseThemeImport('--f-tree-indent:999px;').patch.components?.tree?.indent, 32);
 });

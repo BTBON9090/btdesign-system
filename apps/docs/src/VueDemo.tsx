@@ -1,3 +1,5 @@
+import { createEnterpriseVueDemo } from './EnterpriseVueDemo';
+import { isEnterpriseId } from './enterprise-catalog';
 import { useEffect, useRef, useState } from 'react';
 import type { App, VNodeChild } from 'vue';
 import { defaultDemoOptions, type DemoOptions } from './catalog';
@@ -26,6 +28,15 @@ export function VueDemo({ kind, onAction, options }: VueDemoProps) {
         if (cancelled || !host.current) return;
         const { createApp, defineComponent, h, ref } = vue;
         const emitAction = (message: string) => action.current?.(message);
+        if (isEnterpriseId(kind)) {
+          app = createApp(
+            createEnterpriseVueDemo(vue, ui, kind, options ?? defaultDemoOptions, emitAction),
+          );
+          app.mount(host.current);
+          setStatus('ready');
+          return;
+        }
+
         app = createApp(
           defineComponent({
             name: 'BTDESIGNVueDemo',

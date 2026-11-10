@@ -12,12 +12,12 @@ npm test
 npm run build
 ```
 
-| 产物        | 位置                                                 | 用途                                                               |
-| ----------- | ---------------------------------------------------- | ------------------------------------------------------------------ |
-| 静态网站    | `apps/docs/dist/`                                    | Studio、设计/开发指南与组件示例                                    |
-| Node API    | `apps/api/dist/`                                     | 自有服务器上的 DeepSeek 服务                                       |
-| Vercel 入口 | `api/health.ts`、`api/compose.ts`、`api/generate.ts` | Vercel 构建时自动处理的 Node 函数                                  |
-| 安装包      | `apps/docs/public/downloads/*.tgz`                   | tokens、React 与 Vue 的本地分发包，构建时也进入网站 downloads 目录 |
+| 产物        | 位置                                                 | 用途                                                                       |
+| ----------- | ---------------------------------------------------- | -------------------------------------------------------------------------- |
+| 静态网站    | `apps/docs/dist/`                                    | Studio、设计/开发指南与组件示例                                            |
+| Node API    | `apps/api/dist/`                                     | 自有服务器上的 DeepSeek 服务                                               |
+| Vercel 入口 | `api/health.ts`、`api/compose.ts`、`api/generate.ts` | Vercel 构建时自动处理的 Node 函数                                          |
+| 安装包      | `apps/docs/public/downloads/*.tgz`                   | tokens、engine、React 与 Vue 的本地分发包，构建时也进入网站 downloads 目录 |
 
 网站使用 hash 路由，例如 `/#/lab`。内部页面刷新不会要求服务器处理 `/lab` 路径，因此不需要把所有请求重写为 `index.html`；尤其不要把 `/api/*` 重写成 HTML。
 

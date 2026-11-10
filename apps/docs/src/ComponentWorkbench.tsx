@@ -1,5 +1,5 @@
 import { useState, type CSSProperties } from 'react';
-import { createTheme, defaultTheme, type ThemeMode } from '@btdesign/tokens';
+import { createTheme, defaultTheme, type ThemeMode, type ThemeConfig } from '@btdesign/tokens';
 import { loadStudio } from './studio/model';
 import {
   catalog,
@@ -27,6 +27,24 @@ const sizeable: ComponentId[] = [
   'spinner',
 ];
 const disableable: ComponentId[] = [
+  'form',
+  'calendar',
+  'date-picker',
+  'date-range-picker',
+  'radio',
+  'checkbox-group',
+  'toggle-group',
+  'segmented',
+  'file-list',
+  'tree',
+  'tree-select',
+  'cascader',
+  'org-picker',
+  'transfer',
+  'sidebar-nav',
+  'top-nav',
+  'dropdown-menu',
+  'data-table',
   'button',
   'input',
   'textarea',
@@ -58,12 +76,14 @@ export function ComponentWorkbench({
   mode,
   onFrameworkChange,
   onAction,
+  liveProject,
 }: {
   kind: ComponentId;
   framework: Framework;
   mode: ThemeMode;
   onFrameworkChange: (value: Framework) => void;
   onAction: (message: string) => void;
+  liveProject?: { name: string; theme: ThemeConfig };
 }) {
   const [options, setOptions] = useState<DemoOptions>({
     ...defaultDemoOptions,
@@ -71,7 +91,8 @@ export function ComponentWorkbench({
     orientation: kind === 'radio-group' ? 'vertical' : 'horizontal',
   });
   const [partIndex, setPartIndex] = useState(0);
-  const [project] = useState(() => loadStudio().project);
+  const [savedProject] = useState(() => loadStudio().project);
+  const project = liveProject ?? savedProject;
   const [themeSource, setThemeSource] = useState<'workspace' | 'default'>('workspace');
   const previewTheme = themeSource === 'workspace' ? project.theme : defaultTheme;
   const previewStyle = {
@@ -92,6 +113,32 @@ export function ComponentWorkbench({
       </div>
       <div className="bt-workbench">
         <div className="bt-workbench-controls" aria-label="预览参数">
+          {['tree', 'tree-select', 'cascader', 'org-picker', 'toggle-group'].includes(kind) && (
+            <label>
+              选择方式
+              <select
+                aria-label="预览选择方式"
+                value={options.multiple ? 'multiple' : 'single'}
+                onChange={(e) => update('multiple', e.target.value === 'multiple')}
+              >
+                <option value="single">单选</option>
+                <option value="multiple">多选</option>
+              </select>
+            </label>
+          )}
+          {['tree', 'tree-select', 'org-picker'].includes(kind) && options.multiple && (
+            <label>
+              父子选择
+              <select
+                aria-label="预览父子选择"
+                value={options.cascade ? 'cascade' : 'independent'}
+                onChange={(e) => update('cascade', e.target.value === 'cascade')}
+              >
+                <option value="independent">独立选择</option>
+                <option value="cascade">关联叶节点</option>
+              </select>
+            </label>
+          )}
           <label>
             预览主题
             <select
@@ -142,7 +189,9 @@ export function ComponentWorkbench({
                 <option value="default">默认</option>
                 <option value="disabled">禁用</option>
                 {invalidable.includes(kind) && <option value="invalid">错误</option>}
-                {kind === 'button' && <option value="loading">处理中</option>}
+                {(kind === 'button' || kind === 'data-table') && (
+                  <option value="loading">处理中</option>
+                )}
               </select>
             </label>
           )}

@@ -24,6 +24,7 @@ const ignored = new Set([
 const extensions = new Set(['.js', '.jsx', '.ts', '.tsx', '.mjs', '.cjs', '.mts', '.cts', '.vue']);
 const providers = [
   { name: 'antd', framework: 'react' },
+  { name: '@ant-design/pro-components', framework: 'react' },
   { name: '@arco-design/web-react', framework: 'react' },
   { name: '@arco-design/web-vue', framework: 'vue' },
   { name: 'ant-design-vue', framework: 'vue' },
@@ -31,6 +32,12 @@ const providers = [
 ];
 const compoundParts = {
   InputAddon: 'InputGroup',
+  FormField: 'Form',
+  FormSection: 'Form',
+  FormActions: 'Form',
+  ListItem: 'List',
+  ListItemContent: 'List',
+  ListItemActions: 'List',
   CardHeader: 'Card',
   CardTitle: 'Card',
   CardDescription: 'Card',
@@ -44,7 +51,30 @@ const compoundParts = {
   TableHead: 'Table',
   TableCell: 'Table',
 };
+const enterpriseComponents = [
+  'Form',
+  'Calendar',
+  'DatePicker',
+  'DateRangePicker',
+  'Radio',
+  'CheckboxGroup',
+  'ToggleGroup',
+  'Segmented',
+  'ButtonGroup',
+  'List',
+  'FileList',
+  'Tree',
+  'TreeSelect',
+  'Cascader',
+  'OrgPicker',
+  'Transfer',
+  'SidebarNav',
+  'TopNav',
+  'DropdownMenu',
+  'DataTable',
+];
 const supported = new Set([
+  ...enterpriseComponents,
   'Button',
   'Input',
   'Textarea',
@@ -80,7 +110,16 @@ const aliases = {
   InputNumber: 'NumberInput',
   Empty: 'EmptyState',
   Spin: 'Spinner',
-  Radio: 'RadioGroup',
+  FormItem: 'FormField',
+  ProForm: 'Form',
+  RangePicker: 'DateRangePicker',
+  RadioButton: 'ToggleGroup',
+  CheckboxButton: 'ToggleGroup',
+  Menu: 'SidebarNav',
+  Dropdown: 'DropdownMenu',
+  ProTable: 'DataTable',
+  TableV2: 'DataTable',
+  DataGrid: 'DataTable',
   InputGroupAddon: 'InputAddon',
 };
 const limitations = {
@@ -92,7 +131,9 @@ const limitations = {
   Select: [
     'BTDESIGN Select 是原生 select；搜索、远程加载、虚拟列表、标签模式和自定义弹层尚不具备。',
   ],
-  Checkbox: ['检查 checked / v-model 和表单提交；组选择、校验上下文需应用层适配。'],
+  Checkbox: [
+    '检查 checked / v-model 和表单提交；组选择可用 CheckboxGroup，仍需适配选项、规则和回调。',
+  ],
   Switch: ['检查 checked / v-model、事件和表单 name；设置可访问标签。'],
   Badge: ['BTDESIGN Badge 是文本状态标签；数字计数、角标定位和 dot 模式需另行实现。'],
   Card: [
@@ -108,7 +149,7 @@ const limitations = {
   Avatar: ['映射 name、src、size；头像组和徽标需应用层组合。'],
   Separator: ['映射 orientation；带标题分隔线需应用层组合。'],
   Table: [
-    'BTDESIGN Table 是语义化原生表格外壳；columns/dataSource、排序、筛选、选择、固定列和虚拟滚动需保留现有实现或重建；Pagination 仅控制页码，仍需自行切片/请求数据。',
+    'BTDESIGN Table 是语义化原生表格外壳；基础表格部件可组合，但 columns/dataSource 等数据驱动用法需评估 DataTable。DataTable 支持部分本地交互；远程加载、虚拟滚动及第三方完整 API 不等价。',
   ],
   Skeleton: ['转换为 width/height 和组合布局；现有复杂骨架结构需要重新组合。'],
   Progress: ['映射 value/max；圆形、分段、渐变和步骤进度尚未实现。'],
@@ -119,7 +160,7 @@ const limitations = {
     '将前后缀组合为 InputAddon 与一个原生控件；需保留可访问名称、描述关联、交互按钮类型和键盘行为，不能直接复制第三方 addon/affix 属性。',
   ],
   RadioGroup: [
-    '转换为 options 数组并映射 value/onValueChange 或 v-model；原生单选项语义保留，单个 Radio、Radio.Button、嵌套布局、按钮样式需重组。',
+    '转换为 options 数组并映射 value/onValueChange 或 v-model；原生单选项语义保留，单个 Radio 与按钮外观分别评估 Radio / ToggleGroup，嵌套布局及值事件仍需重组。',
   ],
   NumberInput: [
     '映射 value/onValueChange 或 v-model；空值使用空字符串，边界在失焦/步进时处理。formatter/parser、stringMode、高精度金额、precision、前后缀与回调参数需单独适配。',
@@ -137,6 +178,62 @@ const limitations = {
     'Spinner 是独立加载状态并需有意义的 label；Spin 的包裹内容、spinning 开关、delay、percent 与遮罩需应用层组合，不能直接替换。',
   ],
 };
+Object.assign(limitations, {
+  Form: [
+    'BTDESIGN Form/FormField 提供同步规则、值状态、错误摘要和提交事件；第三方 Form 实例、依赖字段、动态数组、异步校验、schema、watch、Form.List 与受控回调并不等价。保留原业务校验/提交流程逐项验收。',
+  ],
+  Calendar: ['仅日期网格及年月导航；日程内容、自定义单元格、复杂模式、时间与时区行为需另行保留。'],
+  DatePicker: [
+    '使用 YYYY-MM-DD 日期字符串和空字符串，不接受 dayjs/moment/Date 值；格式化、时区、时间/周/月/季度模式、快捷日期和禁用区间语义需单独适配。',
+  ],
+  DateRangePicker: [
+    '值为两个日期字符串，范围排序；区间内每一天的业务可用性、时间/时区、快捷范围及第三方事件需单独验收。',
+  ],
+  Radio: [
+    'BTDESIGN Radio 是单个原生单选项；Radio.Group 应改用 RadioGroup，Radio.Button 外观应评估 ToggleGroup。组名、值/checked、事件不能机械改名。',
+  ],
+  CheckboxGroup: [
+    '使用 options 与 string[] 值；第三方组上下文、选项结构、数量约束、校验规则和 change 参数需适配。',
+  ],
+  ToggleGroup: [
+    '原生 radio/checkbox 的按钮外观；单/多模式值分别为 string/string[]，第三方 Button 复合上下文和样式需重组。',
+  ],
+  Segmented: ['单选模式选择；items/options、图标、事件及垂直布局需核对，不提供标签页面板。'],
+  ButtonGroup: ['视觉与语义容器；子按钮事件和选择状态由各自组件负责，不能把组容器当受控多选。'],
+  List: [
+    '提供 ul/li 和内容/操作部件；第三方 dataSource/renderItem、网格布局、远程分页和虚拟化需应用层重组。',
+  ],
+  FileList: [
+    '仅受控文件展示与移除/重试事件，不提供上传传输、鉴权、断点续传或自动删除；不要替换完整 Upload 行为。',
+  ],
+  Tree: [
+    '使用 TreeNode 唯一 key 和显式选择/展开；级联多选保存可选叶 key。原库 checkedKeys/halfCheckedKeys、checkStrictly、禁用策略、拖动、懒加载、虚拟化等需逐项核对。',
+  ],
+  TreeSelect: [
+    '共享 Tree 单多选/级联策略与本地搜索；值形状、父子关联、已选标签、加载与虚拟化不同，不能直接替换。',
+  ],
+  Cascader: [
+    '值为节点 key 或 key[]，不是层级路径数组；叶选择/changeOnSelect、multiple、级联勾选、远程子级及搜索事件需显式转换。',
+  ],
+  OrgPicker: [
+    '使用业务提供的 TreeNode 显示组织路径；组织/人员权限、远程加载、成员类型和数据同步不由组件负责。',
+  ],
+  Transfer: [
+    '目标值为 string[]，本地双栏搜索和可见可用项移动；render、分页、排序、远程选项和禁用数据保留规则需验收。',
+  ],
+  SidebarNav: [
+    '适配 items 与 activeKey，展开分组与选择分开；Menu 的路由、openKeys、选中项、折叠布局、图标及多级键盘行为不保证等价。',
+  ],
+  TopNav: [
+    '使用 NavItem 与 activeKey；路由和响应布局由应用管理，不是第三方完整 Menu/menubar 的替代品。',
+  ],
+  DropdownMenu: [
+    '仅一级操作菜单，支持键盘与关闭焦点恢复；子菜单、上下文菜单、触发方式、定位器与overlay属性需保留或另行实现。',
+  ],
+  DataTable: [
+    'BTDESIGN DataTable 支持本地多级表头、树形行、排序筛选、根级分页、选择、列显隐、sticky/固定列及基础编辑；需转换 columns/dataSource、rowKey 和事件。远程请求、虚拟化、拖拽列宽/排序、任意单元格合并、Excel键盘/公式与导出不具备。',
+  ],
+});
 for (const [part, family] of Object.entries(compoundParts)) {
   limitations[part] = [
     `BTDESIGN 导出 ${part}，但仍需核对原生标签、作用域、属性/插槽与样式；同名不保证 asChild、ref、事件或上下文兼容。`,
@@ -144,6 +241,7 @@ for (const [part, family] of Object.entries(compoundParts)) {
   ];
 }
 const partialComponents = new Set([
+  ...enterpriseComponents,
   'Select',
   'Table',
   'Dialog',
@@ -205,7 +303,7 @@ function componentMapping(imported) {
       status: 'unsupported',
       confidence: 'high',
       issues: [
-        'Form/Form.Item 负责表单状态、验证和提交；BTDESIGN Field 只是单控件标签与说明的组合，二者不等价。保留原表单状态方案，逐个替换视觉控件。',
+        'BTDESIGN 提供 Form/FormField，但未导出此名称的表单子部件。Form.List、实例方法和第三方表单上下文不等价，需保留原逻辑或显式组合。',
       ],
     };
   for (const prefix of ['Dialog', 'AlertDialog', 'Select', 'Table', 'Card', 'Tabs', 'Avatar']) {
@@ -258,6 +356,70 @@ function scriptParts(source, extension) {
     });
   }
   return parts;
+}
+
+const advancedTableProps = new Set([
+  'columns',
+  'dataSource',
+  'data-source',
+  'data',
+  'rowSelection',
+  'row-selection',
+  'pagination',
+  'expandable',
+  'expandedRowRender',
+  'expanded-row-render',
+  'scroll',
+  'virtual',
+  'summary',
+  'treeProps',
+  'tree-props',
+  'lazy',
+  'load',
+  'spanMethod',
+  'span-method',
+]);
+function tableUsage(ast, local, source, extension) {
+  if (!local) return [];
+  const attributes = new Set();
+  const visit = (node) => {
+    if (
+      (ts.isJsxOpeningElement(node) || ts.isJsxSelfClosingElement(node)) &&
+      node.tagName.getText(ast) === local
+    ) {
+      for (const attribute of node.attributes.properties) {
+        if (ts.isJsxAttribute(attribute)) attributes.add(attribute.name.getText(ast));
+        else if (ts.isJsxSpreadAttribute(attribute)) attributes.add('...props');
+      }
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(ast);
+  if (extension === '.vue') {
+    // Only inspect tags connected to a confirmed local import; auto-imported tags remain warnings.
+    const template =
+      source
+        .match(/<template\b[^>]*>([\s\S]*?)<\/template\s*>/i)?.[1]
+        ?.replace(/<!--[\s\S]*?-->/g, '') ?? '';
+    const kebab = local
+      .replace(/([A-Z]+)([A-Z][a-z])/g, '$1-$2')
+      .replace(/([a-z0-9])([A-Z])/g, '$1-$2')
+      .toLowerCase();
+    const escaped = [local, kebab]
+      .map((name) => name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+      .join('|');
+    for (const match of template.matchAll(
+      new RegExp('<(?:' + escaped + ')(?=[\\s/>])((?:"[^"]*"|\'[^\']*\'|[^\'">])*)>', 'g'),
+    )) {
+      for (const attribute of match[1].matchAll(
+        /(?:^|\s)(?:v-bind:|:)?([\w-]+)(?=\s|=|\/|$)(?:\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+))?/g,
+      )) {
+        attributes.add(attribute[1]);
+        if (attribute[1] === 'v-bind') attributes.add('...props');
+      }
+    }
+  }
+  return [...attributes].filter((name) => advancedTableProps.has(name) || name === '...props');
 }
 
 function scanSource(source, filename, framework) {
@@ -387,7 +549,7 @@ function scanSource(source, filename, framework) {
           : [entry];
       for (const item of entries) {
         const { provider, ...rest } = item;
-        const mapped =
+        let mapped =
           item.kind === 'style'
             ? {
                 target: null,
@@ -396,7 +558,22 @@ function scanSource(source, filename, framework) {
                 issues: ['现有样式需在共存期保留；移除前检查仍在使用的旧组件及全局 reset。'],
               }
             : componentMapping(item.imported);
+        const observedTableProps =
+          mapped.target === 'Table' || mapped.target === 'DataTable'
+            ? tableUsage(ast, item.local, source, path.extname(filename))
+            : [];
+        if (mapped.target === 'Table' && observedTableProps.some((name) => name !== '...props'))
+          mapped = {
+            target: 'DataTable',
+            status: 'partial',
+            confidence: 'high',
+            issues: limitations.DataTable,
+          };
         const issues = [...mapped.issues];
+        if (observedTableProps.length)
+          issues.push(
+            `检测到表格实际使用属性：${observedTableProps.join(', ')}。仅识别属性名称，变量、展开对象、远程数据和嵌套列配置仍需人工复核。`,
+          );
         if (provider.framework !== framework)
           issues.push(
             `该导入通常面向 ${provider.framework}，与本次 --framework ${framework} 不同；需核实混合项目边界。`,
@@ -405,7 +582,13 @@ function scanSource(source, filename, framework) {
           issues.push(
             `检测到 ${entry.local} 的成员访问（${[...members].join(', ')}）；静态方法/复合子组件 API 不能直接替换。`,
           );
-        findings.push({ ...rest, ...mapped, issues, automaticReplacement: false });
+        findings.push({
+          ...rest,
+          ...mapped,
+          ...(observedTableProps.length ? { observedTableProps } : {}),
+          issues,
+          automaticReplacement: false,
+        });
       }
     }
   }
@@ -496,7 +679,7 @@ export async function auditProject(directory, framework) {
       '这是导入清单与迁移候选分析，不是自动迁移、兼容性认证或工期估算。所有候选都需要验证实际业务行为。',
       'confidence 仅表示组件名称映射的确定程度，不表示 API、布局或可访问性兼容程度。',
       '不执行项目代码、不解析完整模块图；包装组件、运行时导入、路径别名变体、全局注册和 Vue 自动导入可能漏报。',
-      '跳过符号链接、依赖/构建目录、类型声明与大于 2 MiB 的文件；Vue 仅解析内联 script 区块。',
+      '跳过符号链接、依赖/构建目录、类型声明与大于 2 MiB 的文件；Vue 导入解析仅限内联 script；仅对已确认导入的表格标签检查模板属性名称，不解析绑定值。',
       '未检测到导入不代表迁移完成；零候选或高候选占比均不构成可直接上线的证据。',
     ],
     dependencies,

@@ -29,6 +29,8 @@ jobs:
         run: npm test
       - name: Build packages and documentation
         run: npm run build
+      - name: Verify generated component examples
+        run: npm run verify:examples
       - name: Check hosting API entry points
         run: npm exec -- tsc --noEmit --module NodeNext --moduleResolution NodeNext --target ES2022 --strict --skipLibCheck --types node api/generate.ts api/health.ts api/compose.ts cloud-functions/api/health.ts cloud-functions/api/generate.ts cloud-functions/api/compose.ts
       - name: Verify distributable packages

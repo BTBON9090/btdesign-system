@@ -215,3 +215,101 @@
   border-top: 0;
   border-radius: 0 0 7px 7px;
 }
+
+.enterprise-narrow {
+  width: 360px;
+  max-width: 100%;
+}
+.enterprise-wide,
+.enterprise-table-demo {
+  width: 100%;
+  min-width: 0;
+}
+.enterprise-form-demo {
+  width: 480px;
+  max-width: 100%;
+}
+.enterprise-nav-preview {
+  width: 280px;
+  max-width: 100%;
+}
+.enterprise-demo-result {
+  display: block;
+  margin: 16px 0 0;
+  font-size: 11px;
+  color: var(--f-muted);
+  line-height: 1.7;
+}
+.bt-workbench
+  :is(
+    .example-date-picker,
+    .example-date-range-picker,
+    .example-tree-select,
+    .example-cascader,
+    .example-org-picker,
+    .example-dropdown-menu
+  ) {
+  overflow: visible;
+  position: relative;
+  z-index: 2;
+}
+.bt-workbench
+  :is(
+    .example-data-table,
+    .example-transfer,
+    .example-top-nav,
+    .example-file-list,
+    .example-list,
+    .example-form
+  ) {
+  align-items: stretch;
+  min-height: 320px;
+}
+.bt-workbench .vue-demo-root > div:first-child:has(> .enterprise-form-demo) {
+  align-items: stretch;
+}
+.enterprise-mini {
+  display: grid;
+  gap: 5px;
+  width: 112px;
+  padding: 8px;
+  border: 1px solid var(--f-border);
+  border-radius: 5px;
+  color: var(--f-muted);
+  font-size: 9px;
+}
+.enterprise-mini > span {
+  margin-bottom: 5px;
+  color: var(--f-text);
+}
+.enterprise-mini i {
+  display: block;
+  background: var(--f-border);
+  height: 2px;
+  width: 80%;
+}
+.enterprise-mini i:last-child {
+  width: 55%;
+}
+.enterprise-mini-tree,
+.enterprise-mini-org-picker,
+.enterprise-mini-tree-select {
+  border: 0;
+}
+.enterprise-mini-tree i:nth-last-child(2),
+.enterprise-mini-org-picker i:nth-last-child(2) {
+  margin-left: 12px;
+}
+.enterprise-mini-calendar,
+.enterprise-mini-date-picker,
+.enterprise-mini-date-range-picker {
+  min-height: 62px;
+}
+.example-data-table {
+  padding: 20px;
+}
+@media (max-width: 560px) {
+  .example-data-table {
+    padding: 12px;
+  }
+}

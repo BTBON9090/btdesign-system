@@ -1,4 +1,5 @@
-import { normalizeTheme, type ThemeConfig } from '@btdesign/tokens';
+import { componentGeometry, normalizeTheme, type ThemeConfig } from '@btdesign/tokens';
+import { componentRegistry } from '@btdesign/core';
 
 export interface ThemeMapping {
   source: string;
@@ -215,6 +216,17 @@ export function parseThemeImport(text: string): ThemeImport {
         if (!object(data.components)) warnings.push('components 未导入：需要组件覆盖对象。');
         else {
           const componentFields: Record<string, Record<string, [number, number]>> = {
+            ...Object.fromEntries(
+              Object.entries(componentGeometry).map(([section, fields]) => [
+                section,
+                Object.fromEntries(
+                  Object.entries(fields).map(([key, rule]) => [
+                    key,
+                    [rule.min, rule.max] as [number, number],
+                  ]),
+                ),
+              ]),
+            ),
             button: { radius: [0, 20], height: [28, 56] },
             input: { radius: [0, 20], height: [28, 56] },
             card: { radius: [0, 20], padding: [8, 40] },
@@ -272,6 +284,14 @@ export function parseThemeImport(text: string): ThemeImport {
       '--f-border': 'semantic.light.border',
     };
     const dimensions: Record<string, [string, number, number]> = {
+      ...Object.fromEntries(
+        Object.entries(componentGeometry).flatMap(([section, fields]) =>
+          Object.entries(fields).map(([key, rule]) => [
+            rule.token,
+            [`components.${section}.${key}`, rule.min, rule.max] as [string, number, number],
+          ]),
+        ),
+      ),
       '--f-button-radius': ['components.button.radius', 0, 20],
       '--f-button-height': ['components.button.height', 28, 56],
       '--f-input-radius': ['components.input.radius', 0, 20],
@@ -424,23 +444,9 @@ export function parseMigrationAudit(text: string): MigrationAudit {
     'require',
     'dynamic-import',
   ];
-  const targets = [
-    'Button',
-    'Input',
-    'Textarea',
-    'Select',
-    'Checkbox',
-    'Switch',
-    'Badge',
-    'Card',
-    'Alert',
-    'Tabs',
-    'Dialog',
-    'Avatar',
-    'Separator',
-    'Table',
-    'Skeleton',
-    'Progress',
+  const targets: string[] = [
+    ...componentRegistry.components.map((component) => component.name),
+    ...Object.values(componentRegistry.composition).flat(),
   ];
   for (const row of report.findings) {
     if (

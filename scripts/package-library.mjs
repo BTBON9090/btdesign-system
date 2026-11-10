@@ -4,7 +4,7 @@ import { resolve } from 'node:path';
 const dest = resolve('apps/docs/public/downloads');
 mkdirSync(dest, { recursive: true });
 for (const file of readdirSync(dest)) if (file.endsWith('.tgz')) unlinkSync(resolve(dest, file));
-const packages = ['tokens', 'react', 'vue'].map((name) => {
+const packages = ['tokens', 'engine', 'react', 'vue'].map((name) => {
   const result = JSON.parse(
     execFileSync(
       'npm',

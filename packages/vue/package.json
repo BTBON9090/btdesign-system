@@ -1,6 +1,6 @@
 {
   "name": "@btdesign/vue",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Vue 3 components for the BTDESIGN design system",
   "type": "module",
   "main": "./dist/index.js",
@@ -26,7 +26,8 @@
     "vue": ">=3.4.0 <4"
   },
   "dependencies": {
-    "@btdesign/tokens": "0.2.0"
+    "@btdesign/tokens": "0.3.0",
+    "@btdesign/engine": "0.3.0"
   },
   "devDependencies": {
     "@vue/server-renderer": "^3.5.0",

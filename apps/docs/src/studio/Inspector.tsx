@@ -23,6 +23,7 @@ import {
 import { selectionKnowledge, type ProjectSpec } from '@btdesign/core';
 import { CodeBlock } from '../shared';
 import type { SceneSelection } from './ScenePreview';
+import { ComponentRules } from './ComponentRules';
 export const knowledge = selectionKnowledge;
 const elementLabels = {
   page: '页面',
@@ -355,6 +356,13 @@ export function Inspector({
                 </small>
               </div>
             )}
+            <ComponentRules
+              theme={project.theme}
+              mode={mode}
+              locked={locks.includes('components')}
+              onLock={() => lock('components')}
+              onPatch={patchTheme}
+            />
             <div className="bt-inspector-section">
               <label className="bt-field">
                 信息密度

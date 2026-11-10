@@ -22,7 +22,45 @@ export interface ComponentOverrides {
   card?: { radius?: number; padding?: number };
   field?: { gap?: number; labelSize?: number };
   table?: { cellPadding?: number; rowHeight?: number };
+  form?: { gap?: number; sectionGap?: number };
+  choice?: { size?: number; gap?: number };
+  calendar?: { cellSize?: number; gap?: number };
+  tree?: { rowHeight?: number; indent?: number };
+  navigation?: { itemHeight?: number; padding?: number };
+  list?: { rowPadding?: number; gap?: number };
+  overlay?: { radius?: number; padding?: number };
 }
+/** One geometry contract drives normalization, Lab controls and import/export. */
+export const componentGeometry = {
+  form: {
+    gap: { min: 8, max: 32, comfortable: 20, compact: 12, token: '--f-form-gap' },
+    sectionGap: { min: 12, max: 48, comfortable: 32, compact: 20, token: '--f-form-section-gap' },
+  },
+  choice: {
+    size: { min: 14, max: 24, comfortable: 18, compact: 16, token: '--f-choice-size' },
+    gap: { min: 4, max: 20, comfortable: 12, compact: 8, token: '--f-choice-gap' },
+  },
+  calendar: {
+    cellSize: { min: 28, max: 48, comfortable: 36, compact: 30, token: '--f-calendar-cell-size' },
+    gap: { min: 0, max: 8, comfortable: 4, compact: 2, token: '--f-calendar-gap' },
+  },
+  tree: {
+    rowHeight: { min: 28, max: 56, comfortable: 38, compact: 30, token: '--f-tree-row-height' },
+    indent: { min: 12, max: 32, comfortable: 20, compact: 16, token: '--f-tree-indent' },
+  },
+  navigation: {
+    itemHeight: { min: 30, max: 56, comfortable: 40, compact: 32, token: '--f-nav-item-height' },
+    padding: { min: 8, max: 24, comfortable: 12, compact: 8, token: '--f-nav-padding' },
+  },
+  list: {
+    rowPadding: { min: 8, max: 24, comfortable: 16, compact: 10, token: '--f-list-row-padding' },
+    gap: { min: 0, max: 16, comfortable: 4, compact: 0, token: '--f-list-gap' },
+  },
+  overlay: {
+    radius: { min: 0, max: 20, comfortable: 8, compact: 8, token: '--f-overlay-radius' },
+    padding: { min: 8, max: 24, comfortable: 12, compact: 8, token: '--f-overlay-padding' },
+  },
+} as const;
 export type ThemeLock = 'primary' | 'radius' | 'density' | 'font' | 'semantic' | 'components';
 export interface ThemePolicy {
   locked: ThemeLock[];
@@ -93,6 +131,15 @@ function componentOverrides(input: unknown): ComponentOverrides | undefined {
     }
     if (Object.keys(values).length) output[section] = values;
   }
+  for (const [section, fields] of Object.entries(componentGeometry)) {
+    const candidate = record(source[section]);
+    const values: Record<string, number> = {};
+    for (const [key, rule] of Object.entries(fields)) {
+      const value = bounded(candidate[key], rule.min, rule.max);
+      if (value !== undefined) values[key] = value;
+    }
+    if (Object.keys(values).length) Object.assign(output, { [section]: values });
+  }
   return Object.keys(output).length ? output : undefined;
 }
 /** Invalid external values fall back safely; numeric values are bounded. */
@@ -143,7 +190,9 @@ export function applyThemePatch(
     const previous = record(cleanBase[key]);
     const incoming = record(source[key]);
     const sections =
-      key === 'semantic' ? ['light', 'dark'] : ['button', 'input', 'card', 'field', 'table'];
+      key === 'semantic'
+        ? ['light', 'dark']
+        : ['button', 'input', 'card', 'field', 'table', ...Object.keys(componentGeometry)];
     const merged: Record<string, unknown> = { ...previous };
     for (const section of sections) {
       if (!Object.prototype.hasOwnProperty.call(incoming, section)) continue;
@@ -207,6 +256,16 @@ export function createTheme(input: ThemeConfig, mode: ThemeMode = 'light'): Reco
     mono: '"SFMono-Regular", Consolas, "Liberation Mono", "PingFang SC", monospace',
   };
   return {
+    ...Object.fromEntries(
+      Object.entries(componentGeometry).flatMap(([section, fields]) =>
+        Object.entries(fields).map(([key, rule]) => {
+          const override = record(record(config.components)[section])[key];
+          const fallback =
+            section === 'overlay' && key === 'radius' ? config.radius : rule[config.density];
+          return [rule.token, `${override ?? fallback}px`];
+        }),
+      ),
+    ),
     '--f-primary': config.primary,
     '--f-primary-hover': mix(config.primary, onPrimary === '#FFFFFF' ? '#000000' : '#FFFFFF', 0.12),
     '--f-primary-soft': mix(config.primary, bg, dark ? 0.79 : 0.92),

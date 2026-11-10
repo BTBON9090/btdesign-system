@@ -99,4 +99,55 @@ Pagination renders a bounded page range even for large totals; it does not sort,
 
 Import shared styles once, and then import the CSS exported from Design Lab. Set `data-theme="light"` or `data-theme="dark"` on a wrapper or the document element. For live configuration, apply `createTheme(config, mode)` from `@btdesign/tokens` as inline CSS variables to a wrapper. Inline variables take priority over theme selectors.
 
-The library is a foundation: it does not yet include complex data-grid virtualization, date pickers, or a tree component. Accessibility depends on labels, content, colors, application interactions, and testing in the consuming product; these primitives do not certify whole-product conformance.
+The v0.3 enterprise components below use the same theme rules. Form/section spacing, choice geometry, calendar cells, tree indentation, navigation items, lists and overlays all inherit Design Lab tokens; the advanced table inherits the existing table padding and row-height rules.
+
+## Enterprise components
+
+The complete library now contains 44 families and 63 public components. `@btdesign/engine` supplies shared validation, calendar, tree selection and table processing to both framework adapters.
+
+| Family                                | Usage and behavior                                                                                                                                                                                                                                                                                                                                                                           |
+| ------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Form                                  | `initialValues`, controlled `values / onValuesChange`, `rules`, `disabled`, `submitting`, `onSubmit(values)`, `onInvalid(errors)`. Validates before submission, collects custom controls' native validity, displays an error summary and focuses the first invalid control. `type="reset"` restores initial values. The application owns asynchronous submission and the `submitting` state. |
+| FormField                             | `name`, `label`, `description`, `required`, `rules`, `disabled`, `type`, `options`. Types: text, email, password, number, textarea, select, checkbox, date. Custom children may be a function receiving `{value,setValue,id,disabled,required,invalid,describedBy}`. Keep the control connected to this state.                                                                               |
+| FormSection / FormActions             | Native fieldset/legend with `title`, optional description and inherited disabled state; actions container for submit/reset buttons.                                                                                                                                                                                                                                                          |
+| Calendar                              | ISO date `value / defaultValue / onValueChange`, displayed `month / onMonthChange`, `min`, `max`, `disabledDate`, `weekStartsOn`, `label`. Native buttons in a calendar grid; arrows, Home/End and PageUp/PageDown move focus, Enter/Space select.                                                                                                                                           |
+| DatePicker / DateRangePicker          | Editable `YYYY-MM-DD` text with real calendar-date validation and bounds, a calendar popup, clear action and focus restoration. Range value is `[start,end]`; completed ranges are ordered. `label`, `name`, `required`, `disabled`. Visible labels are automatic outside Field; `showLabel` can explicitly request one.                                                                     |
+| Radio / CheckboxGroup                 | Native controls, labels, names and disabled state. CheckboxGroup uses `options`, string-array values and `onValueChange`. Radio retains `checked / defaultChecked / onCheckedChange`.                                                                                                                                                                                                        |
+| ToggleGroup / Segmented / ButtonGroup | ToggleGroup uses native radios or checkboxes styled as buttons, with `multiple`, `options` and values. Segmented is single selection. ButtonGroup is a labelled composition container, without implicit selection state.                                                                                                                                                                     |
+| Tree / TreeSelect / OrgPicker         | `nodes`, single key or multiple keys, `multiple`, `cascade`, `disabled`, `name`, `label`; Tree also exposes expansion state. Cascade stores eligible leaf keys and derives parent mixed states. Disabled ancestors disable descendants. Search keeps matching paths. OrgPicker displays complete organization paths.                                                                         |
+| Cascader                              | Single/multiple leaf-key selection through progressive columns; `changeOnSelect` allows a branch in single mode. Search, clear and selected paths are built in. It shares the TreeNode contract; it does not emit arrays of path segments.                                                                                                                                                   |
+| Transfer                              | `options`, controlled target `value / onValueChange`, `titles`, `name`, `disabled`. Searches both panels, selects visible eligible options and moves checked items. Disabled selected options remain in their original panel.                                                                                                                                                                |
+| SidebarNav / TopNav / DropdownMenu    | `items`, `label`, `disabled`, `onSelect(key)`. Navigation adds `activeKey` and collapsible groups; real destinations are links. DropdownMenu is a single-level action menu with disabled items, separators, arrow-key navigation and Escape/Tab dismissal.                                                                                                                                   |
+| List / FileList                       | Compose ListItem, ListItemContent and ListItemActions. FileList accepts `files`, optional `onRemove(id)` and `onRetry(id)`, and displays supplied progress/status. Uploading, storage and authorization remain application responsibilities.                                                                                                                                                 |
+| DataTable                             | `columns`, `data`, `rowKey`, `childrenKey`, `caption`, `loading`, `selectable`, `searchable`, `pagination`, `pageSize`. Supports multi-level headers, tree rows, sorting, per-column filters, global search, root-level pagination, page-row selection, column visibility, sticky headers/fixed columns, expanded details and basic cell editing.                                            |
+
+```tsx
+import { Form, FormField, FormSection, FormActions, DatePicker, Button } from '@btdesign/react';
+
+<Form initialValues={{ name: '', due: '' }} onSubmit={(values) => console.log(values)}>
+  <FormSection title="项目信息">
+    <FormField name="name" label="项目名称" required />
+    <FormField name="due" label="交付日期" required>
+      {(field) => (
+        <DatePicker
+          id={field.id}
+          value={String(field.value ?? '')}
+          onValueChange={field.setValue}
+          disabled={field.disabled}
+          required={field.required}
+        />
+      )}
+    </FormField>
+  </FormSection>
+  <FormActions>
+    <Button type="submit">保存</Button>
+    <Button type="reset" variant="secondary">
+      重置
+    </Button>
+  </FormActions>
+</Form>;
+```
+
+DataTable columns use `{key,title,dataIndex?,children?,sortable?,filterOptions?,width?,align?,fixed?,editable?,render?}`. Use `render(value,row)` for custom content. Editing emits `onCellChange({key,column,value})`; update the input `data` to accept the change. It also exposes controlled query, sort, filters, page, selectedKeys, expandedKeys and hiddenKeys with corresponding callbacks. `renderExpanded(row)` supplies an independent detail row. Filters keep matching ancestor paths expanded; pagination counts root records. Selection is independent of expansion. Fixed columns use explicit widths; the final non-fixed column absorbs remaining space.
+
+The advanced table uses native table semantics and application-owned data. It does not provide spreadsheet keyboard navigation, drag-and-drop column ordering, virtualized rows, remote fetching, or automatic third-party API compatibility. Forms use synchronous rules; async validation belongs in application code. Date values represent calendar days rather than timestamps. Accessibility still depends on labels, content, colors, application interactions and assistive-technology testing in the consuming product; these components do not certify whole-product conformance.

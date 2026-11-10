@@ -58,6 +58,24 @@ export type {
   ControlSize,
 } from './fields.js';
 export * from './composition.js';
+export * from './enterprise-choice.js';
+export * from './enterprise-form.js';
+export * from './enterprise-date.js';
+export * from './enterprise-tree.js';
+export * from './enterprise-navigation.js';
+export * from './enterprise-table.js';
+export type {
+  ChoiceOption,
+  TreeNode,
+  ValidationRule,
+  FormValues,
+  FormRules,
+  FormErrors,
+  DateRange,
+  NavItem,
+  FileItem,
+  TableSort,
+} from '@btdesign/engine';
 
 export interface CheckboxProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'type'> {
   label?: ReactNode;

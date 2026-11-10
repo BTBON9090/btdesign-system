@@ -1,3 +1,9 @@
+import {
+  enterpriseCatalog,
+  enterpriseAnatomy,
+  enterpriseComponentCode,
+  isEnterpriseId,
+} from './enterprise-catalog';
 export type Framework = 'react' | 'vue';
 export const catalog = [
   {
@@ -295,9 +301,10 @@ export const catalog = [
       ['size', 'sm | md | lg', 'md'],
     ],
   },
+  ...enterpriseCatalog,
 ] as const;
 export type ComponentId = (typeof catalog)[number]['id'];
-const reactExamples: Record<ComponentId, string> = {
+const reactExamples: Partial<Record<ComponentId, string>> = {
   button: `import { Button } from '@btdesign/react';\n\n<Button variant="primary">创建项目</Button>\n<Button variant="secondary">取消</Button>\n<Button loading>正在保存</Button>`,
   input: `import { Input } from '@btdesign/react';\n\n<label htmlFor="email">邮箱</label>\n<Input id="email" type="email" placeholder="you@company.com" />`,
   textarea: `import { Textarea } from '@btdesign/react';\n\n<label htmlFor="description">项目描述</label>\n<Textarea id="description" rows={4} placeholder="介绍一下你的项目…" />`,
@@ -333,7 +340,7 @@ const reactExamples: Record<ComponentId, string> = {
     'import { Spinner } from \'@btdesign/react\';\n\n<Spinner label="正在加载项目" size="md" />',
 };
 function reactCode(id: ComponentId) {
-  const example = reactExamples[id];
+  const example = reactExamples[id]!;
   const boundary = example.indexOf('\n\n');
   const imports = `${example.slice(0, boundary)}\nimport '@btdesign/tokens/styles.css';`;
   const body = example.slice(boundary + 2);
@@ -347,12 +354,13 @@ function reactCode(id: ComponentId) {
 }
 
 export function componentCode(id: ComponentId, framework: Framework, options?: DemoOptions) {
+  if (isEnterpriseId(id)) return enterpriseComponentCode(id, framework, options);
   if (options) {
     const configured = configuredComponentCode(id, framework, options);
     if (configured) return configured;
   }
   if (framework === 'react') return reactCode(id);
-  const templates: Record<ComponentId, string> = {
+  const templates: Partial<Record<ComponentId, string>> = {
     button:
       '<Button variant="primary">创建项目</Button>\n<Button variant="secondary">取消</Button>\n<Button loading>正在保存</Button>',
     input:
@@ -425,6 +433,8 @@ export function componentCode(id: ComponentId, framework: Framework, options?: D
 }
 
 export interface DemoOptions {
+  multiple?: boolean;
+  cascade?: boolean;
   size: 'sm' | 'md' | 'lg';
   state: 'default' | 'disabled' | 'invalid' | 'loading';
   variant: string;
@@ -447,6 +457,7 @@ const part = (
 ): AnatomyPart => ({ name, structure, purpose, tokens });
 /** The same names connect design decisions, public composition parts and theme controls. */
 export const componentAnatomy: Record<ComponentId, AnatomyPart[]> = {
+  ...enterpriseAnatomy,
   button: [
     part(
       '操作容器',

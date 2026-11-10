@@ -14,6 +14,29 @@ import {
 import type { App, PropType, VNodeChild } from 'vue';
 import { Field, controlProps, useFieldControl } from './field.js';
 import * as granular from './granular.js';
+import * as enterpriseChoice from './enterprise-choice.js';
+import * as enterpriseForm from './enterprise-form.js';
+import * as enterpriseDate from './enterprise-date.js';
+import * as enterpriseTree from './enterprise-tree.js';
+import * as enterpriseNavigation from './enterprise-navigation.js';
+import * as enterpriseTable from './enterprise-table.js';
+export * from './enterprise-choice.js';
+export * from './enterprise-form.js';
+export * from './enterprise-date.js';
+export * from './enterprise-tree.js';
+export * from './enterprise-navigation.js';
+export * from './enterprise-table.js';
+export type {
+  ChoiceOption,
+  TreeNode,
+  ValidationRule,
+  FormValues,
+  FormRules,
+  FormErrors,
+  DateRange,
+  NavItem,
+  FileItem,
+} from '@btdesign/engine';
 export { Field } from './field.js';
 export type { ControlSize } from './field.js';
 export * from './granular.js';
@@ -629,6 +652,12 @@ export const Progress = defineComponent({
 
 const components = {
   ...granular,
+  ...enterpriseChoice,
+  ...enterpriseForm,
+  ...enterpriseDate,
+  ...enterpriseTree,
+  ...enterpriseNavigation,
+  ...enterpriseTable,
   Field,
   Button,
   Input,

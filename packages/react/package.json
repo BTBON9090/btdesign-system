@@ -1,6 +1,6 @@
 {
   "name": "@btdesign/react",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Accessible React components for BTDESIGN",
   "type": "module",
   "private": false,
@@ -26,7 +26,8 @@
     "react-dom": ">=18.0.0"
   },
   "dependencies": {
-    "@btdesign/tokens": "0.2.0"
+    "@btdesign/tokens": "0.3.0",
+    "@btdesign/engine": "0.3.0"
   },
   "license": "MIT"
 }
