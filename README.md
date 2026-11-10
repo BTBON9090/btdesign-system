@@ -4,7 +4,7 @@ BTDESIGN 是面向 UI 设计师、前端工程师与 AI 编程工具的设计工
 
 工作流程是：**表达意图 → 选择场景 → 理解设计与结构 → 确认共享规则 → 保存版本 → 交付给开发与 AI**。组件文档、开发指南、设计指南和最佳实践随时可查，创作入口围绕当前项目展开。
 
-源码仓库：[BTBON9090/btdesign-system](https://github.com/BTBON9090/btdesign-system)。当前为 v0.1，本仓库提供可运行的网站、组件包和发布配置；个人网站域名尚未确定，组件包尚未发布到 npm 公共注册表。
+在线使用：[design.btbon.cn](https://design.btbon.cn)。源码仓库：[BTBON9090/btdesign-system](https://github.com/BTBON9090/btdesign-system)。当前为 v0.1，Studio 与文档网站已部署至腾讯云 EdgeOne，React / Vue 组件包可从网站下载，尚未发布到 npm 公共注册表。DeepSeek 服务端密钥仍待配置。
 
 ## 在工作空间里做什么
 

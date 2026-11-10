@@ -1,6 +1,6 @@
 # 发布到个人网站
 
-仓库提供 Studio 与文档网站、Node AI 服务和 Vercel 函数入口。本文说明可使用的部署方式；当前尚未绑定个人域名，也不代表网站已经上线。
+仓库提供 Studio 与文档网站、Node AI 服务，以及 EdgeOne / Vercel 函数入口。BTDESIGN 已上线至 [design.btbon.cn](https://design.btbon.cn)，使用独立 EdgeOne 项目和免费 HTTPS 证书。本文记录发布结果与可用部署方式。
 
 ## 构建与交付产物
 
@@ -25,7 +25,17 @@ npm run build
 
 BTDESIGN 使用独立子域名 `design.btbon.cn`，保留 `www.btbon.cn` 的个人作品集。使用独立 EdgeOne Pages / Makers 项目，不更改作品集的仓库、部署或 DNS 记录。
 
-仓库根目录的 `edgeone.json` 设置安装、构建与输出目录，并选择 Node 22.21.1。平台预装版本以 [EdgeOne 构建指南](https://pages.edgeone.ai/document/build-guide) 为准；不要使用不满足 Vite 要求的 Node 22.11。
+截至 2026-11-10：
+
+- 已创建 EdgeOne 项目 `btdesign`（项目 ID：`makers-ltsnqerkhnbf`），连接本仓库的 `main` 分支。
+- 已发布部署 `dp6pg47jjowu`，对应提交 [`79c4ff9`](https://github.com/BTBON9090/btdesign-system/commit/79c4ff9)；同一提交的 [GitHub CI](https://github.com/BTBON9090/btdesign-system/actions/runs/42780783478) 已全部通过。
+- DNSPod 中新增 `design` 的 CNAME：`design.btbon.cn.pages.dnsoe6.com`，TTL 600。免费证书使用自动验证、自动续签。权威 DNS、公网 HTTPS 与浏览器访问均已验证。
+- 首页及 Studio 静态资源、`/api/health`、三个组件安装包均返回 HTTP 200；安装包内的所有文件与本地分发内容一致。React / Vue 预览、主题切换及组件文档导航通过浏览器检查，未出现脚本错误。发布截图见 [production.png](previews/production.png)。
+- `www.btbon.cn` 原作品集保持可访问，其部署与 DNS 记录未改动。
+- 生产环境的自动部署开关默认开启，但本次 Git 推送未出现在自动构建列表，最新版本通过控制台“新建部署 → main”发布。后续更新需确认平台是否实际创建新部署；未出现时使用该手动入口，不能只凭开关开启认定代码已上线。
+- DeepSeek 服务端密钥和生产访问令牌尚未配置，真实 AI 调用未启用。手动编辑、组件预览与项目导出不依赖模型密钥。
+
+仓库根目录的 `edgeone.json` 设置安装、构建与输出目录，并选择 Node 22.21.1。函数时限使用当前构建器要求的 `cloudFunctions.maxDuration: 40`，已替换弃用的 `cloudFunctions.nodejs.maxDuration`。平台预装版本以 [EdgeOne 构建指南](https://pages.edgeone.ai/document/build-guide) 为准；不要使用不满足 Vite 要求的 Node 22.11。
 
 从 GitHub 导入本仓库时：
 
@@ -37,7 +47,7 @@ BTDESIGN 使用独立子域名 `design.btbon.cn`，保留 `www.btbon.cn` 的个�
 
 Cloud Functions 适配器复用同一套输入校验、生产认证、超时与限流逻辑。请求身份只使用平台 `context.clientIp`，请求体在读取流时限制体积；不依赖客户端自填的转发 IP 头。适配依据 [EdgeOne Node Functions](https://pages.edgeone.ai/document/node-functions)。
 
-这里记录目标和配置，并不代表域名已完成绑定；实际发布状态以平台与线上检查结果为准。
+每次上线应核对部署对应的提交，并通过正式域名验证页面与 API；不要只凭平台构建成功认定域名、证书或 AI 配置已就绪。
 
 ## 方案一：Vercel
 
