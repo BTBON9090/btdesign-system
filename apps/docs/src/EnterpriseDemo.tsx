@@ -3,6 +3,7 @@ import * as ui from '@btdesign/react';
 import type { FileItem } from '@btdesign/engine';
 import type { DemoOptions } from './catalog';
 import type { EnterpriseId } from './enterprise-catalog';
+import { dropdownPreviewItems } from './dropdown-preview';
 import {
   enterpriseColumns,
   enterpriseFiles,
@@ -114,6 +115,8 @@ export function EnterpriseDemo({
             min="2026-01-01"
             max="2027-12-31"
             disabled={disabled}
+            readOnly={o.dateReadOnly}
+            clearable={o.dateClearable !== false}
           />
           <output className="enterprise-demo-result">当前日期：{date || '未选择'}</output>
         </div>
@@ -126,6 +129,7 @@ export function EnterpriseDemo({
             value={range}
             onValueChange={setRange}
             disabled={disabled}
+            readOnly={o.dateReadOnly}
           />
           <output className="enterprise-demo-result">
             {range[0] || '开始日期'} → {range[1] || '结束日期'}
@@ -181,28 +185,24 @@ export function EnterpriseDemo({
           onValueChange={setValue}
         />
       );
-    case 'button-group':
+    case 'button-group': {
+      const buttons = Array.from({ length: o.buttonGroupCount ?? 3 }, (_, i) => i + 1);
+      if (o.buttonGroupReverse) buttons.reverse();
       return (
         <ui.ButtonGroup label="项目操作">
-          <ui.Button disabled={disabled} onClick={() => onAction('已触发新建项目示例')}>
-            新建项目
-          </ui.Button>
-          <ui.Button
-            variant="secondary"
-            disabled={disabled}
-            onClick={() => onAction('已触发导入项目示例')}
-          >
-            导入
-          </ui.Button>
-          <ui.Button
-            variant="ghost"
-            disabled={disabled}
-            onClick={() => onAction('已触发更多操作示例')}
-          >
-            更多
-          </ui.Button>
+          {buttons.map((n) => (
+            <ui.Button
+              key={n}
+              variant={n === 1 ? 'primary' : 'secondary'}
+              disabled={disabled}
+              onClick={() => onAction(`已触发操作 ${n}`)}
+            >
+              操作 {n}
+            </ui.Button>
+          ))}
         </ui.ButtonGroup>
       );
+    }
     case 'list':
       return (
         <ui.List className="enterprise-wide">
@@ -308,11 +308,7 @@ export function EnterpriseDemo({
       return (
         <ui.DropdownMenu
           label="项目操作"
-          items={[
-            { key: 'edit', label: '编辑项目' },
-            { key: 'copy', label: '创建副本' },
-            { key: 'archive', label: '归档项目', disabled: true },
-          ]}
+          items={dropdownPreviewItems(o)}
           disabled={disabled}
           onSelect={(key) => onAction(`已触发 ${key} 操作示例`)}
         />

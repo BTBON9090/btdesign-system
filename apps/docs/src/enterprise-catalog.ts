@@ -1,4 +1,5 @@
 import type { AnatomyPart, DemoOptions, Framework } from './component-types';
+import { dropdownPreviewItems } from './dropdown-preview';
 import {
   enterpriseColumns,
   enterpriseFiles,
@@ -46,6 +47,8 @@ export const enterpriseCatalog = [
       ['label / name', 'string', '—'],
       ['min / max / disabledDate', '日期约束', '—'],
       ['disabled / required', 'boolean', 'false'],
+      ['readOnly / readonly', 'boolean', 'false'],
+      ['clearable', 'boolean', 'true'],
     ],
   },
   {
@@ -58,6 +61,7 @@ export const enterpriseCatalog = [
       ['value / modelValue', '[start, end]', '["", ""]'],
       ['min / max / disabledDate', '日期约束', '—'],
       ['label / disabled', 'string / boolean', '—'],
+      ['readOnly / readonly', 'boolean', 'false'],
     ],
   },
   {
@@ -240,9 +244,11 @@ export const enterpriseCatalog = [
     name: 'DropdownMenu',
     cn: '下拉菜单',
     category: '导航',
-    description: '将次要操作收进命名菜单，支持键盘移动、关闭和焦点恢复。',
+    description: '将操作组织成菜单，支持分组、分隔与嵌套，以及键盘导航。',
     props: [
-      ['items', 'NavItem[]，单层操作', '必填'],
+      ['items', 'DropdownMenuItem[]', '必填'],
+      ['item: children / group / separator', 'DropdownMenuItem[] / boolean / boolean', '—'],
+      ['item: href / danger / disabled', 'string / boolean / boolean', '—'],
       ['label', 'string', '—'],
       ['onSelect / select', '(key) => void', '—'],
       ['disabled', 'boolean', 'false'],
@@ -550,14 +556,14 @@ export const enterpriseAnatomy: Record<EnterpriseId, AnatomyPart[]> = {
     anatomy(
       '触发与菜单',
       'DropdownMenu → button + menu',
-      '键盘打开后移动焦点，关闭后回到触发按钮。',
+      '方向键移动与打开子菜单，Escape 逐层返回，Tab 正常离开。',
       '--f-button-height',
       '--f-overlay-radius',
     ),
     anatomy(
       '操作项',
       'menuitem / separator',
-      '分隔操作组，禁用项不可执行。',
+      '分组与分隔组织操作；禁用项不可执行，危险操作使用语义色。',
       '--f-nav-item-height',
       '--f-overlay-padding',
     ),
@@ -602,6 +608,11 @@ export function enterpriseComponentCode(
   framework: Framework,
   o?: DemoOptions,
 ): string {
+  const groupButtons = Array.from(
+    { length: Math.max(2, Math.min(8, o?.buttonGroupCount ?? 3)) },
+    (_, i) => i + 1,
+  );
+  if (o?.buttonGroupReverse) groupButtons.reverse();
   const disabled = o?.state === 'disabled';
   const multiple = o?.multiple ?? false;
   const cascade = o?.cascade ?? false;
@@ -610,6 +621,10 @@ export function enterpriseComponentCode(
   const name = enterpriseCatalog.find((item) => item.id === id)!.name;
   const reactDisabled = disabled ? ' disabled' : '';
   const vueDisabled = disabled ? ' disabled' : '';
+  const reactDateReadOnly = o?.dateReadOnly ? ' readOnly' : '';
+  const vueDateReadOnly = o?.dateReadOnly ? ' readonly' : '';
+  const reactDateClearable = o?.dateClearable === false ? ' clearable={false}' : '';
+  const vueDateClearable = o?.dateClearable === false ? ' :clearable="false"' : '';
   let imports: string = name,
     setup = '',
     body = '';
@@ -622,11 +637,11 @@ export function enterpriseComponentCode(
       case 'calendar':
       case 'date-picker':
         setup = `const [value, setValue] = useState('2026-11-10');`;
-        body = `<${name} label="交付日期" value={value} onValueChange={setValue} min="2026-01-01" max="2027-12-31"${reactDisabled} />`;
+        body = `<${name} label="交付日期" value={value} onValueChange={setValue} min="2026-01-01" max="2027-12-31"${reactDisabled}${id === 'date-picker' ? reactDateReadOnly + reactDateClearable : ''} />`;
         break;
       case 'date-range-picker':
         setup = `const [value, setValue] = useState<[string,string]>(['2026-11-10','2026-11-18']);`;
-        body = `<DateRangePicker label="项目周期" value={value} onValueChange={setValue}${reactDisabled} />`;
+        body = `<DateRangePicker label="项目周期" value={value} onValueChange={setValue}${reactDisabled}${reactDateReadOnly} />`;
         break;
       case 'radio':
         body = `<Radio name="access" value="team" label="团队可见" defaultChecked${reactDisabled}/>`;
@@ -643,7 +658,7 @@ export function enterpriseComponentCode(
         break;
       case 'button-group':
         imports = 'ButtonGroup, Button';
-        body = `<ButtonGroup label="项目操作"><Button${reactDisabled}>新建项目</Button><Button variant="secondary"${reactDisabled}>导入</Button></ButtonGroup>`;
+        body = `<ButtonGroup label="项目操作">${groupButtons.map((n) => `<Button variant="${n === 1 ? 'primary' : 'secondary'}"${reactDisabled}>操作 ${n}</Button>`).join('')}</ButtonGroup>`;
         break;
       case 'list':
         imports = 'List, ListItem, ListItemContent, ListItemActions, Button';
@@ -666,7 +681,7 @@ export function enterpriseComponentCode(
         body = `<${name} label="工作空间导航" items={${json(enterpriseNav)}} activeKey={activeKey} onSelect={setActiveKey}${reactDisabled}/>`;
         break;
       case 'dropdown-menu':
-        body = `<DropdownMenu label="项目操作" items={[{key:'edit',label:'编辑项目'},{key:'copy',label:'创建副本'},{key:'archive',label:'归档项目',disabled:true}]} onSelect={key => console.log(key)}${reactDisabled}/>`;
+        body = `<DropdownMenu label="项目操作" items={${json(dropdownPreviewItems(o))}} onSelect={key => console.log(key)}${reactDisabled}/>`;
         break;
       case 'data-table':
         setup = `const columns: DataColumn[] = ${json(enterpriseColumns)};\n  const [data, setData] = useState<Record<string,unknown>[]>(${json(enterpriseRows)});\n  ${updateRowsCode}`;
@@ -685,11 +700,11 @@ export function enterpriseComponentCode(
     case 'calendar':
     case 'date-picker':
       setup = "const value = ref('2026-11-10');";
-      body = `<${name} label="交付日期" v-model="value" min="2026-01-01" max="2027-12-31"${vueDisabled}/>`;
+      body = `<${name} label="交付日期" v-model="value" min="2026-01-01" max="2027-12-31"${vueDisabled}${id === 'date-picker' ? vueDateReadOnly + vueDateClearable : ''}/>`;
       break;
     case 'date-range-picker':
       setup = "const value = ref<[string,string]>(['2026-11-10','2026-11-18']);";
-      body = `<DateRangePicker label="项目周期" v-model="value"${vueDisabled}/>`;
+      body = `<DateRangePicker label="项目周期" v-model="value"${vueDisabled}${vueDateReadOnly}/>`;
       break;
     case 'radio':
       setup = "const value = ref('team');";
@@ -707,7 +722,7 @@ export function enterpriseComponentCode(
       break;
     case 'button-group':
       imports = 'ButtonGroup, Button';
-      body = `<ButtonGroup label="项目操作"><Button${vueDisabled}>新建项目</Button><Button variant="secondary"${vueDisabled}>导入</Button></ButtonGroup>`;
+      body = `<ButtonGroup label="项目操作">${groupButtons.map((n) => `<Button variant="${n === 1 ? 'primary' : 'secondary'}"${vueDisabled}>操作 ${n}</Button>`).join('')}</ButtonGroup>`;
       break;
     case 'list':
       imports = 'List, ListItem, ListItemContent, ListItemActions, Button';
@@ -730,7 +745,7 @@ export function enterpriseComponentCode(
       body = `<${name} label="工作空间导航" :items="items" :activeKey="activeKey" @select="key => activeKey = key"${vueDisabled}/>`;
       break;
     case 'dropdown-menu':
-      setup = `const items = [{key:'edit',label:'编辑项目'},{key:'copy',label:'创建副本'},{key:'archive',label:'归档项目',disabled:true}];`;
+      setup = `const items = ${json(dropdownPreviewItems(o))};`;
       body = `<DropdownMenu label="项目操作" :items="items" @select="key => console.log(key)"${vueDisabled}/>`;
       break;
     case 'data-table':

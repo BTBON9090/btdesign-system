@@ -1,8 +1,48 @@
 import { createEnterpriseVueDemo } from './EnterpriseVueDemo';
+import { inputTagVuePreview } from './input-tag-preview';
+import { autoCompleteVuePreview } from './auto-complete-preview';
+import { mentionVuePreview } from './mention-preview';
+import { uploadVuePreview } from './upload-preview';
+import { rateVuePreview } from './rate-preview';
 import { isEnterpriseId } from './enterprise-catalog';
 import { useEffect, useRef, useState } from 'react';
 import type { App, VNodeChild } from 'vue';
-import { defaultDemoOptions, type DemoOptions } from './catalog';
+import {
+  defaultDemoOptions,
+  tagPreviewOptions,
+  timelinePreviewOptions,
+  stepsPreviewOptions,
+  tooltipPreviewOptions,
+  pageHeaderPreviewOptions,
+  anchorPreviewOptions,
+  badgePreviewOptions,
+  tabsPreviewOptions,
+  type DemoOptions,
+} from './catalog';
+import { structureVueDemo } from './StructureVueDemo';
+import { descriptionsVueDemo } from './DescriptionsVueDemo';
+import { descriptionsPreviewOptions } from './DescriptionsExample';
+import { createCommentVueDemo } from './CommentVueDemo';
+import { commentPreviewOptions } from './CommentExample';
+import { statisticVueDemo } from './StatisticVueDemo';
+import { statisticPreviewOptions } from './StatisticExample';
+import { imageVueDemo } from './ImageVueDemo';
+import { imagePreviewOptions } from './ImageExample';
+import { createBackTopVueDemo } from './BackTopVueDemo';
+import { backTopPreviewOptions } from './BackTopExample';
+import { emptyPreviewOptions } from './EmptyStateExample';
+import { popoverVueDemo } from './PopoverVueDemo';
+import { popoverPreviewOptions } from './PopoverExample';
+import { carouselVueDemo } from './CarouselVueDemo';
+import { carouselPreviewOptions } from './CarouselExample';
+import { createTagVueDemo } from './TagVueDemo';
+import { timelineVueDemo } from './TimelineVueDemo';
+import { stepsVueDemo } from './StepsVueDemo';
+import { tooltipVueDemo } from './TooltipVueDemo';
+import { pageHeaderVueDemo } from './PageHeaderVueDemo';
+import { createAnchorVueDemo } from './AnchorVueDemo';
+import { badgeVueDemo } from './BadgeVueDemo';
+import { tabsPreviewItems } from './tabs-example-code';
 
 export interface VueDemoProps {
   kind: string;
@@ -28,6 +68,10 @@ export function VueDemo({ kind, onAction, options }: VueDemoProps) {
         if (cancelled || !host.current) return;
         const { createApp, defineComponent, h, ref } = vue;
         const emitAction = (message: string) => action.current?.(message);
+        const CommentVueDemo = createCommentVueDemo(vue, ui);
+        const BackTopVueDemo = createBackTopVueDemo(vue, ui);
+        const TagVueDemo = createTagVueDemo(vue, ui);
+        const AnchorVueDemo = createAnchorVueDemo(vue, ui.Anchor);
         if (isEnterpriseId(kind)) {
           app = createApp(
             createEnterpriseVueDemo(vue, ui, kind, options ?? defaultDemoOptions, emitAction),
@@ -53,12 +97,13 @@ export function VueDemo({ kind, onAction, options }: VueDemoProps) {
               const role = ref('designer');
               const notifications = ref(true);
               const newsletter = ref(false);
-              const tab = ref('design');
               const dialogOpen = ref(false);
               const projectName = ref('品牌工作台');
               const progress = ref(64);
               const saved = ref(false);
               const quantity = ref<number | ''>(4);
+              const sliderValue = ref(40);
+              const timeValue = ref('09:30');
               const page = ref(1);
               const access = ref('team');
 
@@ -122,6 +167,49 @@ export function VueDemo({ kind, onAction, options }: VueDemoProps) {
 
               return () => {
                 const o = options ?? defaultDemoOptions;
+                if (kind === 'tabs') {
+                  const tabOptions = tabsPreviewOptions(o);
+                  return h(ui.Tabs, {
+                    label: '资源类型',
+                    items: tabsPreviewItems(tabOptions),
+                    variant: tabOptions.variant,
+                    orientation: tabOptions.orientation,
+                  });
+                }
+                if (kind === 'badge') return badgeVueDemo(vue, ui, badgePreviewOptions(o));
+                if (kind === 'anchor')
+                  return h(AnchorVueDemo, { options: anchorPreviewOptions(o) });
+                if (kind === 'back-top')
+                  return h(BackTopVueDemo, { options: backTopPreviewOptions(o) });
+                if (kind === 'popover') return popoverVueDemo(vue, ui, popoverPreviewOptions(o));
+                if (kind === 'carousel') return carouselVueDemo(vue, ui, carouselPreviewOptions(o));
+                if (kind === 'image') return imageVueDemo(vue, ui, imagePreviewOptions(o));
+                if (kind === 'statistic')
+                  return statisticVueDemo(vue, ui, statisticPreviewOptions(o));
+                if (kind === 'comment')
+                  return h(CommentVueDemo, {
+                    options: commentPreviewOptions(o),
+                    onAction: emitAction,
+                  });
+                if (kind === 'descriptions')
+                  return descriptionsVueDemo(vue, ui, descriptionsPreviewOptions(o));
+                if (kind === 'avatar' || kind === 'collapse')
+                  return structureVueDemo(vue, ui, kind, o);
+                if (kind === 'page-header')
+                  return pageHeaderVueDemo(
+                    vue,
+                    ui,
+                    ui.PageHeader,
+                    pageHeaderPreviewOptions(o),
+                    emitAction,
+                  );
+                if (kind === 'tooltip')
+                  return tooltipVueDemo(vue, ui.Tooltip, ui.Button, tooltipPreviewOptions(o));
+                if (kind === 'steps') return stepsVueDemo(vue, ui.Steps, stepsPreviewOptions(o));
+                if (kind === 'timeline')
+                  return timelineVueDemo(vue, ui.Timeline, timelinePreviewOptions(o));
+                if (kind === 'tag')
+                  return h(TagVueDemo, { ...tagPreviewOptions(o), onAction: emitAction });
                 const disabled = o.state === 'disabled';
                 const invalid = o.state === 'invalid';
                 const control = { controlSize: o.size, disabled, invalid };
@@ -133,8 +221,15 @@ export function VueDemo({ kind, onAction, options }: VueDemoProps) {
                   [
                     'field',
                     'input-group',
+                    'input-tag',
+                    'auto-complete',
+                    'mention',
+                    'upload',
+                    'rate',
                     'radio-group',
                     'number-input',
+                    'slider',
+                    'time-picker',
                     'breadcrumb',
                     'pagination',
                     'empty-state',
@@ -146,18 +241,107 @@ export function VueDemo({ kind, onAction, options }: VueDemoProps) {
                       return h(
                         ui.Button,
                         {
-                          size: o.size,
+                          size: o.buttonSize ?? 'md',
                           variant: o.variant as 'primary' | 'secondary' | 'ghost' | 'danger',
+                          tone: o.buttonTone ?? 'standard',
+                          shape: o.buttonShape ?? 'default',
+                          iconOnly: o.buttonContent === 'icon',
+                          'aria-label': o.buttonContent === 'icon' ? '保存更改' : undefined,
                           disabled,
                           loading: o.state === 'loading',
                           onClick: () => emitAction('按钮示例已响应'),
                         },
-                        () => '保存更改',
+                        () => [
+                          o.buttonContent === 'leading' || o.buttonContent === 'icon'
+                            ? h('span', { 'aria-hidden': 'true' }, '+')
+                            : null,
+                          o.buttonContent !== 'icon' ? '保存更改' : null,
+                          o.buttonContent === 'trailing'
+                            ? h('span', { 'aria-hidden': 'true' }, '+')
+                            : null,
+                        ],
                       );
-                    case 'input':
+                    case 'input': {
+                      const inputKind = o.inputKind ?? 'text';
+                      const addon = o.inputAddon ?? 'none';
+                      if (inputKind === 'password')
+                        return withField(
+                          '密码',
+                          h(ui.PasswordInput, { ...control, placeholder: '请输入密码' }),
+                        );
+                      if (inputKind === 'search')
+                        return withField(
+                          '搜索成员',
+                          h(ui.SearchInput, {
+                            ...control,
+                            placeholder: '输入成员名称',
+                            onSearch: (value: string) =>
+                              emitAction(value ? `正在搜索：${value}` : '请输入搜索内容'),
+                          }),
+                        );
+                      if (addon !== 'none')
+                        return withField(
+                          '工作空间地址',
+                          h(ui.InputGroup, {}, () => [
+                            addon === 'start' || addon === 'both'
+                              ? h(ui.InputAddon, {}, () => 'https://')
+                              : null,
+                            h(ui.Input, { ...control, placeholder: 'my-team' }),
+                            addon === 'end' || addon === 'both'
+                              ? h(ui.InputAddon, {}, () => '.example.com')
+                              : null,
+                          ]),
+                        );
                       return withField(
                         '工作邮箱',
                         h(ui.Input, { ...control, type: 'email', placeholder: 'you@company.com' }),
+                      );
+                    }
+                    case 'rate':
+                      return rateVuePreview(vue, ui, o);
+                    case 'auto-complete':
+                      return autoCompleteVuePreview(vue, ui, o);
+                    case 'mention':
+                      return mentionVuePreview(vue, ui, o);
+                    case 'upload':
+                      return uploadVuePreview(vue, ui, o);
+                    case 'input-tag':
+                      return inputTagVuePreview(vue, ui, o);
+                    case 'slider':
+                      return withField(
+                        '音量',
+                        h(ui.Slider, {
+                          min: 0,
+                          max: 100,
+                          step: 10,
+                          disabled,
+                          modelValue: sliderValue.value,
+                          'onUpdate:modelValue': (value: number) => {
+                            sliderValue.value = value;
+                          },
+                          marks: o.sliderMarks
+                            ? [
+                                { value: 0, label: '0' },
+                                { value: 50, label: '50' },
+                                { value: 100, label: '100' },
+                              ]
+                            : undefined,
+                        }),
+                      );
+                    case 'time-picker':
+                      return withField(
+                        '开始时间',
+                        h(ui.TimePicker, {
+                          ...control,
+                          name: 'start',
+                          min: '09:00',
+                          max: '18:00',
+                          step: 300,
+                          modelValue: timeValue.value,
+                          'onUpdate:modelValue': (value: string) => {
+                            timeValue.value = value;
+                          },
+                        }),
                       );
                     case 'textarea':
                       return withField(
@@ -191,15 +375,6 @@ export function VueDemo({ kind, onAction, options }: VueDemoProps) {
                         modelValue: notifications.value,
                         'onUpdate:modelValue': (value: boolean) => (notifications.value = value),
                       });
-                    case 'badge':
-                      return h(
-                        ui.Badge,
-                        {
-                          variant: o.variant as
-                            'default' | 'success' | 'warning' | 'danger' | 'info',
-                        },
-                        () => '项目状态',
-                      );
                     case 'alert':
                       return h(
                         ui.Alert,
@@ -306,22 +481,7 @@ export function VueDemo({ kind, onAction, options }: VueDemoProps) {
                         ),
                       ]);
                     case 'empty-state':
-                      return h(
-                        ui.EmptyState,
-                        { title: '还没有项目', description: '创建第一个项目，开始与团队协作。' },
-                        {
-                          action: () =>
-                            h(
-                              ui.Button,
-                              {
-                                onClick: () => {
-                                  window.location.hash = '/lab';
-                                },
-                              },
-                              () => '创建项目',
-                            ),
-                        },
-                      );
+                      return h(ui.EmptyState, emptyPreviewOptions(o));
                     case 'spinner':
                       return h(ui.Spinner, { label: '正在加载项目', size: o.size });
                   }
@@ -632,15 +792,6 @@ export function VueDemo({ kind, onAction, options }: VueDemoProps) {
                       h(ui.Switch, { modelValue: true, disabled: true, label: '账户安全提醒' }),
                     ]);
 
-                  case 'badge':
-                    return row([
-                      h(ui.Badge, {}, () => '草稿'),
-                      h(ui.Badge, { variant: 'success' }, () => '已发布'),
-                      h(ui.Badge, { variant: 'warning' }, () => '审核中'),
-                      h(ui.Badge, { variant: 'info' }, () => '进行中'),
-                      h(ui.Badge, { variant: 'danger' }, () => '未通过'),
-                    ]);
-
                   case 'card':
                     return h(ui.Card, { class: 'example-card' }, () => [
                       h(ui.CardHeader, {}, () => [
@@ -673,32 +824,6 @@ export function VueDemo({ kind, onAction, options }: VueDemoProps) {
                         () => '发布前请检查浅色与深色模式下的组件状态。',
                       ),
                     ]);
-
-                  case 'tabs':
-                    return h(ui.Tabs, {
-                      label: '资源类型',
-                      modelValue: tab.value,
-                      'onUpdate:modelValue': (value: string) => {
-                        tab.value = value;
-                      },
-                      items: [
-                        {
-                          value: 'design',
-                          label: '设计',
-                          content: h('p', {}, '设计规范、语义变量与组件使用原则。'),
-                        },
-                        {
-                          value: 'develop',
-                          label: '开发',
-                          content: h('p', {}, '组件 API、框架集成与可运行示例。'),
-                        },
-                        {
-                          value: 'release',
-                          label: '发布',
-                          content: h('p', {}, '版本记录、变更说明与升级指南。'),
-                        },
-                      ],
-                    });
 
                   case 'dialog':
                     return stack([

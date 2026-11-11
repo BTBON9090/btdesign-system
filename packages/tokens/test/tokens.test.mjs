@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import {
   createTheme,
   normalizeTheme,
@@ -44,6 +45,49 @@ test('foreground remains readable for any primary color, in either theme', () =>
       assert.ok(contrastRatio(vars['--f-primary'], vars['--f-on-primary']) >= 4.5);
       assert.ok(contrastRatio(vars['--f-text'], vars['--f-bg']) >= 7);
       assert.ok(contrastRatio(vars['--f-muted'], vars['--f-bg']) >= 4.5);
+    }
+  }
+});
+
+test('filled semantic buttons stay readable on hover in both modes', () => {
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+  const rule = css.match(
+    /\.f-button\[class\*='f-button--tone-'\]\.f-button--primary:hover:not\(:disabled\)\s*\{([^}]+)\}/,
+  );
+  assert.ok(rule, 'semantic button hover rule exists');
+  const mix = rule[1].match(
+    /color-mix\(in srgb,\s*var\(--f-button-tone\)\s*(\d+(?:\.\d+)?)%,\s*#([0-9a-f]{3}|[0-9a-f]{6})\)/i,
+  );
+  assert.ok(mix, 'hover color can be checked against the actual CSS mix');
+  const weight = Number(mix[1]) / 100;
+  const hex = (color) =>
+    color.length === 3
+      ? color
+          .split('')
+          .map((c) => c + c)
+          .join('')
+      : color;
+  const target = hex(mix[2]);
+  const blend = (color) => {
+    const base = hex(color.replace('#', ''));
+    const channels = [0, 2, 4].map((i) =>
+      Math.round(
+        parseInt(base.slice(i, i + 2), 16) * weight +
+          parseInt(target.slice(i, i + 2), 16) * (1 - weight),
+      )
+        .toString(16)
+        .padStart(2, '0'),
+    );
+    return `#${channels.join('')}`;
+  };
+  for (const mode of ['light', 'dark']) {
+    const vars = createTheme(defaultTheme, mode);
+    for (const tone of ['success', 'warning', 'danger', 'info']) {
+      const background = blend(vars[`--f-${tone}`]);
+      assert.ok(
+        contrastRatio(background, vars['--f-on-status']) >= 4.5,
+        `${mode} ${tone}: ${background}`,
+      );
     }
   }
 });

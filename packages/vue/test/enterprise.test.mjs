@@ -20,6 +20,14 @@ function mount(component, props = {}, children) {
     contains(node) {
       return descendants(this).includes(node);
     },
+    closest(selector) {
+      let node = this;
+      while (node) {
+        if (selector === '[role="menu"]' && node.props.role === 'menu') return node;
+        node = node.parent;
+      }
+      return null;
+    },
     querySelectorAll(selector) {
       return descendants(this).filter((node) =>
         selector === 'input, select, textarea'
@@ -171,7 +179,7 @@ test('all enterprise components are exported and registered without internal uti
       registered.push(name);
     },
   });
-  assert.equal(registered.length, 63);
+  assert.equal(registered.length, Object.keys(ui).length - 1);
   for (const name of names) {
     assert.ok(ui[name]);
     assert.ok(registered.includes(`F${name}`));
@@ -431,6 +439,57 @@ test('dropdown skips disabled actions and closes after selection', async () => {
   await nextTick();
   assert.deepEqual(changes, ['a']);
   assert.equal(view.where((n) => n.props.role === 'menu').length, 0);
+  view.app.unmount();
+});
+test('dropdown groups, nested keyboard navigation, safe links and danger actions', async () => {
+  const changes = [];
+  const view = mount(ui.DropdownMenu, {
+    label: '操作',
+    items: [
+      { key: 'group', label: '项目', group: true, children: [{ key: 'edit', label: '编辑' }] },
+      { key: 'separator', label: '', separator: true },
+      {
+        key: 'more',
+        label: '更多',
+        children: [
+          { key: 'safe', label: '安全链接', href: '/safe' },
+          { key: 'unsafe', label: '危险地址', href: 'javascript:alert(1)' },
+          { key: 'remove', label: '删除', danger: true },
+        ],
+      },
+    ],
+    onSelect: (key) => changes.push(key),
+  });
+  view.all('button')[0].props.onClick();
+  await nextTick();
+  assert.equal(view.where((node) => node.props.role === 'group')[0].props['aria-label'], '项目');
+  assert.equal(view.where((node) => node.props.role === 'separator').length, 1);
+  const more = view.where(
+    (node) => node.props['aria-haspopup'] === 'menu' && node.props.role === 'menuitem',
+  )[0];
+  const right = event(more, { key: 'ArrowRight' });
+  more.props.onKeydown(right);
+  await nextTick();
+  assert.equal(right.defaultPrevented, true);
+  assert.equal(view.where((node) => node.props.role === 'menu').length, 2);
+  const safe = view.where((node) => node.props.href === '/safe')[0];
+  assert.equal(safe.type, 'a');
+  assert.equal(view.where((node) => node.props.href?.startsWith('javascript:')).length, 0);
+  const danger = view.where((node) => node.props['data-danger'])[0];
+  assert.equal(danger.props.role, 'menuitem');
+  const submenu = view.where((node) => node.props.role === 'menu')[1];
+  const escape = event(safe, { key: 'Escape' });
+  submenu.props.onKeydown(escape);
+  await nextTick();
+  assert.equal(escape.defaultPrevented, true);
+  assert.equal(view.where((node) => node.props.role === 'menu').length, 1);
+  assert.equal(view.active(), more);
+  more.props.onClick();
+  await nextTick();
+  view.where((node) => node.props['data-danger'])[0].props.onClick();
+  await nextTick();
+  assert.deepEqual(changes, ['remove']);
+  assert.equal(view.where((node) => node.props.role === 'menu').length, 0);
   view.app.unmount();
 });
 test('DataTable creates multilevel table headers and an actual expandable hierarchy', async () => {

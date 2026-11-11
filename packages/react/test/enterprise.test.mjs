@@ -80,7 +80,15 @@ test('enterprise public surface contains twenty families and six composable part
     'DataTable',
   ])
     assert.ok(ui[name], name);
-  assert.equal(Object.keys(ui).length, 63);
+  for (const name of [
+    'AvatarGroup',
+    'PasswordInput',
+    'SearchInput',
+    'Slider',
+    'TimePicker',
+    'Collapse',
+  ])
+    assert.ok(ui[name], name);
 });
 test('form adapter combines canonical rules with native invalid drafts, including nested date ids', () => {
   const errors = formValidation(

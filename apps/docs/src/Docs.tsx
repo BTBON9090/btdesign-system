@@ -1,7 +1,7 @@
 import { isEnterpriseId, enterpriseCatalog } from './enterprise-catalog';
 import { useState } from 'react';
 import { ArrowRight, ArrowUpRight, Check, ChevronRight, Search, Sparkles } from 'lucide-react';
-import { Alert, Badge } from '@btdesign/react';
+import { Alert, Badge, Tag, Timeline, Steps } from '@btdesign/react';
 import type { ThemeMode } from '@btdesign/tokens';
 import { catalog, componentCategories, type ComponentId, type Framework } from './catalog';
 import { ComponentWorkbench } from './ComponentWorkbench';
@@ -70,7 +70,7 @@ export function Docs({
         ))}
         <div className="sidebar-foot">
           <span className="status-dot" />
-          BTDESIGN v0.3.0
+          BTDESIGN v0.4.0
         </div>
       </aside>
       <div className="docs-main">
@@ -280,6 +280,20 @@ function Miniature({ kind }: { kind: ComponentId }) {
           you@company.com<span>│</span>
         </span>
       );
+    case 'slider':
+      return <span className="mini-input">0 ━━━●━━━━ 100</span>;
+    case 'rate':
+      return <span aria-hidden="true">★★★☆☆</span>;
+    case 'input-tag':
+      return <span className="mini-input">设计 ×　前端 ×</span>;
+    case 'auto-complete':
+      return <span className="mini-input">搜索城市…</span>;
+    case 'mention':
+      return <span className="mini-input">输入 @ 提及成员…</span>;
+    case 'upload':
+      return <span className="mini-input">选择文件</span>;
+    case 'time-picker':
+      return <span className="mini-input">09:30</span>;
     case 'textarea':
       return <span className="mini-input mini-textarea">在这里记录你的想法…</span>;
     case 'select':
@@ -310,6 +324,48 @@ function Miniature({ kind }: { kind: ComponentId }) {
           <Badge variant="success">已发布</Badge>
           <Badge variant="warning">审核中</Badge>
         </>
+      );
+    case 'tag':
+      return <Tag tone="success">设计系统</Tag>;
+    case 'timeline':
+      return (
+        <Timeline
+          label="项目进度"
+          items={[
+            { id: 'a', title: '创建项目' },
+            { id: 'b', title: '团队评审' },
+          ]}
+        />
+      );
+    case 'steps':
+      return (
+        <Steps
+          label="创建项目"
+          items={[
+            { id: 'a', title: '创建' },
+            { id: 'b', title: '完成' },
+          ]}
+        />
+      );
+    case 'tooltip':
+      return (
+        <span className="mini-alert" aria-hidden="true">
+          查看说明
+        </span>
+      );
+    case 'anchor':
+      return (
+        <span className="mini-card">
+          <b>页面目录</b>
+          <span className="mini-line short" />
+        </span>
+      );
+    case 'page-header':
+      return (
+        <span className="mini-card">
+          <b>项目详情</b>
+          <span className="mini-line short" />
+        </span>
       );
     case 'card':
       return (
@@ -692,7 +748,7 @@ function Guide({
           description="先带入熟悉的品牌风格，再识别旧系统的组件与差异，按业务页面逐步迁入同一套规则。"
         />
         <Alert variant="info" title="兼容的边界">
-          BTDESIGN v0.3 支持 React 18 / 19 与 Vue 3.4+。现有 Ant Design、Arco、shadcn/ui 等组件的
+          BTDESIGN v0.4 支持 React 18 / 19 与 Vue 3.4+。现有 Ant Design、Arco、shadcn/ui 等组件的
           API 需要逐项适配，并非替换包名即可完成。
         </Alert>
         <h2>1. 带入已有的品牌风格</h2>
@@ -844,7 +900,7 @@ function Guide({
       <p>也可以在仓库运行打包命令，再将安装包复制到目标项目：</p>
       <CodeBlock
         label="Terminal"
-        code={`# 在 BTDESIGN 仓库中\nnpm run pack:libs\n\n# 在目标项目中，替换为实际文件路径\nnpm install /path/to/btdesign-tokens-0.3.0.tgz \\\n  /path/to/btdesign-engine-0.3.0.tgz \\\n  /path/to/btdesign-${framework}-0.3.0.tgz${framework === 'react' ? '\n\n# 使用导出的 React 场景时\nnpm install lucide-react' : ''}`}
+        code={`# 在 BTDESIGN 仓库中\nnpm run pack:libs\n\n# 在目标项目中，替换为实际文件路径\nnpm install /path/to/btdesign-tokens-0.4.0.tgz \\\n  /path/to/btdesign-engine-0.4.0.tgz \\\n  /path/to/btdesign-${framework}-0.4.0.tgz${framework === 'react' ? '\n\n# 使用导出的 React 场景时\nnpm install lucide-react' : ''}`}
       />
       <h2>4. 单独使用组件</h2>
       <CodeBlock

@@ -276,6 +276,7 @@ export function createTheme(input: ThemeConfig, mode: ThemeMode = 'light'): Reco
     '--f-text': semantic?.text ?? (dark ? '#F2F3F7' : '#202127'),
     '--f-muted': semantic?.muted ?? (dark ? '#A5A9B5' : '#656975'),
     '--f-border': semantic?.border ?? (dark ? '#363944' : '#E3E4EA'),
+    '--f-on-status': dark ? '#111111' : '#FFFFFF',
     '--f-success': dark ? '#75D5A6' : '#137548',
     '--f-success-soft': dark ? '#18392B' : '#EAF8F0',
     '--f-warning': dark ? '#F1C171' : '#8D5908',

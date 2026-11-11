@@ -17,13 +17,19 @@ type Size = 'sm' | 'md' | 'lg';
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'ghost' | 'danger';
-  size?: Size;
+  size?: Size | 'xs' | 'xl';
+  tone?: 'standard' | 'success' | 'warning' | 'danger' | 'ai';
+  shape?: 'default' | 'pill';
+  iconOnly?: boolean;
   loading?: boolean;
 }
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
   {
     variant = 'primary',
     size = 'md',
+    tone = 'standard',
+    shape = 'default',
+    iconOnly = false,
     loading = false,
     className,
     disabled,
@@ -40,10 +46,18 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       type={type}
       disabled={disabled || loading}
       aria-busy={loading || undefined}
-      className={cx('f-button', `f-button--${variant}`, `f-button--${size}`, className)}
+      className={cx(
+        'f-button',
+        `f-button--${variant}`,
+        `f-button--${size}`,
+        tone !== 'standard' && `f-button--tone-${tone}`,
+        shape === 'pill' && 'f-button--pill',
+        iconOnly && 'f-button--icon-only',
+        className,
+      )}
     >
       {loading && <span className="f-spinner" aria-hidden="true" />}
-      {children}
+      {(!iconOnly || !loading) && children}
     </button>
   );
 });
@@ -64,6 +78,29 @@ export * from './enterprise-date.js';
 export * from './enterprise-tree.js';
 export * from './enterprise-navigation.js';
 export * from './enterprise-table.js';
+export * from './avatar-group.js';
+export * from './input-variants.js';
+export * from './slider.js';
+export * from './time-picker.js';
+export * from './collapse.js';
+export * from './tag.js';
+export * from './descriptions.js';
+export * from './timeline.js';
+export * from './comment.js';
+export * from './input-tag.js';
+export * from './steps.js';
+export * from './statistic.js';
+export * from './tooltip.js';
+export * from './auto-complete.js';
+export * from './image.js';
+export * from './carousel.js';
+export * from './page-header.js';
+export * from './rate.js';
+export * from './anchor.js';
+export * from './popover.js';
+export * from './mention.js';
+export * from './back-top.js';
+export * from './upload.js';
 export type {
   ChoiceOption,
   TreeNode,
@@ -169,9 +206,60 @@ export const Switch = forwardRef<HTMLButtonElement, SwitchProps>(function Switch
 
 export interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
   variant?: 'default' | 'success' | 'warning' | 'danger' | 'info';
+  count?: number | string;
+  max?: number;
+  showZero?: boolean;
+  dot?: boolean;
+  badgeLabel?: string;
 }
-export function Badge({ variant = 'default', className, ...props }: BadgeProps) {
-  return <span {...props} className={cx('f-badge', `f-badge--${variant}`, className)} />;
+export function Badge({
+  variant = 'default',
+  count,
+  max = 99,
+  showZero = false,
+  dot = false,
+  badgeLabel,
+  children,
+  className,
+  ...props
+}: BadgeProps) {
+  if (count === undefined && !dot) {
+    return (
+      <span {...props} className={cx('f-badge', `f-badge--${variant}`, className)}>
+        {children}
+      </span>
+    );
+  }
+  const visible =
+    dot ||
+    (typeof count === 'number'
+      ? Number.isFinite(count) && (count > 0 || (count === 0 && showZero))
+      : !!count);
+  const content = typeof count === 'number' && count > max ? `${max}+` : count;
+  const marker = visible ? (
+    <span
+      className={cx(
+        'f-badge',
+        `f-badge--${variant}`,
+        dot ? 'f-badge--dot' : 'f-badge--count',
+        children != null && 'f-badge--overlay',
+      )}
+      role="img"
+      aria-label={badgeLabel ?? (dot ? '提示' : String(count))}
+    >
+      {dot ? null : content}
+    </span>
+  ) : null;
+  return children != null ? (
+    <span {...props} className={cx('f-badge-anchor', className)}>
+      {children}
+      {marker}
+    </span>
+  ) : (
+    <span {...props} className={cx('f-badge-standalone', className)}>
+      {marker}
+    </span>
+  );
 }
 export const Card = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(function Card(
   { className, ...props },
@@ -218,6 +306,8 @@ export interface TabsProps extends Omit<
   defaultValue?: string;
   onValueChange?: (value: string) => void;
   label?: string;
+  variant?: 'default' | 'line' | 'text' | 'card' | 'card-gutter' | 'rounded';
+  orientation?: 'horizontal' | 'vertical';
 }
 export function Tabs({
   items,
@@ -225,6 +315,8 @@ export function Tabs({
   defaultValue,
   onValueChange,
   label = '内容选项',
+  variant = 'default',
+  orientation = 'horizontal',
   className,
   ...props
 }: TabsProps) {
@@ -242,8 +334,16 @@ export function Tabs({
     onValueChange?.(next);
   };
   return (
-    <div {...props} className={cx('f-tabs', className)}>
-      <div className="f-tabs-list" role="tablist" aria-label={label}>
+    <div
+      {...props}
+      className={cx(
+        'f-tabs',
+        variant !== 'default' && `f-tabs--${variant}`,
+        orientation === 'vertical' && 'f-tabs--vertical',
+        className,
+      )}
+    >
+      <div className="f-tabs-list" role="tablist" aria-label={label} aria-orientation={orientation}>
         {items.map((item, index) => (
           <button
             key={item.value}
@@ -265,8 +365,9 @@ export function Tabs({
                 .filter((candidate) => candidate >= 0);
               const position = enabled.indexOf(index);
               let next: number | undefined;
-              if (event.key === 'ArrowRight') next = enabled[(position + 1) % enabled.length];
-              if (event.key === 'ArrowLeft')
+              if (event.key === (orientation === 'vertical' ? 'ArrowDown' : 'ArrowRight'))
+                next = enabled[(position + 1) % enabled.length];
+              if (event.key === (orientation === 'vertical' ? 'ArrowUp' : 'ArrowLeft'))
                 next = enabled[(position - 1 + enabled.length) % enabled.length];
               if (event.key === 'Home') next = enabled[0];
               if (event.key === 'End') next = enabled.at(-1);
@@ -376,8 +477,16 @@ export interface AvatarProps extends HTMLAttributes<HTMLSpanElement> {
   name: string;
   src?: string;
   size?: Size;
+  shape?: 'circle' | 'square';
 }
-export function Avatar({ name, src, size = 'md', className, ...props }: AvatarProps) {
+export function Avatar({
+  name,
+  src,
+  size = 'md',
+  shape = 'circle',
+  className,
+  ...props
+}: AvatarProps) {
   const [failedSrc, setFailedSrc] = useState<string>();
   const initials =
     name
@@ -392,7 +501,12 @@ export function Avatar({ name, src, size = 'md', className, ...props }: AvatarPr
       {...props}
       role="img"
       aria-label={name}
-      className={cx('f-avatar', `f-avatar--${size}`, className)}
+      className={cx(
+        'f-avatar',
+        `f-avatar--${size}`,
+        shape === 'square' && 'f-avatar--square',
+        className,
+      )}
     >
       {src && failedSrc !== src ? (
         <img src={src} alt="" onError={() => setFailedSrc(src)} />

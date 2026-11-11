@@ -50,6 +50,132 @@ try {
       variants.push(['cascade', { ...defaultDemoOptions, multiple: true, cascade: true }]);
     if (component.id === 'data-table')
       variants.push(['loading', { ...defaultDemoOptions, state: 'loading' }]);
+    if (component.id === 'slider') {
+      variants.push(['marks', { ...defaults, sliderMarks: true }]);
+      variants.push(['disabled', { ...defaults, state: 'disabled' }]);
+    }
+    if (component.id === 'date-picker' || component.id === 'date-range-picker') {
+      variants.push(['readonly', { ...defaults, dateReadOnly: true }]);
+      if (component.id === 'date-picker')
+        variants.push(['no-clear', { ...defaults, dateClearable: false }]);
+    }
+    if (component.id === 'time-picker') {
+      variants.push(['disabled', { ...defaults, state: 'disabled' }]);
+      variants.push(['invalid', { ...defaults, state: 'invalid' }]);
+    }
+    if (component.id === 'input') {
+      variants.push(['password', { ...defaults, inputKind: 'password' }]);
+      variants.push(['search', { ...defaults, inputKind: 'search' }]);
+      for (const inputAddon of ['start', 'end', 'both'])
+        variants.push([`addon-${inputAddon}`, { ...defaults, inputAddon }]);
+    }
+    if (component.id === 'input-tag') {
+      variants.push(['disabled', { ...defaults, state: 'disabled' }]);
+      variants.push(['invalid', { ...defaults, state: 'invalid' }]);
+      variants.push(['duplicates', { ...defaults, inputTagDuplicates: true }]);
+    }
+    if (component.id === 'auto-complete') {
+      variants.push(['empty', { ...defaults, autoCompleteEmpty: true }]);
+      variants.push(['disabled', { ...defaults, state: 'disabled' }]);
+      variants.push(['invalid', { ...defaults, state: 'invalid' }]);
+    }
+    if (component.id === 'upload') {
+      variants.push([
+        'multiple-image',
+        { ...defaults, uploadMultiple: true, uploadAccept: 'image' },
+      ]);
+      variants.push(['text', { ...defaults, uploadAccept: 'text' }]);
+      variants.push(['disabled', { ...defaults, state: 'disabled' }]);
+    }
+    if (component.id === 'mention') {
+      variants.push(['empty', { ...defaults, mentionEmpty: true }]);
+      variants.push(['disabled', { ...defaults, state: 'disabled' }]);
+      variants.push(['invalid', { ...defaults, state: 'invalid' }]);
+    }
+    if (component.id === 'rate') {
+      variants.push(['heart-half', { ...defaults, rateShape: 'heart', rateHalf: true }]);
+      variants.push(['allow-clear', { ...defaults, rateClear: true }]);
+      variants.push(['disabled', { ...defaults, state: 'disabled' }]);
+    }
+    if (component.id === 'avatar')
+      variants.push([
+        'group-square',
+        { ...defaultDemoOptions, avatarMode: 'group', avatarShape: 'square', avatarMax: 2 },
+      ]);
+    if (component.id === 'descriptions')
+      variants.push([
+        'vertical-bordered',
+        {
+          ...defaultDemoOptions,
+          orientation: 'vertical',
+          descriptionsBordered: true,
+          descriptionsColumns: 2,
+        },
+      ]);
+    if (component.id === 'comment') {
+      variants.push([
+        'nested-end',
+        { ...defaultDemoOptions, commentNested: true, commentAlignment: 'end' },
+      ]);
+      variants.push(['without-actions', { ...defaultDemoOptions, commentActions: false }]);
+    }
+    if (component.id === 'statistic')
+      variants.push([
+        'percent-down',
+        {
+          ...defaultDemoOptions,
+          statisticFormat: 'percent',
+          statisticTrend: 'down',
+          statisticPrecision: 2,
+        },
+      ]);
+    if (component.id === 'image') {
+      variants.push([
+        'preview',
+        { ...defaultDemoOptions, imageRatio: '3 / 4', imageFit: 'contain', imagePreview: true },
+      ]);
+      variants.push(['fallback', { ...defaultDemoOptions, imageBroken: true }]);
+    }
+    if (component.id === 'carousel')
+      variants.push([
+        'lines-loop',
+        {
+          ...defaultDemoOptions,
+          carouselIndicatorStyle: 'lines',
+          carouselIndicatorPlacement: 'end',
+          carouselLoop: true,
+        },
+      ]);
+    if (component.id === 'back-top')
+      variants.push([
+        'circle-primary-top',
+        { ...defaults, backTopShape: 'circle', backTopVariant: 'primary', backTopContent: 'top' },
+      ]);
+    if (component.id === 'empty-state')
+      variants.push([
+        'offline-compact',
+        { ...defaults, emptyVariant: 'offline', emptySize: 'compact', emptyHeadingLevel: 2 },
+      ]);
+    if (component.id === 'popover') {
+      variants.push([
+        'right-end',
+        { ...defaults, popoverPlacement: 'right-end', popoverArrow: false },
+      ]);
+      variants.push([
+        'no-title-disabled',
+        { ...defaults, popoverTitle: false, popoverDisabled: true },
+      ]);
+    }
+    if (component.id === 'collapse') {
+      variants.push([
+        'accordion-end',
+        { ...defaultDemoOptions, collapseMode: 'accordion', collapseIcon: 'end' },
+      ]);
+      variants.push([
+        'disabled-no-icon',
+        { ...defaultDemoOptions, state: 'disabled', collapseIcon: 'none' },
+      ]);
+    }
     for (const framework of ['react', 'vue']) {
       const seen = new Set();
       for (const [variant, options] of variants) {

@@ -62,6 +62,7 @@ import { ScenePreview, sceneComponents } from './ScenePreview';
 import { type EditorSelection, selectionLabel } from './component-controls';
 import { catalog } from '../catalog';
 import { useProjectHistory } from './useProjectHistory';
+import { requiredPackageEntries } from './package-manifest';
 import { Inspector } from './Inspector';
 import { ComponentCanvas } from './ComponentCanvas';
 import { MigrationPanel } from './MigrationPanel';
@@ -362,16 +363,17 @@ export function Studio({
       const bundle: Record<string, Uint8Array> = {};
       for (const [name, text] of Object.entries(exported)) bundle[name] = strToU8(text);
       if (includePackages) {
-        const response = await fetch(`${import.meta.env.BASE_URL}downloads/manifest.json`);
+        const response = await fetch(`${import.meta.env.BASE_URL}downloads/manifest.json`, {
+          cache: 'no-cache',
+        });
         if (!response.ok)
           throw Error('安装包不可用，请运行 npm run pack:libs 后重试，或取消包含安装包。');
-        const manifest = (await response.json()) as { name: string; file: string }[];
-        for (const entry of manifest.filter(
-          (p) =>
-            p.name === '@btdesign/tokens' ||
-            p.name === '@btdesign/engine' ||
-            p.name === `@btdesign/${project.framework}`,
-        )) {
+        const entries = requiredPackageEntries(
+          await response.json(),
+          project.framework,
+          exported['package.json'],
+        );
+        for (const entry of entries) {
           const res = await fetch(`${import.meta.env.BASE_URL}downloads/${entry.file}`);
           if (!res.ok) throw Error('组件包下载失败，请重试。');
           bundle[`packages/${entry.file}`] = new Uint8Array(await res.arrayBuffer());

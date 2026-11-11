@@ -6,6 +6,7 @@ dist/
 .DS_Store
 *.log
 *.tgz
+!assets/legacy-downloads/0.3.0/*.tgz
 apps/docs/public/downloads/
 .vercel/
 test-results/

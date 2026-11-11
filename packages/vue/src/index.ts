@@ -12,7 +12,7 @@ import {
   watch,
 } from 'vue';
 import type { App, PropType, VNodeChild } from 'vue';
-import { Field, controlProps, useFieldControl } from './field.js';
+import { Field, controlProps, useControlId, useFieldControl } from './field.js';
 import * as granular from './granular.js';
 import * as enterpriseChoice from './enterprise-choice.js';
 import * as enterpriseForm from './enterprise-form.js';
@@ -20,12 +20,58 @@ import * as enterpriseDate from './enterprise-date.js';
 import * as enterpriseTree from './enterprise-tree.js';
 import * as enterpriseNavigation from './enterprise-navigation.js';
 import * as enterpriseTable from './enterprise-table.js';
+import { AvatarGroup } from './avatar-group.js';
+import { PasswordInput, SearchInput } from './input-variants.js';
+import { Slider } from './slider.js';
+import { TimePicker } from './time-picker.js';
+import { Collapse } from './collapse.js';
+import { Tag } from './tag.js';
+import { Descriptions } from './descriptions.js';
+import { Timeline } from './timeline.js';
+import { Comment } from './comment.js';
+import { InputTag } from './input-tag.js';
+import { Steps } from './steps.js';
+import { Statistic } from './statistic.js';
+import { Tooltip } from './tooltip.js';
+import { AutoComplete } from './auto-complete.js';
+import { Image } from './image.js';
+import { Carousel } from './carousel.js';
+import { PageHeader } from './page-header.js';
+import { Rate } from './rate.js';
+import { Anchor } from './anchor.js';
+import { Popover } from './popover.js';
+import { Mention } from './mention.js';
+import { BackTop } from './back-top.js';
+import { Upload } from './upload.js';
 export * from './enterprise-choice.js';
 export * from './enterprise-form.js';
 export * from './enterprise-date.js';
 export * from './enterprise-tree.js';
 export * from './enterprise-navigation.js';
 export * from './enterprise-table.js';
+export * from './avatar-group.js';
+export * from './input-variants.js';
+export * from './slider.js';
+export * from './time-picker.js';
+export * from './collapse.js';
+export * from './tag.js';
+export * from './descriptions.js';
+export * from './timeline.js';
+export * from './comment.js';
+export * from './input-tag.js';
+export * from './steps.js';
+export * from './statistic.js';
+export * from './tooltip.js';
+export * from './auto-complete.js';
+export * from './image.js';
+export * from './carousel.js';
+export * from './page-header.js';
+export * from './rate.js';
+export * from './anchor.js';
+export * from './popover.js';
+export * from './mention.js';
+export * from './back-top.js';
+export * from './upload.js';
 export type {
   ChoiceOption,
   TreeNode,
@@ -56,7 +102,13 @@ export const Button = defineComponent({
   inheritAttrs: false,
   props: {
     variant: { type: String as PropType<ButtonVariant>, default: 'primary' },
-    size: { type: String as PropType<Size>, default: 'md' },
+    size: { type: String as PropType<Size | 'xs' | 'xl'>, default: 'md' },
+    tone: {
+      type: String as PropType<'standard' | 'success' | 'warning' | 'danger' | 'ai'>,
+      default: 'standard',
+    },
+    shape: { type: String as PropType<'default' | 'pill'>, default: 'default' },
+    iconOnly: Boolean,
     type: { type: String as PropType<'button' | 'submit' | 'reset'>, default: 'button' },
     disabled: Boolean,
     loading: Boolean,
@@ -66,14 +118,21 @@ export const Button = defineComponent({
       h(
         'button',
         mergeProps(attrs, {
-          class: ['f-button', `f-button--${props.variant}`, `f-button--${props.size}`],
+          class: [
+            'f-button',
+            `f-button--${props.variant}`,
+            `f-button--${props.size}`,
+            props.tone !== 'standard' && `f-button--tone-${props.tone}`,
+            props.shape === 'pill' && 'f-button--pill',
+            props.iconOnly && 'f-button--icon-only',
+          ],
           type: props.type,
           disabled: props.disabled || props.loading,
           'aria-busy': props.loading || undefined,
         }),
         [
           props.loading ? h('span', { class: 'f-spinner', 'aria-hidden': 'true' }) : null,
-          slots.default?.(),
+          !props.iconOnly || !props.loading ? slots.default?.() : null,
         ],
       );
   },
@@ -271,14 +330,53 @@ export const Switch = defineComponent({
 export const Badge = defineComponent({
   name: 'BTDESIGNBadge',
   inheritAttrs: false,
-  props: { variant: { type: String as PropType<Tone | 'default'>, default: 'default' } },
+  props: {
+    variant: { type: String as PropType<Tone | 'default'>, default: 'default' },
+    count: [Number, String],
+    max: { type: Number, default: 99 },
+    showZero: Boolean,
+    dot: Boolean,
+    badgeLabel: String,
+  },
   setup(props, { attrs, slots }) {
-    return () =>
-      h(
+    return () => {
+      const children = slots.default?.();
+      if (props.count === undefined && !props.dot)
+        return h(
+          'span',
+          mergeProps(attrs, { class: ['f-badge', `f-badge--${props.variant}`] }),
+          children,
+        );
+      const visible =
+        props.dot ||
+        (typeof props.count === 'number'
+          ? Number.isFinite(props.count) &&
+            (props.count > 0 || (props.count === 0 && props.showZero))
+          : !!props.count);
+      const content =
+        typeof props.count === 'number' && props.count > props.max ? `${props.max}+` : props.count;
+      const marker = visible
+        ? h(
+            'span',
+            {
+              class: [
+                'f-badge',
+                `f-badge--${props.variant}`,
+                props.dot ? 'f-badge--dot' : 'f-badge--count',
+                children && 'f-badge--overlay',
+              ],
+              role: 'img',
+              'aria-label': props.badgeLabel ?? (props.dot ? '提示' : String(props.count)),
+            },
+            props.dot ? undefined : content,
+          )
+        : null;
+      return h(
         'span',
-        mergeProps(attrs, { class: ['f-badge', `f-badge--${props.variant}`] }),
-        slots.default?.(),
+        mergeProps(attrs, { class: children ? 'f-badge-anchor' : 'f-badge-standalone' }),
+        children ? [...children, marker] : [marker],
       );
+    };
   },
 });
 
@@ -319,6 +417,11 @@ export const Tabs = defineComponent({
     defaultValue: String,
     id: String,
     label: { type: String, default: '选项卡' },
+    variant: {
+      type: String as PropType<'default' | 'line' | 'text' | 'card' | 'card-gutter' | 'rounded'>,
+      default: 'default',
+    },
+    orientation: { type: String as PropType<'horizontal' | 'vertical'>, default: 'horizontal' },
   },
   emits: ['update:modelValue'],
   setup(props, { attrs, slots, emit }) {
@@ -329,12 +432,9 @@ export const Tabs = defineComponent({
         ? candidate
         : props.items.find((item) => !item.disabled)?.value;
     });
-    const generatedId = ref<string>();
-    const baseId = computed(() => props.id ?? generatedId.value);
+    const generatedId = useControlId('tabs');
+    const baseId = computed(() => props.id ?? generatedId);
     const buttons = new Map<string, HTMLButtonElement>();
-    onMounted(() => {
-      generatedId.value = `forma-vue-tabs-${++idSequence}`;
-    });
     const select = (value: string) => {
       localValue.value = value;
       emit('update:modelValue', value);
@@ -343,8 +443,10 @@ export const Tabs = defineComponent({
       const enabled = props.items.filter((item) => !item.disabled);
       const index = enabled.findIndex((item) => item.value === value);
       let next = index;
-      if (event.key === 'ArrowRight') next = (index + 1) % enabled.length;
-      else if (event.key === 'ArrowLeft') next = (index - 1 + enabled.length) % enabled.length;
+      if (event.key === (props.orientation === 'vertical' ? 'ArrowDown' : 'ArrowRight'))
+        next = (index + 1) % enabled.length;
+      else if (event.key === (props.orientation === 'vertical' ? 'ArrowUp' : 'ArrowLeft'))
+        next = (index - 1 + enabled.length) % enabled.length;
       else if (event.key === 'Home') next = 0;
       else if (event.key === 'End') next = enabled.length - 1;
       else return;
@@ -357,55 +459,70 @@ export const Tabs = defineComponent({
     const panelId = (index: number) =>
       baseId.value ? `${baseId.value}-panel-${index}` : undefined;
     return () =>
-      h('div', mergeProps(attrs, { class: 'f-tabs' }), [
-        h(
-          'div',
-          { class: 'f-tabs-list', role: 'tablist', 'aria-label': props.label },
-          props.items.map((item, index) =>
-            h(
-              'button',
-              {
-                ref: (element: unknown) => {
-                  if (element) buttons.set(item.value, element as HTMLButtonElement);
-                  else buttons.delete(item.value);
-                },
-                key: item.value,
-                type: 'button',
-                role: 'tab',
-                class: 'f-tab',
-                id: tabId(index),
-                'aria-controls': panelId(index),
-                'aria-selected': active.value === item.value,
-                disabled: item.disabled,
-                tabindex: active.value === item.value ? 0 : -1,
-                onClick: () => select(item.value),
-                onKeydown: (event: KeyboardEvent) => keyDown(event, item.value),
-              },
-              item.label,
-            ),
-          ),
-        ),
-        ...props.items.map((item, index) =>
+      h(
+        'div',
+        mergeProps(attrs, {
+          class: [
+            'f-tabs',
+            props.variant !== 'default' && `f-tabs--${props.variant}`,
+            props.orientation === 'vertical' && 'f-tabs--vertical',
+          ],
+        }),
+        [
           h(
             'div',
             {
-              key: item.value,
-              role: 'tabpanel',
-              class: 'f-tab-panel',
-              id: panelId(index),
-              'aria-labelledby': tabId(index),
-              'aria-label': !baseId.value ? item.label : undefined,
-              hidden: active.value !== item.value,
-              tabindex: 0,
+              class: 'f-tabs-list',
+              role: 'tablist',
+              'aria-label': props.label,
+              'aria-orientation': props.orientation,
             },
-            [
-              slots[item.value]?.() ??
-                (active.value === item.value ? slots.default?.() : null) ??
-                item.content,
-            ],
+            props.items.map((item, index) =>
+              h(
+                'button',
+                {
+                  ref: (element: unknown) => {
+                    if (element) buttons.set(item.value, element as HTMLButtonElement);
+                    else buttons.delete(item.value);
+                  },
+                  key: item.value,
+                  type: 'button',
+                  role: 'tab',
+                  class: 'f-tab',
+                  id: tabId(index),
+                  'aria-controls': panelId(index),
+                  'aria-selected': active.value === item.value,
+                  disabled: item.disabled,
+                  tabindex: active.value === item.value ? 0 : -1,
+                  onClick: () => select(item.value),
+                  onKeydown: (event: KeyboardEvent) => keyDown(event, item.value),
+                },
+                item.label,
+              ),
+            ),
           ),
-        ),
-      ]);
+          ...props.items.map((item, index) =>
+            h(
+              'div',
+              {
+                key: item.value,
+                role: 'tabpanel',
+                class: 'f-tab-panel',
+                id: panelId(index),
+                'aria-labelledby': tabId(index),
+                'aria-label': !baseId.value ? item.label : undefined,
+                hidden: active.value !== item.value,
+                tabindex: 0,
+              },
+              [
+                slots[item.value]?.() ??
+                  (active.value === item.value ? slots.default?.() : null) ??
+                  item.content,
+              ],
+            ),
+          ),
+        ],
+      );
   },
 });
 
@@ -513,6 +630,7 @@ export const Avatar = defineComponent({
     alt: String,
     fallback: String,
     size: { type: String as PropType<Size>, default: 'md' },
+    shape: { type: String as PropType<'circle' | 'square'>, default: 'circle' },
   },
   setup(props, { attrs, slots }) {
     const failed = ref(false);
@@ -526,7 +644,11 @@ export const Avatar = defineComponent({
       h(
         'span',
         mergeProps(attrs, {
-          class: ['f-avatar', `f-avatar--${props.size}`],
+          class: [
+            'f-avatar',
+            `f-avatar--${props.size}`,
+            props.shape === 'square' && 'f-avatar--square',
+          ],
           role: !props.src || failed.value ? 'img' : undefined,
           'aria-label':
             !props.src || failed.value
@@ -671,6 +793,30 @@ const components = {
   Tabs,
   Dialog,
   Avatar,
+  AvatarGroup,
+  PasswordInput,
+  SearchInput,
+  Slider,
+  TimePicker,
+  Collapse,
+  Tag,
+  Descriptions,
+  Timeline,
+  Comment,
+  InputTag,
+  Steps,
+  Statistic,
+  Tooltip,
+  AutoComplete,
+  Image,
+  Carousel,
+  PageHeader,
+  Rate,
+  Anchor,
+  Popover,
+  Mention,
+  BackTop,
+  Upload,
   Separator,
   Table,
   Skeleton,

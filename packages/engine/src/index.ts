@@ -4,3 +4,4 @@ export * from './form.js';
 export * from './date.js';
 export * from './tree.js';
 export * from './table.js';
+export * from './autocomplete.js';

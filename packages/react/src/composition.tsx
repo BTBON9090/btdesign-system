@@ -347,35 +347,8 @@ export function Pagination({
   );
 }
 
-export interface EmptyStateProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title'> {
-  title: ReactNode;
-  description?: ReactNode;
-  icon?: ReactNode;
-  action?: ReactNode;
-}
-export function EmptyState({
-  title,
-  description,
-  icon,
-  action,
-  children,
-  className,
-  ...props
-}: EmptyStateProps) {
-  return (
-    <div {...props} className={cx('f-empty-state', className)}>
-      {icon && (
-        <div className="f-empty-state-icon" aria-hidden="true">
-          {icon}
-        </div>
-      )}
-      <h3 className="f-empty-state-title">{title}</h3>
-      {description && <p className="f-empty-state-description">{description}</p>}
-      {children}
-      {action && <div className="f-empty-state-action">{action}</div>}
-    </div>
-  );
-}
+export { EmptyState } from './empty-state.js';
+export type { EmptyStateProps, EmptyStateVariant, EmptyStateSize } from './empty-state.js';
 export interface SpinnerProps extends HTMLAttributes<HTMLSpanElement> {
   label?: string;
   size?: 'sm' | 'md' | 'lg';

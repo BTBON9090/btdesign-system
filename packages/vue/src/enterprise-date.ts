@@ -120,146 +120,168 @@ export const Calendar = defineComponent({
       const yearStart = Math.max(1, Math.min(Number(props.min?.slice(0, 4)) || year - 100, year));
       const yearEnd = Math.min(9999, Math.max(Number(props.max?.slice(0, 4)) || year + 50, year));
       const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
-      return h('div', mergeProps(attrs, { class: 'f-calendar', ref: root }), [
-        h('div', { class: 'f-calendar-header' }, [
-          h(
-            'button',
-            {
-              type: 'button',
-              class: 'f-calendar-nav',
-              disabled: props.disabled,
-              'aria-label': '上个月',
-              onClick: () => month(addMonths(`${displayMonth.value}-01`, -1).slice(0, 7)),
-            },
-            '‹',
-          ),
-          h('div', { class: 'f-calendar-selects' }, [
+      return h(
+        'div',
+        mergeProps(attrs, {
+          class: 'f-calendar',
+          ref: root,
+          role: 'group',
+          'aria-label': props.label,
+          'aria-disabled': props.disabled || undefined,
+        }),
+        [
+          h('div', { class: 'f-calendar-header' }, [
             h(
-              'select',
+              'button',
               {
-                class: 'f-select',
-                'aria-label': '年份',
-                disabled: props.disabled,
-                value: year,
-                onChange: (e: Event) =>
-                  month(`${(e.target as HTMLSelectElement).value}-${displayMonth.value.slice(5)}`),
+                type: 'button',
+                class: 'f-calendar-nav',
+                disabled: props.disabled || displayMonth.value === '0001-01',
+                'aria-label': '上个月',
+                onClick: () => month(addMonths(`${displayMonth.value}-01`, -1).slice(0, 7)),
               },
-              Array.from(
-                { length: Math.min(10000, yearEnd - yearStart + 1) },
-                (_, i) => yearStart + i,
-              ).map((value) => h('option', { value, selected: value === year }, `${value}年`)),
+              '‹',
             ),
-            h(
-              'select',
-              {
-                class: 'f-select',
-                'aria-label': '月份',
-                disabled: props.disabled,
-                value: Number(displayMonth.value.slice(5)),
-                onChange: (e: Event) =>
-                  month(`${year}-${(e.target as HTMLSelectElement).value.padStart(2, '0')}`),
-              },
-              Array.from({ length: 12 }, (_, i) => i + 1).map((value) =>
-                h(
-                  'option',
-                  { value, selected: value === Number(displayMonth.value.slice(5)) },
-                  `${value}月`,
+            h('div', { class: 'f-calendar-selects' }, [
+              h(
+                'select',
+                {
+                  class: 'f-select',
+                  'aria-label': '年份',
+                  disabled: props.disabled,
+                  value: year,
+                  onChange: (e: Event) =>
+                    month(
+                      `${(e.target as HTMLSelectElement).value.padStart(4, '0')}-${displayMonth.value.slice(5)}`,
+                    ),
+                },
+                Array.from(
+                  { length: Math.min(10000, yearEnd - yearStart + 1) },
+                  (_, i) => yearStart + i,
+                ).map((value) => h('option', { value, selected: value === year }, `${value}年`)),
+              ),
+              h(
+                'select',
+                {
+                  class: 'f-select',
+                  'aria-label': '月份',
+                  disabled: props.disabled,
+                  value: Number(displayMonth.value.slice(5)),
+                  onChange: (e: Event) =>
+                    month(
+                      `${String(year).padStart(4, '0')}-${(e.target as HTMLSelectElement).value.padStart(2, '0')}`,
+                    ),
+                },
+                Array.from({ length: 12 }, (_, i) => i + 1).map((value) =>
+                  h(
+                    'option',
+                    { value, selected: value === Number(displayMonth.value.slice(5)) },
+                    `${value}月`,
+                  ),
                 ),
               ),
+            ]),
+            h(
+              'button',
+              {
+                type: 'button',
+                class: 'f-calendar-nav',
+                disabled: props.disabled || displayMonth.value === '9999-12',
+                'aria-label': '下个月',
+                onClick: () => month(addMonths(`${displayMonth.value}-01`, 1).slice(0, 7)),
+              },
+              '›',
             ),
           ]),
           h(
-            'button',
+            'span',
+            { class: 'f-sr-only', 'aria-live': 'polite' },
+            `${year}年${Number(displayMonth.value.slice(5))}月`,
+          ),
+          h(
+            'table',
             {
-              type: 'button',
-              class: 'f-calendar-nav',
-              disabled: props.disabled,
-              'aria-label': '下个月',
-              onClick: () => month(addMonths(`${displayMonth.value}-01`, 1).slice(0, 7)),
+              role: 'grid',
+              'aria-label': `${year}年${Number(displayMonth.value.slice(5))}月`,
+              class: 'f-calendar-grid',
             },
-            '›',
-          ),
-        ]),
-        h(
-          'span',
-          { class: 'f-sr-only', 'aria-live': 'polite' },
-          `${year}年${Number(displayMonth.value.slice(5))}月`,
-        ),
-        h('table', { role: 'grid', 'aria-label': props.label, class: 'f-calendar-grid' }, [
-          h(
-            'thead',
-            {},
-            h(
-              'tr',
-              {},
-              Array.from({ length: 7 }, (_, i) =>
-                h('th', { scope: 'col' }, weekdays[(i + props.weekStartsOn) % 7]),
-              ),
-            ),
-          ),
-          h(
-            'tbody',
-            {},
-            Array.from({ length: 6 }, (_, week) =>
+            [
               h(
-                'tr',
+                'thead',
                 {},
-                days.slice(week * 7, week * 7 + 7).map((day) =>
+                h(
+                  'tr',
+                  {},
+                  Array.from({ length: 7 }, (_, i) =>
+                    h('th', { scope: 'col' }, weekdays[(i + props.weekStartsOn) % 7]),
+                  ),
+                ),
+              ),
+              h(
+                'tbody',
+                {},
+                Array.from({ length: 6 }, (_, week) =>
                   h(
-                    'td',
-                    { 'aria-selected': day.value === state.value.value },
-                    h(
-                      'button',
-                      {
-                        type: 'button',
-                        class: [
-                          'f-calendar-day',
-                          !day.currentMonth && 'is-outside',
-                          day.value === state.value.value && 'is-selected',
-                        ],
-                        tabindex: day.value === active ? 0 : -1,
-                        disabled: disabled(day.value),
-                        'data-date': day.value,
-                        'data-outside': !day.currentMonth || undefined,
-                        'data-selected': day.value === state.value.value || undefined,
-                        'aria-label': day.value,
-                        'aria-current': day.value === today ? 'date' : undefined,
-                        onFocus: () => (focused.value = day.value),
-                        onKeydown: (e: KeyboardEvent) => key(e, day.value),
-                        onClick: () => {
-                          if (!disabled(day.value)) {
-                            state.set(day.value);
-                            focused.value = day.value;
-                            month(day.month);
-                          }
-                        },
-                      },
-                      String(day.day),
+                    'tr',
+                    {},
+                    days.slice(week * 7, week * 7 + 7).map((day) =>
+                      h(
+                        'td',
+                        { 'aria-selected': day.value === state.value.value },
+                        h(
+                          'button',
+                          {
+                            type: 'button',
+                            class: [
+                              'f-calendar-day',
+                              !day.currentMonth && 'is-outside',
+                              day.value === state.value.value && 'is-selected',
+                            ],
+                            tabindex: day.value === active ? 0 : -1,
+                            disabled: disabled(day.value),
+                            'data-date': day.value,
+                            'data-outside': !day.currentMonth || undefined,
+                            'data-selected': day.value === state.value.value || undefined,
+                            'aria-label': day.value,
+                            'aria-current': day.value === today ? 'date' : undefined,
+                            onFocus: () => (focused.value = day.value),
+                            onKeydown: (e: KeyboardEvent) => key(e, day.value),
+                            onClick: () => {
+                              if (!disabled(day.value)) {
+                                state.set(day.value);
+                                focused.value = day.value;
+                                month(day.month);
+                              }
+                            },
+                          },
+                          String(day.day),
+                        ),
+                      ),
                     ),
                   ),
                 ),
               ),
+            ],
+          ),
+          h(
+            'div',
+            { class: 'f-calendar-footer' },
+            h(
+              'button',
+              {
+                type: 'button',
+                class: 'f-calendar-today f-button f-button--ghost f-button--sm',
+                disabled: disabled(today),
+                onClick: () => {
+                  state.set(today);
+                  move(today);
+                },
+              },
+              '今天',
             ),
           ),
-        ]),
-        h(
-          'div',
-          { class: 'f-calendar-footer' },
-          h(
-            'button',
-            {
-              type: 'button',
-              class: 'f-calendar-today f-button f-button--ghost f-button--sm',
-              disabled: disabled(today),
-              onClick: () => {
-                state.set(today);
-                move(today);
-              },
-            },
-            '今天',
-          ),
-        ),
-      ]);
+        ],
+      );
     };
   },
 });
@@ -298,10 +320,30 @@ export const DatePicker = defineComponent({
         input.value?.setCustomValidity('');
       },
     );
+    watch(
+      () => [draft.value, props.min, props.max, props.disabledDate] as const,
+      () => {
+        input.value?.setCustomValidity(
+          draft.value !== '' && isDateDisabled(draft.value, props)
+            ? '请输入可用日期，格式为 YYYY-MM-DD。'
+            : '',
+        );
+      },
+    );
     const close = (restore = false) => {
       open.value = false;
       if (restore) nextTick(() => trigger.value?.focus());
     };
+    watch(
+      () => [
+        field({ ...attrs, disabled: props.disabled }).disabled,
+        attrs.readonly,
+        attrs.readOnly,
+      ],
+      ([disabled, readonly, readOnly]) => {
+        if (isDisabled(disabled) || isDisabled(readonly) || isDisabled(readOnly)) close();
+      },
+    );
     useDismiss(root, open, () => close());
     return () => {
       const bound = field({
@@ -504,7 +546,7 @@ export const DateRangePicker = defineComponent({
       h(
         'div',
         mergeProps(
-          { ...attrs, id: undefined },
+          { ...attrs, id: undefined, readonly: undefined, readOnly: undefined },
           { class: 'f-date-range', role: 'group', 'aria-label': props.label },
         ),
         [0, 1].map((index) =>
@@ -522,6 +564,7 @@ export const DateRangePicker = defineComponent({
             disabledDate: props.disabledDate,
             disabled: props.disabled,
             required: props.required,
+            readonly: attrs.readonly ?? attrs.readOnly,
             'onUpdate:modelValue': (value: string) => {
               if (props.disabled) return;
               const range = [...state.value.value];

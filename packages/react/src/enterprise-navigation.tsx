@@ -1,6 +1,13 @@
-import { useEffect, useId, useRef, useState, type HTMLAttributes, type KeyboardEvent } from 'react';
+import React, {
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type HTMLAttributes,
+  type KeyboardEvent,
+} from 'react';
 import { safeHref, type NavItem } from '@btdesign/engine';
-import { cx, moveFocus, usePopup } from './enterprise-utils.js';
+import { cx, usePopup } from './enterprise-utils.js';
 
 export interface NavigationProps extends Omit<HTMLAttributes<HTMLElement>, 'onSelect'> {
   items: NavItem[];
@@ -89,8 +96,13 @@ export function SidebarNav(props: NavigationProps) {
 export function TopNav(props: NavigationProps) {
   return <Navigation {...props} orientation="top" />;
 }
+export type DropdownMenuItem = Omit<NavItem, 'children'> & {
+  children?: DropdownMenuItem[];
+  group?: boolean;
+  danger?: boolean;
+};
 export interface DropdownMenuProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onSelect'> {
-  items: (NavItem & { separator?: boolean; danger?: boolean })[];
+  items: DropdownMenuItem[];
   label?: string;
   disabled?: boolean;
   onSelect?: (key: string) => void;
@@ -105,26 +117,166 @@ export function DropdownMenu({
 }: DropdownMenuProps) {
   const popup = usePopup(!!disabled);
   const id = useId();
-  const lastRequested = useRef(false);
-  useEffect(() => {
-    if (popup.open) {
-      const items = Array.from(
-        popup.panel.current?.querySelectorAll<HTMLElement>('[role="menuitem"]:not(:disabled)') ??
-          [],
-      );
-      (lastRequested.current ? items.at(-1) : items[0])?.focus();
-      lastRequested.current = false;
-    }
-  }, [popup.open]);
-  const keydown = (event: KeyboardEvent<HTMLDivElement>) => {
-    if (event.key === 'Escape') {
-      event.preventDefault();
-      popup.close(true);
-    } else if (['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) {
-      event.preventDefault();
-      moveFocus(event.currentTarget, '[role="menuitem"]', event.key);
-    } else if (event.key === 'Tab') popup.close(true);
+  const [chain, setChain] = useState<string[]>([]);
+  const menus = useRef(new Map<string, HTMLDivElement>());
+  const menuItems = useRef(new Map<string, HTMLElement>());
+  const pending = useRef<{ menu?: string; item?: string; last?: boolean } | null>(null);
+  const rootPath = '[]';
+  const focusMenu = (path: string, last = false) => {
+    const menu = menus.current.get(path);
+    const nodes = Array.from(
+      menu?.querySelectorAll<HTMLElement>('[role="menuitem"]:not(:disabled)') ?? [],
+    ).filter((node) => node.closest('[role="menu"]') === menu);
+    (last ? nodes.at(-1) : nodes[0])?.focus();
   };
+  useEffect(() => {
+    if (!popup.open) return;
+    const request = pending.current;
+    pending.current = null;
+    if (request?.item) menuItems.current.get(request.item)?.focus();
+    else focusMenu(request?.menu ?? rootPath, request?.last);
+  }, [popup.open, chain]);
+  const openSubmenu = (path: string, depth: number) => {
+    pending.current = { menu: path };
+    setChain((previous) => [...previous.slice(0, depth), path]);
+  };
+  const keydown = (event: KeyboardEvent<HTMLDivElement>, menuPath: string, depth: number) => {
+    if (event.key === 'Tab') {
+      setTimeout(() => popup.close(), 0);
+      return;
+    }
+    if (event.key === 'Escape' || (event.key === 'ArrowLeft' && depth > 0)) {
+      event.preventDefault();
+      event.stopPropagation();
+      if (depth === 0) popup.close(true);
+      else {
+        pending.current = { item: chain[depth - 1] };
+        setChain((previous) => previous.slice(0, depth - 1));
+      }
+      return;
+    }
+    if (['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) {
+      event.preventDefault();
+      event.stopPropagation();
+      const menu = menus.current.get(menuPath);
+      const nodes = Array.from(
+        menu?.querySelectorAll<HTMLElement>('[role="menuitem"]:not(:disabled)') ?? [],
+      ).filter((node) => node.closest('[role="menu"]') === menu);
+      if (!nodes.length) return;
+      const index = nodes.indexOf(document.activeElement as HTMLElement);
+      const next =
+        event.key === 'Home'
+          ? 0
+          : event.key === 'End'
+            ? nodes.length - 1
+            : (index + (event.key === 'ArrowDown' ? 1 : -1) + nodes.length) % nodes.length;
+      nodes[next]?.focus();
+    }
+  };
+  const renderEntries = (
+    entries: DropdownMenuItem[],
+    parentPath: string[],
+    depth: number,
+    inheritedDisabled = false,
+  ): React.ReactNode =>
+    entries.map((item) => {
+      const path = [...parentPath, item.key];
+      const pathId = JSON.stringify(path);
+      const blocked = !!(disabled || inheritedDisabled || item.disabled);
+      if (item.separator)
+        return <div key={item.key} role="separator" className="f-menu-separator" />;
+      if (item.group)
+        return (
+          <div key={item.key} role="group" aria-label={item.label} className="f-menu-group">
+            <div className="f-menu-group-label">{item.label}</div>
+            {renderEntries(item.children ?? [], path, depth, blocked)}
+          </div>
+        );
+      const hasChildren = !!item.children?.length;
+      const expanded = chain[depth] === pathId;
+      const href = !hasChildren && !blocked ? safeHref(item.href) : undefined;
+      const common = {
+        role: 'menuitem' as const,
+        tabIndex: -1,
+        className: 'f-menu-item',
+        'data-danger': item.danger || undefined,
+        ref: (node: HTMLElement | null) => {
+          if (node) menuItems.current.set(pathId, node);
+          else menuItems.current.delete(pathId);
+        },
+        onKeyDown: (event: KeyboardEvent<HTMLElement>) => {
+          if (event.key === 'ArrowRight' && hasChildren && !blocked) {
+            event.preventDefault();
+            event.stopPropagation();
+            openSubmenu(pathId, depth);
+          }
+        },
+        onClick: () => {
+          if (blocked) return;
+          if (hasChildren) openSubmenu(pathId, depth);
+          else {
+            onSelect?.(item.key);
+            popup.close(true);
+          }
+        },
+      };
+      const content = (
+        <>
+          {item.label}
+          {hasChildren && (
+            <span className="f-menu-submenu-arrow" aria-hidden="true">
+              ›
+            </span>
+          )}
+        </>
+      );
+      const control = href ? (
+        <a {...common} href={href}>
+          {content}
+        </a>
+      ) : (
+        <button
+          {...common}
+          type="button"
+          disabled={blocked}
+          aria-haspopup={hasChildren ? 'menu' : undefined}
+          aria-expanded={hasChildren ? expanded : undefined}
+        >
+          {content}
+        </button>
+      );
+      return hasChildren ? (
+        <div key={item.key} className="f-menu-submenu">
+          {control}
+          {expanded && renderMenu(item.children!, path, depth + 1, item.label)}
+        </div>
+      ) : (
+        <React.Fragment key={item.key}>{control}</React.Fragment>
+      );
+    });
+  function renderMenu(
+    entries: DropdownMenuItem[],
+    path: string[],
+    depth: number,
+    menuLabel: string,
+  ): React.ReactNode {
+    const pathId = JSON.stringify(path);
+    return (
+      <div
+        id={depth === 0 ? id : undefined}
+        ref={(node) => {
+          if (node) menus.current.set(pathId, node);
+          else menus.current.delete(pathId);
+        }}
+        role="menu"
+        aria-label={menuLabel}
+        className={cx('f-dropdown-menu', 'f-overlay', depth > 0 && 'f-dropdown-submenu')}
+        onKeyDown={(event) => keydown(event, pathId, depth)}
+      >
+        {renderEntries(entries, path, depth)}
+      </div>
+    );
+  }
   return (
     <div {...props} ref={popup.root} className={cx('f-dropdown', className)}>
       <button
@@ -135,11 +287,19 @@ export function DropdownMenu({
         aria-haspopup="menu"
         aria-expanded={popup.open}
         aria-controls={popup.open ? id : undefined}
-        onClick={() => popup.setOpen(!popup.open)}
+        onClick={() => {
+          if (popup.open) popup.close();
+          else {
+            pending.current = { menu: rootPath };
+            setChain([]);
+            popup.setOpen(true);
+          }
+        }}
         onKeyDown={(event) => {
           if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
             event.preventDefault();
-            lastRequested.current = event.key === 'ArrowUp';
+            pending.current = { menu: rootPath, last: event.key === 'ArrowUp' };
+            setChain([]);
             popup.setOpen(true);
           }
         }}
@@ -147,53 +307,7 @@ export function DropdownMenu({
         {label}
         <span aria-hidden="true">⌄</span>
       </button>
-      {popup.open && (
-        <div
-          id={id}
-          ref={popup.panel}
-          role="menu"
-          aria-label={label}
-          className="f-dropdown-menu f-overlay"
-          onKeyDown={keydown}
-        >
-          {items.map((item) =>
-            item.separator ? (
-              <div key={item.key} role="separator" className="f-menu-separator" />
-            ) : safeHref(item.href) && !item.disabled ? (
-              <a
-                key={item.key}
-                role="menuitem"
-                tabIndex={-1}
-                className="f-menu-item"
-                href={safeHref(item.href)}
-                onClick={() => {
-                  onSelect?.(item.key);
-                  popup.close(true);
-                }}
-              >
-                {item.label}
-              </a>
-            ) : (
-              <button
-                key={item.key}
-                role="menuitem"
-                tabIndex={-1}
-                className="f-menu-item"
-                type="button"
-                disabled={item.disabled}
-                data-danger={item.danger || undefined}
-                onClick={() => {
-                  if (item.disabled) return;
-                  onSelect?.(item.key);
-                  popup.close(true);
-                }}
-              >
-                {item.label}
-              </button>
-            ),
-          )}
-        </div>
-      )}
+      {popup.open && renderMenu(items, [], 0, label)}
     </div>
   );
 }

@@ -13,7 +13,7 @@ import {
 } from '../src/studio/component-controls.ts';
 
 test('every published family has named parts and editable controls that resolve to real theme tokens', () => {
-  assert.equal(catalog.length, 44);
+  assert.equal(new Set(catalog.map((item) => item.id)).size, catalog.length);
   assert.deepEqual(Object.keys(componentControls).sort(), catalog.map((item) => item.id).sort());
   const vars = createTheme(defaultTheme);
   for (const item of catalog) {

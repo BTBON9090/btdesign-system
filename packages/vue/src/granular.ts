@@ -407,25 +407,8 @@ export const Pagination = defineComponent({
   },
 });
 
-export const EmptyState = defineComponent({
-  name: 'BTDESIGNEmptyState',
-  inheritAttrs: false,
-  props: { title: { type: String, required: true }, description: String },
-  setup(props, { attrs, slots }) {
-    return () =>
-      h('div', mergeProps(attrs, { class: 'f-empty-state' }), [
-        slots.icon
-          ? h('div', { class: 'f-empty-state-icon', 'aria-hidden': 'true' }, slots.icon())
-          : null,
-        h('h3', { class: 'f-empty-state-title' }, props.title),
-        props.description
-          ? h('p', { class: 'f-empty-state-description' }, props.description)
-          : null,
-        slots.default?.(),
-        slots.action ? h('div', { class: 'f-empty-state-action' }, slots.action()) : null,
-      ]);
-  },
-});
+export { EmptyState } from './empty-state.js';
+export type { EmptyStateVariant, EmptyStateSize } from './empty-state.js';
 
 export const Spinner = defineComponent({
   name: 'BTDESIGNSpinner',

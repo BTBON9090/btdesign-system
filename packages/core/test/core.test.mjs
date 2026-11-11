@@ -107,13 +107,13 @@ test('handoff contains portable files, true APIs, semantic tokens and honest bou
     ].sort(),
   );
   assert.deepEqual(JSON.parse(files['.btdesign/system.json']), project);
-  assert.equal(componentRegistry.components.length, 44);
   assert.equal(componentRegistry.packages.engine, '@btdesign/engine');
   const publicNames = new Set([
     ...componentRegistry.components.map((entry) => entry.name),
     ...Object.values(componentRegistry.composition).flat(),
   ]);
-  assert.equal(publicNames.size, 63);
+  assert.deepEqual([...publicNames].sort(), Object.keys(reactComponents).sort());
+  assert.deepEqual([...publicNames, 'BTDESIGNPlugin'].sort(), Object.keys(vueComponents).sort());
   const tokens = createTheme(project.theme);
   for (const entry of componentRegistry.components) {
     assert.ok(reactComponents[entry.name], `React export ${entry.name}`);
@@ -137,11 +137,11 @@ test('handoff contains portable files, true APIs, semantic tokens and honest bou
   assert.match(context, /native main\/section\/form\/button\/input\/table/);
   assert.equal(
     JSON.parse(files['package.json']).dependencies['@btdesign/react'],
-    'file:./packages/btdesign-react-0.3.0.tgz',
+    'file:./packages/btdesign-react-0.4.0.tgz',
   );
   assert.equal(
     JSON.parse(files['package.json']).dependencies['@btdesign/engine'],
-    'file:./packages/btdesign-engine-0.3.0.tgz',
+    'file:./packages/btdesign-engine-0.4.0.tgz',
   );
   assert.match(files['README.md'], /npm install/);
   assert.match(files['README.md'], /npm run dev/);
@@ -310,15 +310,15 @@ test('React and Vue starters build with their complete Vite entry and TypeScript
       const pkg = JSON.parse(files['package.json']);
       assert.equal(
         pkg.dependencies['@btdesign/tokens'],
-        'file:./packages/btdesign-tokens-0.3.0.tgz',
+        'file:./packages/btdesign-tokens-0.4.0.tgz',
       );
       assert.equal(
         pkg.dependencies['@btdesign/engine'],
-        'file:./packages/btdesign-engine-0.3.0.tgz',
+        'file:./packages/btdesign-engine-0.4.0.tgz',
       );
       assert.equal(
         pkg.dependencies[`@btdesign/${framework}`],
-        `file:./packages/btdesign-${framework}-0.3.0.tgz`,
+        `file:./packages/btdesign-${framework}-0.4.0.tgz`,
       );
       assert.ok(pkg.dependencies['@fontsource-variable/inter']);
       assert.ok(!pkg.dependencies['@btdesign/core']);

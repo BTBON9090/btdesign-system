@@ -86,7 +86,7 @@ Tabs 支持左右方向键、Home、End 和自动激活。服务端渲染场景�
 
 ```ts
 import { BTDESIGNPlugin } from '@btdesign/vue';
-app.use(BTDESIGNPlugin); // FButton、FField、FTableCell 等 63 个组件与部件
+app.use(BTDESIGNPlugin); // FButton、FField、FTableCell 等组件与部件
 ```
 
 主题配置通过 `@btdesign/tokens` 的 `createTheme(config, mode)` 设置在组件共同祖先的 CSS 变量上，或导出 CSS 文件。Vue 包不自动覆盖页面主题。

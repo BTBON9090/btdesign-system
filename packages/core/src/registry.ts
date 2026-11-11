@@ -1,7 +1,7 @@
 export const componentRegistry = {
   schemaVersion: 1,
   library: 'BTDESIGN',
-  version: '0.3.0',
+  version: '0.4.0',
   packages: {
     react: '@btdesign/react',
     vue: '@btdesign/vue',
@@ -23,7 +23,7 @@ export const componentRegistry = {
     action: ['--f-primary', '--f-on-primary', '--f-primary-hover', '--f-primary-soft'],
     surface: ['--f-bg', '--f-surface', '--f-subtle', '--f-border'],
     text: ['--f-text', '--f-muted'],
-    status: ['--f-success', '--f-warning', '--f-danger', '--f-info'],
+    status: ['--f-success', '--f-warning', '--f-danger', '--f-info', '--f-on-status'],
     typography: ['--f-font'],
     layout: ['--f-space', '--f-radius', '--f-control-height'],
     components: [
@@ -74,13 +74,305 @@ export const componentRegistry = {
       purpose: 'Primary and secondary actions',
       props: {
         variant: ['primary', 'secondary', 'ghost', 'danger'],
-        size: ['sm', 'md', 'lg'],
+        size: ['xs', 'sm', 'md', 'lg', 'xl'],
+        tone: ['standard', 'success', 'warning', 'danger', 'ai'],
+        shape: ['default', 'pill'],
+        iconOnly: 'boolean',
         loading: 'boolean',
         disabled: 'boolean',
         type: ['button', 'submit', 'reset'],
       },
       notes:
         'Default type is button. Loading disables activation. Add an accessible name to icon-only actions.',
+    },
+    {
+      name: 'PasswordInput',
+      purpose: 'Password entry with an accessible visibility toggle',
+      props: { showLabel: 'string', hideLabel: 'string', controlSize: ['sm', 'md', 'lg'] },
+      notes: 'Inherits Field and input tokens. Do not put credentials in examples or logs.',
+    },
+    {
+      name: 'InputTag',
+      purpose: 'Enter and remove a list of text tags',
+      props: {
+        allowDuplicates: 'boolean',
+        requiredMessage: 'string',
+        disabled: 'boolean',
+        readOnly: 'boolean',
+      },
+      react: {
+        value: 'string[]',
+        defaultValue: 'string[]',
+        onValueChange: '(values:string[])=>void',
+      },
+      vue: { modelValue: 'string[]', defaultValue: 'string[]', 'update:modelValue': 'string[]' },
+      notes:
+        'Enter commits a tag. Empty-draft Backspace removes the last tag. Committed tags submit as repeated named form fields; duplicates are disallowed by default.',
+    },
+    {
+      name: 'Upload',
+      purpose: 'Select local files through a native file input',
+      props: {
+        accept: 'string',
+        multiple: 'boolean',
+        disabled: 'boolean',
+        required: 'boolean',
+        controlSize: ['sm', 'md', 'lg'],
+      },
+      react: { onFilesChange: '(files:File[],event:ChangeEvent)=>void' },
+      vue: { filesChange: '(files:File[])=>void' },
+      notes:
+        'This is a file-selection control. Upload transport, progress, retries and persistence belong to the application.',
+    },
+    {
+      name: 'AutoComplete',
+      purpose: 'Editable input with local filtered suggestions',
+      props: { options: 'ChoiceOption[]', emptyText: 'string', disabled: 'boolean' },
+      react: {
+        value: 'string',
+        defaultValue: 'string',
+        onValueChange: '(value:string)=>void',
+        onSelectOption: '(option:ChoiceOption)=>void',
+      },
+      vue: {
+        modelValue: 'string',
+        defaultValue: 'string',
+        'update:modelValue': 'string',
+        select: 'ChoiceOption',
+      },
+      notes:
+        'The application provides options and any remote requests. Disabled options cannot be selected.',
+    },
+    {
+      name: 'Mention',
+      purpose: 'Insert a plain-text mention from local suggestions',
+      props: { options: 'ChoiceOption[]', emptyText: 'string', disabled: 'boolean' },
+      react: {
+        value: 'string',
+        defaultValue: 'string',
+        onValueChange: '(value:string)=>void',
+        onSelectOption: '(option:ChoiceOption)=>void',
+      },
+      vue: {
+        modelValue: 'string',
+        defaultValue: 'string',
+        'update:modelValue': 'string',
+        select: 'ChoiceOption',
+      },
+      notes:
+        'Inserts plain text, not structured user entities. The application provides suggestion data and any remote requests.',
+    },
+    {
+      name: 'Steps',
+      purpose: 'Display progress through an ordered sequence',
+      props: {
+        items: '{id,title,description?,status?,icon?}[]',
+        current: 'number',
+        orientation: ['horizontal', 'vertical'],
+      },
+      notes: 'Displays step status; does not provide click-to-navigate behavior.',
+    },
+    {
+      name: 'Descriptions',
+      purpose: 'Display structured label and value pairs',
+      props: {
+        items: '{key,label,value,span?}[]',
+        title: 'string',
+        column: 'number (1–6)',
+        orientation: ['horizontal', 'vertical'],
+        bordered: 'boolean',
+      },
+      notes:
+        'Uses semantic description lists. Vue also provides title and per-item label/value slots.',
+    },
+    {
+      name: 'Image',
+      purpose: 'Display an image with loading, fallback and optional preview',
+      props: {
+        src: 'string',
+        alt: 'string',
+        aspectRatio: 'string',
+        fit: ['cover', 'contain'],
+        preview: 'boolean',
+      },
+      notes: 'Preview uses a modal dialog. Zoom, rotation and image galleries are not implemented.',
+    },
+    {
+      name: 'PageHeader',
+      purpose: 'Display page context and application-supplied actions',
+      props: {
+        title: 'content',
+        description: 'content',
+        showBack: 'boolean',
+        backLabel: 'string',
+        headingLevel: '1–6',
+      },
+      notes:
+        'The application supplies breadcrumb, actions and the back callback; navigation is not implicit.',
+    },
+    {
+      name: 'Anchor',
+      purpose: 'Navigate to sections with native fragment links',
+      props: { items: '{id,href,title,children?}[]', activeHref: 'string', label: 'string' },
+      notes:
+        'The application supplies the current section; hash routers may intercept navigation. Automatic scroll tracking is not implemented.',
+    },
+    {
+      name: 'BackTop',
+      purpose: 'Return a scroll container to a configured position',
+      props: {
+        target: '() => Window | HTMLElement',
+        visibilityHeight: 'number',
+        top: 'number',
+        behavior: ['smooth', 'auto'],
+        shape: ['square', 'circle'],
+      },
+      notes: 'Listens to the supplied scroll target and respects reduced-motion preferences.',
+    },
+    {
+      name: 'Rate',
+      purpose: 'Select a rating with keyboard-accessible radio controls',
+      props: {
+        count: 'number',
+        shape: ['star', 'heart'],
+        allowHalf: 'boolean',
+        allowClear: 'boolean',
+        disabled: 'boolean',
+      },
+      notes:
+        'Supports star and heart appearances; rating state and form submission remain explicit.',
+    },
+    {
+      name: 'Carousel',
+      purpose: 'User-controlled sequence of slides',
+      props: {
+        items: '{key,content,label?}[]',
+        loop: 'boolean',
+        indicatorStyle: ['dots', 'lines'],
+        indicatorPlacement: ['bottom', 'start', 'end'],
+      },
+      react: { index: 'number', defaultIndex: 'number', onIndexChange: '(index:number)=>void' },
+      vue: { modelValue: 'number', defaultIndex: 'number', 'update:modelValue': 'number' },
+      notes: 'Slides change through user controls; automatic playback is not implemented.',
+    },
+    {
+      name: 'Tooltip',
+      purpose: 'Provide non-interactive help for a focusable trigger',
+      props: {
+        content: 'text or content',
+        placement: ['top', 'bottom', 'left', 'right'],
+        disabled: 'boolean',
+      },
+      react: { open: 'boolean', defaultOpen: 'boolean', onOpenChange: '(open:boolean)=>void' },
+      vue: { open: 'boolean', defaultOpen: 'boolean', 'update:open': 'boolean' },
+      notes:
+        'The trigger must forward aria-describedby. This version does not automatically avoid viewport edges.',
+    },
+    {
+      name: 'Popover',
+      purpose: 'Show an interactive nonmodal panel from a button',
+      props: {
+        trigger: 'non-interactive button content',
+        content: 'content',
+        placement: 'top/bottom/left/right with optional start/end',
+        showArrow: 'boolean',
+        disabled: 'boolean',
+      },
+      notes:
+        'Escape and outside interaction close the panel; the trigger is a button and must not contain another button. Automatic viewport collision handling is not implemented.',
+    },
+    {
+      name: 'Statistic',
+      purpose: 'Display a supplied value with optional trend',
+      props: {
+        value: 'number | string',
+        format: ['number', 'percent'],
+        precision: 'number',
+        trend: ['up', 'down', 'neutral'],
+      },
+      notes:
+        'Values are supplied by the application; percentages are already scaled. Countdown is not implemented.',
+    },
+    {
+      name: 'Comment',
+      purpose: 'Display a comment with optional nested replies and application-provided actions',
+      props: {
+        author: 'string or content',
+        time: 'string',
+        dateTime: 'string',
+        alignment: ['start', 'end'],
+      },
+      notes: 'The application owns posting, replies and actions; use actual buttons for actions.',
+    },
+    {
+      name: 'Timeline',
+      purpose: 'Display an ordered sequence of events',
+      props: {
+        items: '{id,title,description?,time?,dateTime?,tone?,state?}[]',
+        orientation: ['vertical', 'horizontal'],
+      },
+      notes:
+        'Presents an ordered event sequence. Status must remain understandable without color alone.',
+    },
+    {
+      name: 'Tag',
+      purpose: 'Compact status or removable label',
+      props: {
+        variant: ['default', 'success', 'warning', 'danger', 'info'],
+        closable: 'boolean',
+        disabled: 'boolean',
+      },
+      notes:
+        'Close requests are emitted to the application, which owns whether the tag is removed.',
+    },
+    {
+      name: 'SearchInput',
+      purpose: 'Search input with an explicit search action',
+      react: { onSearch: '(value:string)=>void' },
+      vue: { modelValue: 'string', search: '(value:string)=>void' },
+      notes:
+        'The application provides the search behavior; Enter and the action button emit the current value.',
+    },
+    {
+      name: 'Slider',
+      purpose: 'Native single-value range input',
+      props: {
+        min: 'number',
+        max: 'number',
+        step: 'number',
+        marks: '{value:number,label?:string}[]',
+        disabled: 'boolean',
+      },
+      notes: 'Uses native keyboard and form behavior. Range selection is not implemented.',
+    },
+    {
+      name: 'TimePicker',
+      purpose: 'Native single-time input',
+      props: { min: 'string', max: 'string', step: 'number', disabled: 'boolean' },
+      notes:
+        'Uses native time input; time ranges, time zones and a custom popup are not implemented.',
+    },
+    {
+      name: 'AvatarGroup',
+      purpose: 'Group of avatars with an optional overflow count',
+      props: { max: 'number', size: ['sm', 'md', 'lg'], label: 'string' },
+      notes: 'Set size on the child avatars as well; max limits visible children.',
+    },
+    {
+      name: 'Collapse',
+      purpose: 'Expand related sections',
+      props: {
+        items: '{value,label,content?,disabled?,extra?}[]',
+        accordion: 'boolean',
+        disabled: 'boolean',
+        expandIconPosition: ['start', 'end', 'none'],
+      },
+      react: {
+        value: 'string[]',
+        defaultValue: 'string[]',
+        onValueChange: '(values:string[])=>void',
+      },
+      vue: { modelValue: 'string[]', defaultValue: 'string[]', 'update:modelValue': 'string[]' },
     },
     {
       name: 'Input',
@@ -156,8 +448,16 @@ export const componentRegistry = {
     {
       name: 'Badge',
       purpose: 'Textual status',
-      props: { variant: ['default', 'success', 'warning', 'danger', 'info'] },
-      notes: 'Status must include meaningful visible text, not color alone.',
+      props: {
+        variant: ['default', 'success', 'warning', 'danger', 'info'],
+        count: 'number | string',
+        max: 'number',
+        showZero: 'boolean',
+        dot: 'boolean',
+        badgeLabel: 'string',
+      },
+      notes:
+        'Supports standalone status and count/dot around content. Status must not rely on color alone.',
     },
     {
       name: 'Card',
@@ -180,6 +480,8 @@ export const componentRegistry = {
         items: '{value,label,content?,disabled?}[]',
         defaultValue: 'string',
         label: 'string',
+        variant: ['default', 'line', 'text', 'card', 'card-gutter', 'rounded'],
+        orientation: ['horizontal', 'vertical'],
       },
       react: { value: 'string', onValueChange: '(value:string)=>void' },
       vue: {
@@ -187,7 +489,7 @@ export const componentRegistry = {
         'update:modelValue': 'string',
         slots: 'named slots matching each item value',
       },
-      notes: 'Supports arrows, Home and End; disabled tabs are skipped.',
+      notes: 'Supports direction-appropriate arrows, Home and End; disabled tabs are skipped.',
     },
     {
       name: 'Dialog',
@@ -204,7 +506,12 @@ export const componentRegistry = {
     {
       name: 'Avatar',
       purpose: 'User identity',
-      props: { name: 'string', src: 'string', size: ['sm', 'md', 'lg'] },
+      props: {
+        name: 'string',
+        src: 'string',
+        size: ['sm', 'md', 'lg'],
+        shape: ['circle', 'square'],
+      },
       notes: 'React requires name. Vue also supports alt/fallback. Include a readable identity.',
     },
     {
@@ -314,11 +621,26 @@ export const componentRegistry = {
     {
       name: 'EmptyState',
       purpose: 'Explain absence of data and offer a next step',
-      props: { title: 'required text/content', description: 'text/content' },
+      props: {
+        title: 'text/content',
+        description: 'text/content',
+        variant: [
+          'no-content',
+          'initial',
+          'no-messages',
+          'no-results',
+          'no-permission',
+          'offline',
+          'not-found',
+          'error',
+        ],
+        size: ['compact', 'default', 'page'],
+        headingLevel: '2–6',
+      },
       react: { icon: 'ReactNode', action: 'ReactNode', children: 'ReactNode' },
       vue: { slots: 'icon, action, default' },
       notes:
-        'Distinguish first use, no search results, missing permission and errors in application copy. Offer a relevant action with a real handler.',
+        'The application chooses the scenario and provides any real action; the component does not detect network or permission state.',
     },
     {
       name: 'Spinner',
@@ -704,9 +1026,9 @@ export const componentRegistry = {
     },
     {
       name: 'DropdownMenu',
-      purpose: 'One-level action menu from a labeled trigger',
+      purpose: 'Action menu with optional groups and nested submenus',
       props: {
-        items: 'NavItem[] with optional separator',
+        items: 'DropdownMenuItem[] with optional separator, group, danger and children',
         label: 'string',
         disabled: 'boolean',
       },
@@ -717,7 +1039,7 @@ export const componentRegistry = {
         select: 'key',
       },
       notes:
-        'Supports directional/Home/End focus, skips disabled items, Escape/Tab/outside dismiss. Children/nested submenu APIs are not implemented; flatten or retain existing menu behavior.',
+        'Supports grouped items, separators, nested menus, directional/Home/End focus and Escape/Tab/outside dismiss. Submenus do not automatically flip at viewport edges.',
     },
     {
       name: 'DataTable',

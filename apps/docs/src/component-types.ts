@@ -2,12 +2,33 @@ export type Framework = 'react' | 'vue';
 export type ComponentId =
   | 'button'
   | 'input'
+  | 'auto-complete'
+  | 'mention'
+  | 'upload'
+  | 'input-tag'
+  | 'slider'
+  | 'rate'
+  | 'time-picker'
   | 'textarea'
   | 'select'
   | 'checkbox'
   | 'switch'
   | 'badge'
+  | 'tag'
+  | 'timeline'
+  | 'steps'
+  | 'tooltip'
+  | 'page-header'
+  | 'anchor'
   | 'card'
+  | 'collapse'
+  | 'descriptions'
+  | 'comment'
+  | 'statistic'
+  | 'image'
+  | 'carousel'
+  | 'popover'
+  | 'back-top'
   | 'alert'
   | 'tabs'
   | 'dialog'
@@ -48,6 +69,88 @@ export type ComponentId =
 export interface DemoOptions {
   multiple?: boolean;
   cascade?: boolean;
+  buttonGroupCount?: number;
+  buttonGroupReverse?: boolean;
+  buttonSize?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+  buttonTone?: 'standard' | 'success' | 'warning' | 'danger' | 'ai';
+  buttonShape?: 'default' | 'pill';
+  buttonContent?: 'text' | 'leading' | 'trailing' | 'icon';
+  avatarMode?: 'single' | 'group';
+  avatarShape?: 'circle' | 'square';
+  avatarMax?: number;
+  collapseMode?: 'multiple' | 'accordion';
+  collapseIcon?: 'start' | 'end' | 'none';
+  descriptionsBordered?: boolean;
+  descriptionsColumns?: 1 | 2 | 3;
+  commentAlignment?: 'start' | 'end';
+  commentNested?: boolean;
+  commentActions?: boolean;
+  statisticFormat?: 'number' | 'percent';
+  statisticTrend?: 'none' | 'up' | 'down' | 'neutral';
+  statisticPrecision?: 0 | 1 | 2;
+  imageRatio?:
+    | '1 / 1'
+    | '4 / 3'
+    | '3 / 2'
+    | '16 / 10'
+    | '1.618 / 1'
+    | '16 / 9'
+    | '2 / 1'
+    | '5 / 2'
+    | '3 / 1'
+    | '1 / 1.618'
+    | '2 / 3'
+    | '3 / 4';
+  imageFit?: 'cover' | 'contain';
+  imagePreview?: boolean;
+  imageBroken?: boolean;
+  carouselIndicatorStyle?: 'dots' | 'lines';
+  carouselIndicatorPlacement?: 'bottom' | 'start' | 'end';
+  carouselLoop?: boolean;
+  popoverPlacement?: import('./PopoverExample').PopoverPreviewPlacement;
+  popoverArrow?: boolean;
+  popoverTitle?: boolean;
+  popoverDisabled?: boolean;
+  backTopShape?: 'square' | 'circle';
+  backTopVariant?: 'neutral' | 'primary';
+  backTopContent?: 'arrow' | 'up' | 'top';
+  emptyVariant?: import('./EmptyStateExample').EmptyPreviewVariant;
+  emptySize?: 'compact' | 'default' | 'page';
+  emptyHeadingLevel?: 2 | 3 | 4 | 5 | 6;
+  inputKind?: 'text' | 'password' | 'search';
+  inputAddon?: 'none' | 'start' | 'end' | 'both';
+  inputTagDuplicates?: boolean;
+  autoCompleteEmpty?: boolean;
+  mentionEmpty?: boolean;
+  dateReadOnly?: boolean;
+  dateClearable?: boolean;
+  uploadMultiple?: boolean;
+  uploadAccept?: 'any' | 'image' | 'text';
+  sliderMarks?: boolean;
+  rateShape?: 'star' | 'heart';
+  rateHalf?: boolean;
+  rateClear?: boolean;
+  rateCount?: number;
+  tagClosable?: boolean;
+  timelineStates?: boolean;
+  stepsCurrent?: 0 | 1 | 2;
+  stepsIcons?: boolean;
+  stepsError?: boolean;
+  tooltipPlacement?: 'top' | 'bottom' | 'left' | 'right';
+  pageHeaderBack?: boolean;
+  pageHeaderDescription?: boolean;
+  pageHeaderActions?: boolean;
+  pageHeaderBreadcrumb?: boolean;
+  anchorNested?: boolean;
+  badgeMode?: 'status' | 'count' | 'dot';
+  badgeTarget?: 'standalone' | 'avatar' | 'text';
+  badgeCount?: 0 | 8 | 120;
+  badgeShowZero?: boolean;
+  dropdownGroup?: boolean;
+  dropdownSeparator?: boolean;
+  dropdownSubmenu?: boolean;
+  tabsVariant?: 'default' | 'line' | 'text' | 'card' | 'card-gutter' | 'rounded';
+  tabsDisabledItem?: boolean;
   size: 'sm' | 'md' | 'lg';
   state: 'default' | 'disabled' | 'invalid' | 'loading';
   variant: string;

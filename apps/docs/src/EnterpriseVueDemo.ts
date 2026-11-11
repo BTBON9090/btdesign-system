@@ -1,6 +1,7 @@
 import type { DemoOptions } from './catalog';
 import type { EnterpriseId } from './enterprise-catalog';
 import type { FileItem } from '@btdesign/engine';
+import { dropdownPreviewItems } from './dropdown-preview';
 import {
   enterpriseColumns,
   enterpriseFiles,
@@ -133,6 +134,8 @@ export function createEnterpriseVueDemo(
                 min: '2026-01-01',
                 max: '2027-12-31',
                 disabled,
+                readonly: o.dateReadOnly,
+                clearable: o.dateClearable !== false,
               }),
               result(`当前日期：${date.value || '未选择'}`),
             ]);
@@ -143,6 +146,7 @@ export function createEnterpriseVueDemo(
                 modelValue: range.value,
                 'onUpdate:modelValue': (next: [string, string]) => (range.value = next),
                 disabled,
+                readonly: o.dateReadOnly,
               }),
               result(`${range.value[0] || '开始日期'} → ${range.value[1] || '结束日期'}`),
             ]);
@@ -183,24 +187,24 @@ export function createEnterpriseVueDemo(
               modelValue: typeof value.value === 'string' ? value.value : 'design',
               'onUpdate:modelValue': onValue,
             });
-          case 'button-group':
-            return h(ui.ButtonGroup, { label: '项目操作' }, () => [
-              h(
-                ui.Button,
-                { disabled, onClick: () => onAction('已触发新建项目示例') },
-                () => '新建项目',
+          case 'button-group': {
+            const buttons = Array.from({ length: o.buttonGroupCount ?? 3 }, (_, i) => i + 1);
+            if (o.buttonGroupReverse) buttons.reverse();
+            return h(ui.ButtonGroup, { label: '项目操作' }, () =>
+              buttons.map((n) =>
+                h(
+                  ui.Button,
+                  {
+                    key: n,
+                    variant: n === 1 ? 'primary' : 'secondary',
+                    disabled,
+                    onClick: () => onAction(`已触发操作 ${n}`),
+                  },
+                  () => `操作 ${n}`,
+                ),
               ),
-              h(
-                ui.Button,
-                { variant: 'secondary', disabled, onClick: () => onAction('已触发导入项目示例') },
-                () => '导入',
-              ),
-              h(
-                ui.Button,
-                { variant: 'ghost', disabled, onClick: () => onAction('已触发更多操作示例') },
-                () => '更多',
-              ),
-            ]);
+            );
+          }
           case 'list':
             return h(ui.List, { class: 'enterprise-wide' }, () =>
               ['品牌体系升级', '客户服务门户', '品牌资产中心'].map((name, index) =>
@@ -288,11 +292,7 @@ export function createEnterpriseVueDemo(
           case 'dropdown-menu':
             return h(ui.DropdownMenu, {
               label: '项目操作',
-              items: [
-                { key: 'edit', label: '编辑项目' },
-                { key: 'copy', label: '创建副本' },
-                { key: 'archive', label: '归档项目', disabled: true },
-              ],
+              items: dropdownPreviewItems(o),
               disabled,
               onSelect: (key: string) => onAction(`已触发 ${key} 操作示例`),
             });

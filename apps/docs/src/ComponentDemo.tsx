@@ -1,5 +1,11 @@
 import { EnterpriseDemo } from './EnterpriseDemo';
+import { InputTagPreview } from './input-tag-preview';
+import { AutoCompletePreview } from './auto-complete-preview';
+import { MentionPreview } from './mention-preview';
+import { UploadPreview } from './upload-preview';
+import { RatePreview } from './rate-preview';
 import { isEnterpriseId } from './enterprise-catalog';
+import { StructureDemo } from './StructureDemo';
 import { useState } from 'react';
 import { ArrowRight, Plus, Mail, Check, Folder, MoreHorizontal } from 'lucide-react';
 import {
@@ -31,6 +37,15 @@ import {
   Checkbox,
   Dialog,
   Input,
+  PasswordInput,
+  SearchInput,
+  Slider,
+  TimePicker,
+  Timeline,
+  Steps,
+  Tooltip,
+  PageHeader,
+  Anchor,
   Progress,
   Select,
   Separator,
@@ -41,6 +56,39 @@ import {
   Textarea,
 } from '@btdesign/react';
 import { catalog, defaultDemoOptions, type DemoOptions, type ComponentId } from './catalog';
+import {
+  tagPreviewOptions,
+  timelinePreviewOptions,
+  stepsPreviewOptions,
+  tooltipPreviewOptions,
+  pageHeaderPreviewOptions,
+  anchorPreviewOptions,
+  badgePreviewOptions,
+  tabsPreviewOptions,
+} from './catalog';
+import { DescriptionsDemo } from './DescriptionsDemo';
+import { descriptionsPreviewOptions } from './DescriptionsExample';
+import { CommentDemo } from './CommentDemo';
+import { commentPreviewOptions } from './CommentExample';
+import { StatisticDemo } from './StatisticDemo';
+import { statisticPreviewOptions } from './StatisticExample';
+import { ImageDemo } from './ImageDemo';
+import { imagePreviewOptions } from './ImageExample';
+import { BackTopDemo } from './BackTopDemo';
+import { backTopPreviewOptions } from './BackTopExample';
+import { emptyPreviewOptions } from './EmptyStateExample';
+import { PopoverDemo } from './PopoverDemo';
+import { popoverPreviewOptions } from './PopoverExample';
+import { CarouselDemo } from './CarouselDemo';
+import { carouselPreviewOptions } from './CarouselExample';
+import { TagDemo } from './TagDemo';
+import { TimelineDemo } from './TimelineDemo';
+import { StepsDemo } from './StepsDemo';
+import { TooltipDemo } from './TooltipDemo';
+import { PageHeaderDemo } from './PageHeaderDemo';
+import { AnchorDemo } from './AnchorDemo';
+import { BadgeDemo } from './BadgeDemo';
+import { tabsPreviewItems } from './tabs-example-code';
 export function ComponentDemo({
   kind,
   onAction = () => {},
@@ -52,6 +100,55 @@ export function ComponentDemo({
 }) {
   const [open, setOpen] = useState(false);
   const [checked, setChecked] = useState(true);
+  if (kind === 'tabs') {
+    const tabOptions = tabsPreviewOptions(options);
+    return (
+      <Tabs
+        className="full-width"
+        label="资源类型"
+        items={tabsPreviewItems(tabOptions)}
+        variant={tabOptions.variant}
+        orientation={tabOptions.orientation}
+      />
+    );
+  }
+  if (kind === 'badge')
+    return <BadgeDemo component={Badge} avatar={Avatar} options={badgePreviewOptions(options)} />;
+  if (kind === 'anchor')
+    return <AnchorDemo component={Anchor} options={anchorPreviewOptions(options)} />;
+  if (kind === 'page-header')
+    return (
+      <PageHeaderDemo
+        component={PageHeader}
+        options={pageHeaderPreviewOptions(options)}
+        onAction={onAction}
+      />
+    );
+  if (kind === 'back-top') return <BackTopDemo options={backTopPreviewOptions(options)} />;
+  if (kind === 'popover') return <PopoverDemo options={popoverPreviewOptions(options)} />;
+  if (kind === 'carousel') return <CarouselDemo options={carouselPreviewOptions(options)} />;
+  if (kind === 'image') return <ImageDemo options={imagePreviewOptions(options)} />;
+  if (kind === 'tooltip')
+    return <TooltipDemo component={Tooltip} options={tooltipPreviewOptions(options)} />;
+  if (kind === 'statistic') return <StatisticDemo options={statisticPreviewOptions(options)} />;
+  if (kind === 'steps')
+    return <StepsDemo component={Steps} options={stepsPreviewOptions(options)} />;
+  if (kind === 'comment')
+    return <CommentDemo options={commentPreviewOptions(options)} onAction={onAction} />;
+  if (kind === 'timeline')
+    return <TimelineDemo component={Timeline} options={timelinePreviewOptions(options)} />;
+  if (kind === 'descriptions')
+    return <DescriptionsDemo options={descriptionsPreviewOptions(options)} />;
+  if (kind === 'tag') {
+    const tagOptions = tagPreviewOptions(options);
+    return (
+      <TagDemo
+        key={`${tagOptions.tone}:${tagOptions.closable}:${tagOptions.disabled}`}
+        options={tagOptions}
+        onAction={onAction}
+      />
+    );
+  }
   if (isEnterpriseId(kind))
     return (
       <EnterpriseDemo
@@ -61,13 +158,22 @@ export function ComponentDemo({
         onAction={onAction}
       />
     );
+  if (kind === 'avatar' || kind === 'collapse')
+    return <StructureDemo kind={kind} options={options ?? defaultDemoOptions} />;
   if (
     options ||
     [
       'field',
       'input-group',
+      'input-tag',
+      'auto-complete',
+      'mention',
+      'upload',
+      'rate',
       'radio-group',
       'number-input',
+      'slider',
+      'time-picker',
       'breadcrumb',
       'pagination',
       'empty-state',
@@ -161,16 +267,6 @@ export function ComponentDemo({
           <Switch label="由组织管理" disabled defaultChecked />
         </div>
       );
-    case 'badge':
-      return (
-        <div className="demo-row">
-          <Badge>草稿</Badge>
-          <Badge variant="success">已发布</Badge>
-          <Badge variant="warning">审核中</Badge>
-          <Badge variant="danger">未通过</Badge>
-          <Badge variant="info">协作中</Badge>
-        </div>
-      );
     case 'card':
       return (
         <Card className="example-card">
@@ -200,29 +296,6 @@ export function ComponentDemo({
             网络暂时不可用，请稍后重试。
           </Alert>
         </div>
-      );
-    case 'tabs':
-      return (
-        <Tabs
-          className="full-width"
-          items={[
-            {
-              value: 'design',
-              label: '设计规范',
-              content: <p>用统一的语义变量表达品牌，保持跨页面的一致性。</p>,
-            },
-            {
-              value: 'develop',
-              label: '开发资源',
-              content: <p>React 和 Vue 3 共用同一套 CSS 变量与设计约定。</p>,
-            },
-            {
-              value: 'history',
-              label: '更新记录',
-              content: <p>v0.3.0 — {catalog.length} 个组件族与可组合子部件。</p>,
-            },
-          ]}
-        />
       );
     case 'dialog':
       return (
@@ -257,15 +330,6 @@ export function ComponentDemo({
             </form>
           </Dialog>
         </>
-      );
-    case 'avatar':
-      return (
-        <div className="demo-row">
-          <Avatar name="林晓" size="sm" />
-          <Avatar name="Alex Chen" />
-          <Avatar name="Yuki Tanaka" size="lg" />
-          <Avatar name="王宁" />
-        </div>
       );
     case 'separator':
       return (
@@ -499,19 +563,103 @@ function ConfiguredDemo({
     case 'button':
       return (
         <Button
-          size={o.size}
+          size={o.buttonSize ?? 'md'}
           variant={o.variant as 'primary' | 'secondary' | 'ghost' | 'danger'}
+          tone={o.buttonTone ?? 'standard'}
+          shape={o.buttonShape ?? 'default'}
+          iconOnly={o.buttonContent === 'icon'}
+          aria-label={o.buttonContent === 'icon' ? '保存更改' : undefined}
           disabled={disabled}
           loading={o.state === 'loading'}
           onClick={() => onAction('按钮示例已响应')}
         >
-          保存更改
+          {(o.buttonContent === 'leading' || o.buttonContent === 'icon') && (
+            <span aria-hidden="true">+</span>
+          )}
+          {o.buttonContent !== 'icon' && '保存更改'}
+          {o.buttonContent === 'trailing' && <span aria-hidden="true">+</span>}
         </Button>
       );
-    case 'input':
+    case 'input': {
+      const inputKind = o.inputKind ?? 'text';
+      const addon = o.inputAddon ?? 'none';
+      const isAddress = inputKind === 'text' && addon !== 'none';
       return (
-        <Field className="demo-form" label="工作邮箱" error={error}>
-          <Input {...control} type="email" placeholder="you@company.com" />
+        <Field
+          className="demo-form"
+          label={
+            inputKind === 'password'
+              ? '密码'
+              : inputKind === 'search'
+                ? '搜索成员'
+                : isAddress
+                  ? '工作空间地址'
+                  : '工作邮箱'
+          }
+          error={error}
+        >
+          {inputKind === 'password' ? (
+            <PasswordInput {...control} placeholder="请输入密码" />
+          ) : inputKind === 'search' ? (
+            <SearchInput
+              {...control}
+              placeholder="输入成员名称"
+              onSearch={(value) => onAction(value ? `正在搜索：${value}` : '请输入搜索内容')}
+            />
+          ) : isAddress ? (
+            <InputGroup>
+              {(addon === 'start' || addon === 'both') && <InputAddon>https://</InputAddon>}
+              <Input {...control} placeholder="my-team" />
+              {(addon === 'end' || addon === 'both') && <InputAddon>.example.com</InputAddon>}
+            </InputGroup>
+          ) : (
+            <Input {...control} type="email" placeholder="you@company.com" />
+          )}
+        </Field>
+      );
+    }
+    case 'rate':
+      return <RatePreview options={o} />;
+    case 'auto-complete':
+      return <AutoCompletePreview options={o} />;
+    case 'mention':
+      return <MentionPreview options={o} />;
+    case 'upload':
+      return <UploadPreview options={o} />;
+    case 'input-tag':
+      return <InputTagPreview options={o} />;
+    case 'slider':
+      return (
+        <Field className="demo-form" label="音量">
+          <Slider
+            min={0}
+            max={100}
+            step={10}
+            defaultValue={40}
+            disabled={disabled}
+            marks={
+              o.sliderMarks
+                ? [
+                    { value: 0, label: '0' },
+                    { value: 50, label: '50' },
+                    { value: 100, label: '100' },
+                  ]
+                : undefined
+            }
+          />
+        </Field>
+      );
+    case 'time-picker':
+      return (
+        <Field className="demo-form" label="开始时间" error={error}>
+          <TimePicker
+            {...control}
+            name="start"
+            min="09:00"
+            max="18:00"
+            step={300}
+            defaultValue="09:30"
+          />
         </Field>
       );
     case 'textarea':
@@ -546,12 +694,6 @@ function ConfiguredDemo({
           onCheckedChange={setChecked}
           disabled={disabled}
         />
-      );
-    case 'badge':
-      return (
-        <Badge variant={o.variant as 'default' | 'success' | 'warning' | 'danger' | 'info'}>
-          项目状态
-        </Badge>
       );
     case 'alert':
       return (
@@ -662,21 +804,7 @@ function ConfiguredDemo({
         </div>
       );
     case 'empty-state':
-      return (
-        <EmptyState
-          title="还没有项目"
-          description="创建第一个项目，开始与团队协作。"
-          action={
-            <Button
-              onClick={() => {
-                window.location.hash = '/lab';
-              }}
-            >
-              创建项目
-            </Button>
-          }
-        />
-      );
+      return <EmptyState {...emptyPreviewOptions(o)} />;
     case 'spinner':
       return <Spinner label="正在加载项目" size={o.size} />;
     default:

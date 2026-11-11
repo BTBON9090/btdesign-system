@@ -44,7 +44,12 @@ export function Calendar({
   const today = formatDate(new Date());
   const [selected, update] = useControllable(value, defaultValue, onValueChange);
   const initialMonth = parseDate(selected) ? selected.slice(0, 7) : today.slice(0, 7);
-  const [displayed, changeMonth] = useControllable(month, initialMonth, onMonthChange);
+  const [localMonth, setLocalMonth] = useState(initialMonth);
+  const displayed = month ?? localMonth;
+  const changeMonth = (next: string) => {
+    if (month === undefined) setLocalMonth(next);
+    onMonthChange?.(next);
+  };
   const safeMonth =
     /^\d{4}-\d{2}$/.test(displayed) && parseDate(`${displayed}-01`) ? displayed : initialMonth;
   const [focused, setFocused] = useState(selected || today);
@@ -59,6 +64,12 @@ export function Calendar({
   const focusDay = days.some((day) => day.value === focused && allowed(day.value))
     ? focused
     : fallback;
+  useEffect(() => {
+    if (value !== undefined && parseDate(value)) {
+      setFocused(value);
+      if (month === undefined) setLocalMonth(value.slice(0, 7));
+    }
+  }, [value, month]);
   useEffect(() => {
     if (!shouldFocus.current) return;
     shouldFocus.current = false;
@@ -227,6 +238,8 @@ export interface DatePickerProps
   required?: boolean;
   placeholder?: string;
   showLabel?: boolean;
+  readOnly?: boolean;
+  clearable?: boolean;
 }
 export function DatePicker({
   value,
@@ -235,6 +248,8 @@ export function DatePicker({
   label,
   name,
   disabled,
+  readOnly,
+  clearable = true,
   required,
   placeholder = 'YYYY-MM-DD',
   min,
@@ -272,11 +287,11 @@ export function DatePicker({
         : '',
     );
   }, [draft, min, max, disabledDate]);
-  const popup = usePopup(!!field.disabled);
+  const popup = usePopup(!!field.disabled || !!readOnly);
   const id = field.id ?? generated;
   const accessibleLabel = label ?? '日期';
   const commit = () => {
-    if (field.disabled) return;
+    if (field.disabled || readOnly) return;
     if (draft === '') {
       if (value !== undefined) setDraft(selected);
       update('');
@@ -321,6 +336,7 @@ export function DatePicker({
           placeholder={placeholder}
           value={draft}
           disabled={field.disabled}
+          readOnly={readOnly}
           required={field.required}
           invalid={invalid}
           aria-describedby={
@@ -340,6 +356,7 @@ export function DatePicker({
           }}
           onBlur={commit}
           onKeyDown={(event) => {
+            if (field.disabled || readOnly) return;
             if (event.key === 'ArrowDown') {
               event.preventDefault();
               popup.setOpen(true);
@@ -358,16 +375,16 @@ export function DatePicker({
           aria-expanded={popup.open}
           aria-haspopup="dialog"
           aria-controls={popup.open ? `${generated}-calendar` : undefined}
-          disabled={field.disabled}
+          disabled={field.disabled || readOnly}
           onClick={() => popup.setOpen(!popup.open)}
         >
           ▦
         </button>
-        {selected && (
+        {clearable && draft && (
           <button
             type="button"
             className="f-date-clear"
-            disabled={field.disabled}
+            disabled={field.disabled || readOnly}
             aria-label={`清空${accessibleLabel}`}
             onClick={() => {
               setDraft(value === undefined ? '' : selected);

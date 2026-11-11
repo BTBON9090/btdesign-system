@@ -5,6 +5,27 @@ import {
   isEnterpriseId,
 } from './enterprise-catalog';
 import type { ComponentId, Framework, DemoOptions, AnatomyPart } from './component-types';
+import { inputTagExample } from './input-tag-preview';
+import { autoCompleteExample } from './auto-complete-preview';
+import { mentionExample } from './mention-preview';
+import { uploadExample } from './upload-preview';
+import { rateExample } from './rate-preview';
+import { tagExampleCode, type TagPreviewOptions } from './tag-example-code';
+import { timelineExampleCode, type TimelinePreviewOptions } from './timeline-example-code';
+import { stepsExampleCode, type StepsPreviewOptions } from './steps-example-code';
+import { tooltipExampleCode, type TooltipPreviewOptions } from './tooltip-example-code';
+import { pageHeaderExampleCode, type PageHeaderPreviewOptions } from './page-header-example-code';
+import { anchorExampleCode, type AnchorPreviewOptions } from './anchor-example-code';
+import { badgeExampleCode, type BadgePreviewOptions } from './badge-example-code';
+import { tabsExampleCode, type TabsPreviewOptions } from './tabs-example-code';
+import { descriptionsCode, descriptionsPreviewOptions } from './DescriptionsExample';
+import { commentExampleCode, commentPreviewOptions } from './CommentExample';
+import { statisticExampleCode, statisticPreviewOptions } from './StatisticExample';
+import { imageExampleCode, imagePreviewOptions } from './ImageExample';
+import { carouselExampleCode, carouselPreviewOptions } from './CarouselExample';
+import { popoverExampleCode, popoverPreviewOptions } from './PopoverExample';
+import { backTopExampleCode, backTopPreviewOptions } from './BackTopExample';
+import { emptyExampleCode, emptyPreviewOptions } from './EmptyStateExample';
 export type { ComponentId, Framework, DemoOptions, AnatomyPart } from './component-types';
 
 export const componentCategories = [
@@ -27,7 +48,10 @@ export const catalog = [
     description: '清晰表达操作意图，在每个决策点给予恰当的视觉权重。',
     props: [
       ['variant', 'primary | secondary | ghost | danger', 'primary'],
-      ['size', 'sm | md | lg', 'md'],
+      ['tone', 'standard | success | warning | danger | ai', 'standard'],
+      ['shape', 'default | pill', 'default'],
+      ['iconOnly', 'boolean', 'false'],
+      ['size', 'xs | sm | md | lg | xl', 'md'],
       ['loading', 'boolean', 'false'],
       ['disabled', 'boolean', 'false'],
     ],
@@ -57,6 +81,116 @@ export const catalog = [
       ['controlSize / invalid', 'sm | md | lg / boolean', 'md / false'],
       ['maxLength', 'number', '—'],
       ['value / modelValue', 'string', '—'],
+    ],
+  },
+  {
+    id: 'auto-complete',
+    name: 'AutoComplete',
+    cn: '自动补全',
+    category: '文本与字段',
+    description: '从本地候选项中筛选并选择建议，也可以保留自由输入。',
+    props: [
+      ['options', 'ChoiceOption[]（value / label / disabled / description）', '必填'],
+      ['value / modelValue', 'string', '—'],
+      ['defaultValue', 'string', "''"],
+      ['onValueChange / update:modelValue', 'callback', '—'],
+      ['onSelectOption / select', 'callback', '—'],
+      ['emptyText', 'string', '没有匹配结果'],
+      ['controlSize / invalid', 'sm | md | lg / boolean', 'md / false'],
+      ['disabled / readOnly', 'boolean', 'false'],
+    ],
+  },
+  {
+    id: 'mention',
+    name: 'Mention',
+    cn: '提及',
+    category: '文本与字段',
+    description: '输入 @ 从本地候选中选择，选中后将名称插入普通文本。',
+    props: [
+      ['options', 'ChoiceOption[]（value / label / disabled / description）', '必填'],
+      ['value / modelValue', 'string', '—'],
+      ['defaultValue', 'string', "''"],
+      ['onValueChange / update:modelValue', 'callback', '—'],
+      ['onSelectOption / select', 'callback', '—'],
+      ['emptyText', 'string', '没有匹配结果'],
+      ['controlSize / invalid', 'sm | md | lg / boolean', 'md / false'],
+      ['disabled / readOnly', 'boolean', 'false'],
+    ],
+  },
+  {
+    id: 'upload',
+    name: 'Upload',
+    cn: '文件选择',
+    category: '文本与字段',
+    description: '通过原生文件选择器将文件交给应用处理；传输、进度和文件列表由应用管理。',
+    props: [
+      ['accept', 'string', '—'],
+      ['multiple / disabled / required', 'boolean', 'false'],
+      ['name / form', 'string', '—'],
+      ['onFilesChange / files-change', '(files: File[], event: Event) => void', '—'],
+      ['controlSize', 'sm | md | lg', 'md'],
+    ],
+  },
+  {
+    id: 'input-tag',
+    name: 'InputTag',
+    cn: '标签输入框',
+    category: '文本与字段',
+    description: '输入并管理多个标签；按 Enter 添加，空输入时按退格删除最后一项。',
+    props: [
+      ['value / modelValue', 'string[]', '—'],
+      ['defaultValue', 'string[]', '[]'],
+      ['onValueChange / update:modelValue', 'callback', '—'],
+      ['allowDuplicates', 'boolean', 'false'],
+      ['requiredMessage', 'string', '请至少添加一项标签。'],
+      ['controlSize / invalid', 'sm | md | lg / boolean', 'md / false'],
+      ['disabled / readOnly', 'boolean', 'false'],
+    ],
+  },
+  {
+    id: 'slider',
+    name: 'Slider',
+    cn: '滑动输入条',
+    category: '文本与字段',
+    description: '通过单个滑块在数值范围内选择，支持键盘操作和原生刻度。',
+    props: [
+      ['value / modelValue', 'number', '50（原生）'],
+      ['min / max / step', 'number', '0 / 100 / 1'],
+      ['marks', '{ value: number; label?: string }[]', '—'],
+      ['disabled', 'boolean', 'false'],
+      ['onValueChange / update:modelValue', 'callback', '—'],
+    ],
+  },
+  {
+    id: 'rate',
+    name: 'Rate',
+    cn: '评分',
+    category: '选择与切换',
+    description: '使用星形或心形选择一个评分，支持键盘操作和可选半分。',
+    props: [
+      ['value / modelValue', 'number', '—'],
+      ['defaultValue', 'number', '0'],
+      ['count', 'number', '5'],
+      ['shape', 'star | heart', 'star'],
+      ['allowHalf / allowClear', 'boolean', 'false'],
+      ['name / label', 'string', '— / 评分'],
+      ['disabled / required', 'boolean', 'false'],
+      ['onValueChange / update:modelValue', 'callback', '—'],
+    ],
+  },
+  {
+    id: 'time-picker',
+    name: 'TimePicker',
+    cn: '时间选择器',
+    category: '日期',
+    description: '使用原生时间输入选择单个时间，支持表单校验和键盘输入。',
+    props: [
+      ['value / modelValue', 'string（HH:mm / HH:mm:ss）', '—'],
+      ['min / max', 'string（本地时间）', '—'],
+      ['step', 'number（秒）', '60（原生）'],
+      ['controlSize / invalid', 'sm | md | lg / boolean', 'md / false'],
+      ['disabled', 'boolean', 'false'],
+      ['onValueChange / update:modelValue', 'callback', '—'],
     ],
   },
   {
@@ -102,8 +236,100 @@ export const catalog = [
     name: 'Badge',
     cn: '徽标',
     category: '反馈',
-    description: '以简洁的文字与颜色标识状态，确保含义不只依赖颜色。',
-    props: [['variant', 'default | success | warning | danger | info', 'default']],
+    description: '使用文字、计数或圆点传达状态，也可标记头像或其他内容。',
+    props: [
+      ['variant', 'default | success | warning | danger | info', 'default'],
+      ['count / max / showZero', 'number | string / number / boolean', '— / 99 / false'],
+      ['dot / badgeLabel', 'boolean / string', 'false / —'],
+      ['children / default slot', 'ReactNode / Vue slot', '—'],
+    ],
+  },
+  {
+    id: 'tag',
+    name: 'Tag',
+    cn: '标签',
+    category: '反馈',
+    description: '标识分类或状态；可选关闭操作由使用方决定是否移除。',
+    props: [
+      ['tone', 'default | success | warning | danger | info', 'default'],
+      ['closable / disabled', 'boolean', 'false'],
+      ['closeLabel', 'string', '移除标签'],
+      ['onClose / close', '(event: MouseEvent) => void', '—'],
+    ],
+  },
+  {
+    id: 'timeline',
+    name: 'Timeline',
+    cn: '时间轴',
+    category: '表格与列表',
+    description: '按顺序呈现事件，支持横向、纵向与可读状态。',
+    props: [
+      ['items', 'TimelineItem[]', '必填'],
+      ['orientation', 'vertical | horizontal', 'vertical'],
+      ['label', 'string', '时间轴'],
+      ['item: id / title / description / time / dateTime', 'string / ReactNode / VNodeChild', '—'],
+      [
+        'item: tone / state',
+        'default | success | warning | danger | info / done | current | pending',
+        'default / —',
+      ],
+    ],
+  },
+  {
+    id: 'steps',
+    name: 'Steps',
+    cn: '步骤条',
+    category: '导航',
+    description: '按顺序展示任务进度与各步骤状态，支持水平和垂直布局。',
+    props: [
+      ['items', 'StepItem[]', '必填'],
+      ['current', 'number（从 0 开始）', '0'],
+      ['orientation', 'horizontal | vertical', 'horizontal'],
+      ['label', 'string', '步骤'],
+      ['item: id / title / description / icon', 'string / ReactNode / VNodeChild', '—'],
+      ['item: status', 'wait | process | finish | error', '由 current 推导'],
+    ],
+  },
+  {
+    id: 'tooltip',
+    name: 'Tooltip',
+    cn: '文字气泡',
+    category: '反馈',
+    description: '悬停或聚焦时提供简短说明；Escape 可关闭。触发元素须能接收焦点并转发描述属性。',
+    props: [
+      ['children / default slot', '单个可聚焦元素', '必填'],
+      ['content / content slot', 'ReactNode / string | number / Vue slot', '—'],
+      ['placement', 'top | bottom | left | right', 'top'],
+      ['open / defaultOpen / disabled', 'boolean', 'false'],
+      ['onOpenChange / update:open', '(open: boolean) => void', '—'],
+    ],
+  },
+  {
+    id: 'page-header',
+    name: 'PageHeader',
+    cn: '页头',
+    category: '导航',
+    description: '组织页面标题、说明、面包屑和操作；返回行为由应用接管。',
+    props: [
+      ['title / title slot', 'ReactNode / string / Vue slot', '必填（或插槽）'],
+      ['description / description slot', 'ReactNode / string / Vue slot', '—'],
+      ['breadcrumb / actions', 'ReactNode / Vue slots', '—'],
+      ['onBack / @back', '(event: MouseEvent) => void', '—'],
+      ['showBack / backLabel / headingLevel', 'boolean / string / 1–6', '自动 / 返回 / 1'],
+    ],
+  },
+  {
+    id: 'anchor',
+    name: 'Anchor',
+    cn: '锚点',
+    category: '导航',
+    description: '用页面目录定位章节，支持嵌套；当前位置由应用维护。',
+    props: [
+      ['items', 'AnchorItem[]', '必填'],
+      ['activeHref / label', 'string', '— / 页面目录'],
+      ['onNavigate / @navigate', '(href, event) => void', '—'],
+      ['item: id / href / title / children', 'string / fragment / 内容 / AnchorItem[]', '—'],
+    ],
   },
   {
     id: 'card',
@@ -115,6 +341,133 @@ export const catalog = [
       ['children / default slot', 'CardHeader / CardContent / CardFooter', '—'],
       ['CardTitle / CardDescription', '标题与说明子部件', '—'],
       ['className / class', 'string', '—'],
+    ],
+  },
+  {
+    id: 'collapse',
+    name: 'Collapse',
+    cn: '折叠面板',
+    category: '布局与容器',
+    description: '逐项展开相关内容，支持手风琴、多项展开与独立的附加操作。',
+    props: [
+      ['items', '{ value, label, content?, disabled?, extra? }[]', '必填'],
+      ['value / modelValue', 'string[]', '—'],
+      ['defaultValue', 'string[]', '[]'],
+      ['onValueChange / update:modelValue', '(value: string[]) => void', '—'],
+      ['accordion / disabled', 'boolean', 'false'],
+      ['expandIconPosition', 'start | end | none', 'start'],
+    ],
+  },
+  {
+    id: 'descriptions',
+    name: 'Descriptions',
+    cn: '描述列表',
+    category: '表格与列表',
+    description: '用标签和值组织对象详情，支持横向、纵向及带边框布局。',
+    props: [
+      ['items', '{ key, label, value, span? }[]', '必填'],
+      ['title', 'string', '—'],
+      ['column', 'number（1–6）', '3'],
+      ['orientation', 'horizontal | vertical', 'horizontal'],
+      ['bordered', 'boolean', 'false'],
+      ['Vue slots', 'title / label-{key} / value-{key}', '—'],
+    ],
+  },
+  {
+    id: 'comment',
+    name: 'Comment',
+    cn: '评论',
+    category: '表格与列表',
+    description: '组织作者、时间、评论内容和操作，支持嵌套展示回复。',
+    props: [
+      ['author', 'ReactNode / string（Vue）', '必填'],
+      ['avatar / content / actions', 'ReactNode / Vue slots', '—'],
+      ['time / dateTime', '时间文字 / ISO 时间', '—'],
+      ['alignment', 'start | end', 'start'],
+      ['children / default slot', '嵌套回复', '—'],
+    ],
+  },
+  {
+    id: 'statistic',
+    name: 'Statistic',
+    cn: '数值显示',
+    category: '表格与列表',
+    description: '展示已有的指标数值、百分比和趋势说明。',
+    props: [
+      ['value', 'number | string', '必填'],
+      ['title', 'ReactNode / string（Vue）', '—'],
+      ['format', 'number | percent（值 25 表示 25%）', 'number'],
+      ['precision / locale', 'number / string', '—'],
+      ['prefix / suffix', 'ReactNode / string（Vue）或 slot', '—'],
+      ['trend / trendText', 'up | down | neutral / 内容', '—'],
+    ],
+  },
+  {
+    id: 'image',
+    name: 'Image',
+    cn: '图片',
+    category: '布局与容器',
+    description: '展示带替代文字的图片，支持比例、加载回退和可选的大图预览。',
+    props: [
+      ['src / alt', 'string / string', '必填'],
+      ['aspectRatio', 'CSS aspect-ratio（如 16 / 9）', '—'],
+      ['fit / loading', 'cover | contain / eager | lazy', 'cover / lazy'],
+      ['caption / fallback', 'ReactNode / Vue slots', '—'],
+      ['preview / previewLabel', 'boolean / string', 'false / 查看大图'],
+    ],
+  },
+  {
+    id: 'carousel',
+    name: 'Carousel',
+    cn: '轮播',
+    category: '布局与容器',
+    description: '由用户切换一组内容，支持指示器、键盘和可选首尾循环。',
+    props: [
+      ['items', '{ key, label?, content }[]', '必填'],
+      ['index / modelValue', 'number', '—'],
+      ['defaultIndex', 'number', '0'],
+      ['onIndexChange / update:modelValue', '(index: number) => void', '—'],
+      ['label / loop', 'string / boolean', '图片轮播 / false'],
+      [
+        'indicatorStyle / indicatorPlacement',
+        'dots | lines / bottom | start | end',
+        'dots / bottom',
+      ],
+    ],
+  },
+  {
+    id: 'back-top',
+    name: 'BackTop',
+    cn: '返回顶部',
+    category: '导航',
+    description: '滚动到一定距离后出现，帮助用户返回页面或滚动容器顶部。',
+    props: [
+      ['target', '() => Window | HTMLElement | null', 'window'],
+      ['visibilityHeight / top', 'number / number', '400 / 0'],
+      ['behavior', 'smooth | auto（遵循系统减少动态设置）', 'smooth'],
+      [
+        'shape / variant / content',
+        'square | circle / neutral | primary / arrow | up | top',
+        'square / neutral / arrow',
+      ],
+      ['position', 'fixed | inline', 'fixed'],
+      ['children / default slot', '自定义按钮内容', '—'],
+    ],
+  },
+  {
+    id: 'popover',
+    name: 'Popover',
+    cn: '气泡卡片',
+    category: '反馈',
+    description: '在触发元素旁展示可交互的补充内容。',
+    props: [
+      ['trigger / #trigger', 'ReactNode / slot（按钮内部内容，不可嵌套按钮）', '必填'],
+      ['title / content / label', '内容 / 内容 / string', '详情'],
+      ['placement / showArrow', '12 种位置 / boolean', 'bottom / true'],
+      ['open / modelValue / defaultOpen', 'boolean', 'false'],
+      ['onOpenChange / update:modelValue', '(open: boolean) => void', '—'],
+      ['disabled', 'boolean', 'false'],
+      ['定位说明', '显式位置；暂不自动避让视口边缘', '—'],
     ],
   },
   {
@@ -138,6 +491,8 @@ export const catalog = [
       ['items', '{value, label, content?, disabled?}[]', '必填'],
       ['value / modelValue', 'string', '首个可用选项'],
       ['defaultValue', 'string', '首个可用选项'],
+      ['variant', 'default | line | text | card | card-gutter | rounded', 'default'],
+      ['orientation', 'horizontal | vertical', 'horizontal'],
       ['onValueChange / update:modelValue', 'callback', '—'],
     ],
   },
@@ -166,6 +521,12 @@ export const catalog = [
       ['name', 'string', 'React 必填'],
       ['alt / fallback（Vue）', 'string', '—'],
       ['size', 'sm | md | lg', 'md'],
+      ['shape', 'circle | square', 'circle'],
+      [
+        'AvatarGroup max / size / shape / label',
+        'number / sm | md | lg / circle | square / string',
+        '不限 / md / circle / 头像组',
+      ],
     ],
   },
   {
@@ -297,10 +658,16 @@ export const catalog = [
     category: '反馈',
     description: '说明暂时没有内容的原因，并提供一个合适的下一步。',
     props: [
-      ['title', 'ReactNode / string', '必填'],
-      ['description', 'ReactNode / string', '—'],
+      [
+        'variant',
+        'no-content | initial | no-messages | no-results | no-permission | offline | not-found | error',
+        'no-content',
+      ],
+      ['size / headingLevel', 'compact | default | page / 2 | 3 | 4 | 5 | 6', 'default / 3'],
+      ['title / description', 'ReactNode / string 或 Vue slot', '按场景的标题 / —'],
       ['icon / action', 'ReactNode / named slot', '—'],
       ['children / default slot', 'content', '—'],
+      ['场景来源', '由业务传入；不检测网络或触发重试', '—'],
     ],
   },
   {
@@ -329,6 +696,7 @@ const reactExamples: Partial<Record<ComponentId, string>> = {
   tabs: `import { Tabs } from '@btdesign/react';\n\n<Tabs defaultValue="design" items={[\n  { value: 'design', label: '设计', content: '设计规范与资源' },\n  { value: 'develop', label: '开发', content: '组件 API 与示例' }\n]} />`,
   dialog: `import { useState } from 'react';\nimport { Button, Dialog } from '@btdesign/react';\n\nexport function Example() {\n  const [open, setOpen] = useState(false);\n  return <>\n    <Button onClick={() => setOpen(true)}>新建项目</Button>\n    <Dialog open={open} onOpenChange={setOpen} title="新建项目">\n      <p>为团队开启一个新的工作空间。</p>\n      <Button onClick={() => setOpen(false)}>完成</Button>\n    </Dialog>\n  </>;\n}`,
   avatar: `import { Avatar } from '@btdesign/react';\n\n<Avatar name="林晓" />\n<Avatar name="Alex Chen" size="lg" />`,
+  collapse: `import { Collapse } from '@btdesign/react';\n\n<Collapse items={[{ value: 'one', label: '项目说明', content: '设计与开发保持同步。' }, { value: 'two', label: '团队成员', content: '查看并管理成员。' }]} defaultValue={['one']} />`,
   separator: `import { Separator } from '@btdesign/react';\n\n<p>项目设置</p>\n<Separator />\n<p>团队成员</p>`,
   table:
     'import { Table, TableCaption, TableHeader, TableBody, TableRow, TableHead, TableCell } from \'@btdesign/react\';\n\n<Table>\n  <TableCaption>团队成员</TableCaption>\n  <TableHeader><TableRow><TableHead scope="col">姓名</TableHead><TableHead scope="col">角色</TableHead></TableRow></TableHeader>\n  <TableBody><TableRow><TableCell>林晓</TableCell><TableCell>设计师</TableCell></TableRow></TableBody>\n</Table>',
@@ -366,7 +734,32 @@ function reactCode(id: ComponentId) {
 }
 
 export function componentCode(id: ComponentId, framework: Framework, options?: DemoOptions) {
+  if (id === 'tabs') return tabsExampleCode(framework, tabsPreviewOptions(options));
+  if (id === 'badge') return badgeExampleCode(framework, badgePreviewOptions(options));
+  if (id === 'rate') return rateExample(framework, options ?? defaultDemoOptions);
+  if (id === 'auto-complete') return autoCompleteExample(framework, options ?? defaultDemoOptions);
+  if (id === 'mention') return mentionExample(framework, options ?? defaultDemoOptions);
+  if (id === 'upload') return uploadExample(framework, options ?? defaultDemoOptions);
+  if (id === 'input-tag') return inputTagExample(framework, options ?? defaultDemoOptions);
   if (isEnterpriseId(id)) return enterpriseComponentCode(id, framework, options);
+  if (id === 'tag') return tagExampleCode(framework, tagPreviewOptions(options));
+  if (id === 'timeline') return timelineExampleCode(framework, timelinePreviewOptions(options));
+  if (id === 'steps') return stepsExampleCode(framework, stepsPreviewOptions(options));
+  if (id === 'tooltip') return tooltipExampleCode(framework, tooltipPreviewOptions(options));
+  if (id === 'page-header')
+    return pageHeaderExampleCode(framework, pageHeaderPreviewOptions(options));
+  if (id === 'anchor') return anchorExampleCode(framework, anchorPreviewOptions(options));
+  if (id === 'descriptions')
+    return descriptionsCode(framework, descriptionsPreviewOptions(options));
+  if (id === 'comment') return commentExampleCode(framework, commentPreviewOptions(options));
+  if (id === 'statistic') return statisticExampleCode(framework, statisticPreviewOptions(options));
+  if (id === 'image') return imageExampleCode(framework, imagePreviewOptions(options));
+  if (id === 'carousel') return carouselExampleCode(framework, carouselPreviewOptions(options));
+  if (id === 'popover') return popoverExampleCode(framework, popoverPreviewOptions(options));
+  if (id === 'back-top') return backTopExampleCode(framework, backTopPreviewOptions(options));
+  if (id === 'empty-state') return emptyExampleCode(framework, emptyPreviewOptions(options));
+  if ((id === 'slider' || id === 'time-picker') && !options)
+    return configuredComponentCode(id, framework, defaultDemoOptions)!;
   if (options) {
     const configured = configuredComponentCode(id, framework, options);
     if (configured) return configured;
@@ -390,6 +783,7 @@ export function componentCode(id: ComponentId, framework: Framework, options?: D
     dialog:
       '<Button @click="open = true">新建项目</Button>\n<Dialog v-model="open" title="新建项目">\n  <p>为团队开启一个新的工作空间。</p>\n  <Button @click="open = false">完成</Button>\n</Dialog>',
     avatar: '<Avatar name="林晓" />\n<Avatar name="Alex Chen" size="lg" />',
+    collapse: `<Collapse :items="[{ value: 'one', label: '项目说明', content: '设计与开发保持同步。' }, { value: 'two', label: '团队成员', content: '查看并管理成员。' }]" :default-value="['one']" />`,
     separator: '<p>项目设置</p><Separator /><p>团队成员</p>',
     table:
       '<Table>\n  <TableCaption>团队成员</TableCaption>\n  <TableHeader><TableRow><TableHead scope="col">姓名</TableHead><TableHead scope="col">角色</TableHead></TableRow></TableHeader>\n  <TableBody><TableRow><TableCell>林晓</TableCell><TableCell>设计师</TableCell></TableRow></TableBody>\n</Table>',
@@ -420,7 +814,7 @@ export function componentCode(id: ComponentId, framework: Framework, options?: D
     'input-group',
     'radio-group',
   ].includes(id)
-    ? `\nconst value = ref('${id === 'select' ? 'designer' : id === 'tabs' ? 'design' : id === 'radio-group' ? 'team' : ''}');`
+    ? `\nconst value = ref('${id === 'select' ? 'designer' : id === 'radio-group' ? 'team' : ''}');`
     : ['checkbox', 'switch'].includes(id)
       ? '\nconst checked = ref(true);'
       : id === 'dialog'
@@ -429,9 +823,7 @@ export function componentCode(id: ComponentId, framework: Framework, options?: D
           ? "\nconst quantity = ref<number | ''>(4);"
           : id === 'pagination'
             ? '\nconst page = ref(1);'
-            : id === 'empty-state'
-              ? "\nfunction createProject() { window.location.hash = '/lab'; }"
-              : '';
+            : '';
   const extraImports: Partial<Record<ComponentId, string>> = {
     dialog: ', Button',
     field: ', Input',
@@ -451,6 +843,58 @@ export const defaultDemoOptions: DemoOptions = {
   orientation: 'horizontal',
   progress: 64,
 };
+export function tagPreviewOptions(options?: DemoOptions): TagPreviewOptions {
+  const tones = ['default', 'success', 'warning', 'danger', 'info'] as const;
+  const tone = tones.find((value) => value === options?.variant) ?? 'default';
+  return { tone, closable: options?.tagClosable ?? false, disabled: options?.state === 'disabled' };
+}
+export function timelinePreviewOptions(options?: DemoOptions): TimelinePreviewOptions {
+  const tones = ['default', 'success', 'warning', 'danger', 'info'] as const;
+  return {
+    tone: tones.find((value) => value === options?.variant) ?? 'default',
+    orientation: options?.orientation ?? 'vertical',
+    showStates: options?.timelineStates ?? true,
+  };
+}
+export function stepsPreviewOptions(options?: DemoOptions): StepsPreviewOptions {
+  return {
+    orientation: options?.orientation ?? 'horizontal',
+    current: options?.stepsCurrent ?? 1,
+    showIcons: options?.stepsIcons ?? false,
+    errorLast: options?.stepsError ?? false,
+  };
+}
+export function tooltipPreviewOptions(options?: DemoOptions): TooltipPreviewOptions {
+  return { placement: options?.tooltipPlacement ?? 'top', disabled: options?.state === 'disabled' };
+}
+export function pageHeaderPreviewOptions(options?: DemoOptions): PageHeaderPreviewOptions {
+  return {
+    showBack: options?.pageHeaderBack ?? true,
+    showDescription: options?.pageHeaderDescription ?? true,
+    showActions: options?.pageHeaderActions ?? true,
+    showBreadcrumb: options?.pageHeaderBreadcrumb ?? false,
+  };
+}
+export function anchorPreviewOptions(options?: DemoOptions): AnchorPreviewOptions {
+  return { nested: options?.anchorNested ?? false };
+}
+export function tabsPreviewOptions(options?: DemoOptions): TabsPreviewOptions {
+  return {
+    variant: options?.tabsVariant ?? 'default',
+    orientation: options?.orientation ?? 'horizontal',
+    disabledItem: options?.tabsDisabledItem ?? false,
+  };
+}
+export function badgePreviewOptions(options?: DemoOptions): BadgePreviewOptions {
+  const tones = ['default', 'success', 'warning', 'danger', 'info'] as const;
+  return {
+    mode: options?.badgeMode ?? 'status',
+    variant: tones.find((value) => value === options?.variant) ?? 'default',
+    target: options?.badgeTarget ?? 'avatar',
+    count: options?.badgeCount ?? 8,
+    showZero: options?.badgeShowZero ?? false,
+  };
+}
 const part = (
   name: string,
   structure: string,
@@ -480,6 +924,130 @@ export const componentAnatomy: Record<ComponentId, AnatomyPart[]> = {
       'loading → aria-busy + disabled',
       '提交期间阻止重复操作，保留清楚的动作文本。',
       '--f-primary',
+    ),
+  ],
+  slider: [
+    part(
+      '数值轨道',
+      'Slider → input[type=range]',
+      '使用原生键盘与数值约束，配合明确标签。',
+      '--f-primary',
+      '--f-focus',
+    ),
+    part('刻度', 'marks → datalist', '可提供参考刻度；实际显示方式由浏览器决定。', '--f-muted'),
+  ],
+  rate: [
+    part(
+      '评分选项',
+      'Rate → radiogroup / radio',
+      '通过键盘或指针选择评分，可配置半分和清除。',
+      '--f-choice-size',
+      '--f-choice-gap',
+      '--f-primary',
+    ),
+    part(
+      '字段关系',
+      'Field → label / description / error',
+      '说明评分对象，并在必要时标记必填。',
+      '--f-field-gap',
+    ),
+  ],
+  'input-tag': [
+    part(
+      '输入区域',
+      'InputTag → input + tags',
+      '提供明确的标签说明，按 Enter 提交输入内容。',
+      '--f-input-height',
+      '--f-input-radius',
+    ),
+    part(
+      '标签与移除',
+      'tag → text + remove button',
+      '支持键盘和按钮删除；输入法组合期间不提交。',
+      '--f-subtle',
+      '--f-focus',
+    ),
+    part(
+      '字段关系',
+      'Field → label / description / error',
+      '必填时至少需要一个已添加的标签。',
+      '--f-field-gap',
+    ),
+  ],
+  upload: [
+    part(
+      '文件选择',
+      'Upload → input[type=file]',
+      '支持键盘和原生文件选择；具体文件类型仅为选择器提示。',
+      '--f-input-height',
+      '--f-input-radius',
+    ),
+    part(
+      '字段关系',
+      'Field → label / description / error',
+      '为文件选择提供清晰的名称和说明。',
+      '--f-field-gap',
+    ),
+  ],
+  mention: [
+    part(
+      '输入区域',
+      'Mention → input[role=combobox]',
+      '输入 @ 后选择候选，名称以普通文本插入光标位置。',
+      '--f-input-height',
+      '--f-input-radius',
+    ),
+    part(
+      '候选列表',
+      'listbox → option',
+      '方向键浏览并跳过禁用项，Enter 选择，Escape 关闭。',
+      '--f-nav-item-height',
+      '--f-overlay-radius',
+      '--f-overlay-padding',
+    ),
+    part(
+      '字段关系',
+      'Field → label / description / error',
+      '为输入区域提供明确标签与说明。',
+      '--f-field-gap',
+    ),
+  ],
+  'auto-complete': [
+    part(
+      '输入区域',
+      'AutoComplete → input[role=combobox]',
+      '输入文字筛选建议，保留自由输入与原生表单能力。',
+      '--f-input-height',
+      '--f-input-radius',
+    ),
+    part(
+      '候选列表',
+      'listbox → option',
+      '方向键浏览并跳过禁用项，Enter 选择，Escape 关闭。',
+      '--f-nav-item-height',
+      '--f-overlay-radius',
+      '--f-overlay-padding',
+    ),
+    part(
+      '字段关系',
+      'Field → label / description / error',
+      '为输入区域提供明确标签与说明。',
+      '--f-field-gap',
+    ),
+  ],
+  'time-picker': [
+    part(
+      '时间输入',
+      'TimePicker → input[type=time]',
+      '使用本地时间字符串，支持键盘、表单约束和原生选择器。',
+      '--f-input-height',
+      '--f-input-radius',
+    ),
+    part(
+      '字段关系',
+      'Field → label / description / error',
+      '通过标签和说明交代时间含义。',
+      '--f-field-gap',
     ),
   ],
   input: [
@@ -571,6 +1139,106 @@ export const componentAnatomy: Record<ComponentId, AnatomyPart[]> = {
       '--f-subtle',
       '--f-primary-soft',
     ),
+    part(
+      '计数与圆点',
+      'count / dot',
+      '数字超出上限时保留完整的辅助文本，圆点应提供说明。',
+      '--f-space',
+      '--f-danger',
+    ),
+    part('包裹内容', 'Badge → child', '可标记头像、图标或文本，不改变子元素行为。', '--f-space'),
+  ],
+  tag: [
+    part('标签内容', 'Tag → span', '以简短文字表达分类或状态。', '--f-text', '--f-subtle'),
+    part(
+      '关闭操作',
+      'button[type=button]',
+      '由使用方决定是否移除标签，关闭按钮提供可访问名称。',
+      '--f-focus',
+    ),
+  ],
+  timeline: [
+    part(
+      '时间节点',
+      'ol → li + marker',
+      '按时间顺序呈现事件，标记不作为唯一状态信息。',
+      '--f-primary',
+      '--f-border',
+    ),
+    part(
+      '事件内容',
+      'title / description / time',
+      '为事件提供可读标题、可选说明和机器可读日期。',
+      '--f-text',
+      '--f-muted',
+    ),
+  ],
+  steps: [
+    part(
+      '步骤标记',
+      'ol → li + marker',
+      '按顺序表达当前、完成、等待或错误状态，不依赖颜色传达状态。',
+      '--f-primary',
+      '--f-button-height',
+    ),
+    part(
+      '步骤内容',
+      'title / description',
+      '为每一步提供明确标题和可选说明。',
+      '--f-text',
+      '--f-muted',
+    ),
+  ],
+  tooltip: [
+    part(
+      '触发元素',
+      'Focusable child → aria-describedby',
+      '触发器保留自身语义并关联说明；禁用的原生按钮无法键盘聚焦。',
+      '--f-focus',
+    ),
+    part(
+      '文字气泡',
+      'span[role=tooltip]',
+      '说明应简短且非交互，指针或焦点离开及 Escape 可关闭。',
+      '--f-overlay-radius',
+      '--f-overlay-padding',
+      '--f-surface',
+      '--f-text',
+    ),
+  ],
+  'page-header': [
+    part(
+      '返回操作',
+      'button[type=button]',
+      '返回事件由应用处理，没有回调时不会提供可用的返回按钮。',
+      '--f-button-height',
+      '--f-button-radius',
+      '--f-focus',
+    ),
+    part(
+      '标题与说明',
+      'heading / description',
+      '按页面层级选择标题级别，说明用于补充当前任务。',
+      '--f-text',
+      '--f-muted',
+    ),
+    part(
+      '面包屑与操作',
+      'breadcrumb / actions',
+      '通过组合内容和插槽提供路径及页面动作。',
+      '--f-space',
+    ),
+  ],
+  anchor: [
+    part(
+      '锚点链接',
+      'nav / ol / a',
+      '原生链接支持键盘操作，当前项由应用指定。',
+      '--f-nav-item-height',
+      '--f-primary',
+      '--f-focus',
+    ),
+    part('子级目录', 'ol', '嵌套条目使用统一的层级缩进。', '--f-tree-indent', '--f-space'),
   ],
   card: [
     part(
@@ -635,6 +1303,116 @@ export const componentAnatomy: Record<ComponentId, AnatomyPart[]> = {
       '--f-primary',
     ),
     part('尺寸', 'size', '与同行文本和信息密度匹配。', '--f-space'),
+    part(
+      '头像组',
+      'AvatarGroup',
+      '聚合成员并在超过上限时显示剩余数量。',
+      '--f-space',
+      '--f-surface',
+    ),
+  ],
+  collapse: [
+    part(
+      '标题与触发器',
+      'button[aria-expanded]',
+      '标识每一组内容，并提供展开和收起操作。',
+      '--f-text',
+      '--f-input-height',
+    ),
+    part(
+      '内容面板',
+      'region[aria-labelledby]',
+      '与触发器关联，收起时隐藏。',
+      '--f-surface',
+      '--f-space',
+    ),
+    part(
+      '附加操作',
+      'extra / #extra-{value}',
+      '提供独立操作，避免点击时意外切换面板。',
+      '--f-text',
+    ),
+  ],
+  descriptions: [
+    part('字段标签', 'dt', '清楚说明当前字段的含义。', '--f-muted'),
+    part('字段内容', 'dd', '展示文本或组合内容，窄屏下自动换行。', '--f-text', '--f-space'),
+  ],
+  comment: [
+    part('作者与时间', 'author + time', '明确评论来源与时间。', '--f-text', '--f-muted'),
+    part('评论内容', 'content / #content', '容纳可组合的文字和内容。', '--f-text', '--f-space'),
+    part(
+      '操作与回复',
+      'actions / #actions + children / default slot',
+      '由业务接入真实的点赞、回复等操作。',
+      '--f-space',
+    ),
+  ],
+  statistic: [
+    part('指标名称', 'title', '说明数值代表的内容。', '--f-muted'),
+    part('数值与单位', 'value + prefix + suffix', '保留准确的数值、单位与精度。', '--f-text'),
+    part('趋势说明', 'trend + trendText', '趋势方向以文字语义表达，不仅依赖颜色。', '--f-muted'),
+  ],
+  image: [
+    part('图片', 'img + alt', '提供准确的替代文字与适合内容的比例。', '--f-surface', '--f-radius'),
+    part('图注', 'figcaption / #caption', '为图片补充必要说明。', '--f-muted', '--f-space'),
+    part(
+      '查看大图',
+      'button + dialog',
+      '可选打开大图，支持 Escape 与关闭后焦点恢复。',
+      '--f-surface',
+      '--f-border',
+    ),
+  ],
+  'back-top': [
+    part(
+      '返回按钮',
+      'button',
+      '超过设定的滚动距离后出现，激活时返回指定容器位置。',
+      '--f-button-height',
+      '--f-button-radius',
+      '--f-primary',
+    ),
+  ],
+  popover: [
+    part(
+      '触发按钮',
+      'button',
+      '用简洁文字说明打开的内容，按钮内不要再放按钮。',
+      '--f-border',
+      '--f-radius',
+    ),
+    part(
+      '浮层',
+      'dialog',
+      '承载可交互内容，支持 Escape 关闭与焦点恢复；位置暂不自动避让。',
+      '--f-surface',
+      '--f-overlay-radius',
+      '--f-overlay-padding',
+    ),
+    part(
+      '标题与内容',
+      'title + content / slots',
+      '提供浮层名称和必要操作。',
+      '--f-text',
+      '--f-space',
+    ),
+  ],
+  carousel: [
+    part(
+      '幻灯片',
+      'group[aria-roledescription]',
+      '每一项内容有可理解的顺序或名称。',
+      '--f-surface',
+      '--f-radius',
+    ),
+    part('切换操作', 'button', '由用户主动切换，支持方向键和边界状态。', '--f-text', '--f-border'),
+    part(
+      '指示器',
+      'button[aria-current]',
+      '标记当前位置，也可以直接跳转。',
+      '--f-primary',
+      '--f-space',
+    ),
   ],
   separator: [
     part(
@@ -830,11 +1608,53 @@ function configuredComponentCode(
   switch (id) {
     case 'button':
       imports = 'Button';
-      body = `<Button variant="${o.variant}" size="${o.size}"${disabled}${o.state === 'loading' ? ' loading' : ''}>保存更改</Button>`;
+      {
+        const content = o.buttonContent ?? 'text';
+        const icon = '<span aria-hidden="true">+</span>';
+        const children = `${content === 'leading' || content === 'icon' ? icon : ''}${content === 'icon' ? '' : '保存更改'}${content === 'trailing' ? icon : ''}`;
+        const iconProps =
+          content === 'icon' ? `${vue ? ' icon-only' : ' iconOnly'} aria-label="保存更改"` : '';
+        body = `<Button variant="${o.variant}" size="${o.buttonSize ?? 'md'}" tone="${o.buttonTone ?? 'standard'}" shape="${o.buttonShape ?? 'default'}"${iconProps}${disabled}${o.state === 'loading' ? ' loading' : ''}>${children}</Button>`;
+      }
       break;
-    case 'input':
-      imports = 'Field, Input';
-      body = `<Field label="工作邮箱"${error}>\n  <Input${control} type="email" placeholder="you@company.com" />\n</Field>`;
+    case 'input': {
+      const kind = o.inputKind ?? 'text';
+      const addon = o.inputAddon ?? 'none';
+      if (kind === 'password') {
+        imports = 'Field, PasswordInput';
+        body = `<Field label="密码"${error}>\n  <PasswordInput${control} placeholder="请输入密码" />\n</Field>`;
+      } else if (kind === 'search') {
+        imports = 'Field, SearchInput';
+        body = `<Field label="搜索成员"${error}>\n  <SearchInput${control} placeholder="输入成员名称" ${vue ? '@search="search"' : 'onSearch={(value) => console.log(value)}'} />\n</Field>`;
+        if (vue) state = 'function search(value: string) { console.log(value); }';
+      } else if (addon !== 'none') {
+        imports = 'Field, InputGroup, InputAddon, Input';
+        const before =
+          addon === 'start' || addon === 'both' ? '\n    <InputAddon>https://</InputAddon>' : '';
+        const after =
+          addon === 'end' || addon === 'both' ? '\n    <InputAddon>.example.com</InputAddon>' : '';
+        body = `<Field label="工作空间地址"${error}>\n  <InputGroup>${before}\n    <Input${control} placeholder="my-team" />${after}\n  </InputGroup>\n</Field>`;
+      } else {
+        imports = 'Field, Input';
+        body = `<Field label="工作邮箱"${error}>\n  <Input${control} type="email" placeholder="you@company.com" />\n</Field>`;
+      }
+      break;
+    }
+    case 'slider': {
+      imports = 'Field, Slider';
+      const marks = o.sliderMarks
+        ? vue
+          ? " :marks=\"[{value: 0, label: '0'}, {value: 50, label: '50'}, {value: 100, label: '100'}]\""
+          : " marks={[{value: 0, label: '0'}, {value: 50, label: '50'}, {value: 100, label: '100'}]}"
+        : '';
+      if (vue) state = 'const volume = ref(40);';
+      body = `<Field label="音量">\n  <Slider ${vue ? 'v-model="volume" :min="0" :max="100" :step="10"' : 'defaultValue={40} min={0} max={100} step={10}'}${disabled}${marks} />\n</Field>`;
+      break;
+    }
+    case 'time-picker':
+      imports = 'Field, TimePicker';
+      if (vue) state = "const time = ref('09:30');";
+      body = `<Field label="开始时间"${error}>\n  <TimePicker${control} name="start" min="09:00" max="18:00" ${vue ? 'v-model="time" :step="300"' : 'defaultValue="09:30" step={300}'} />\n</Field>`;
       break;
     case 'textarea':
       imports = 'Field, Textarea';
@@ -861,10 +1681,27 @@ function configuredComponentCode(
       imports = 'Alert';
       body = `<Alert variant="${o.variant}" title="团队配置">这里显示与当前任务相关的信息。</Alert>`;
       break;
-    case 'avatar':
-      imports = 'Avatar';
-      body = `<Avatar name="林晓" size="${o.size}" />`;
+    case 'avatar': {
+      const shape = o.avatarShape ?? 'circle';
+      const avatar = (name: string) =>
+        `<Avatar name="${name}" size="${o.size}" shape="${shape}" />`;
+      if (o.avatarMode === 'group') {
+        imports = 'Avatar, AvatarGroup';
+        const max = o.avatarMax ?? 3;
+        body = `<AvatarGroup label="项目成员" size="${o.size}" shape="${shape}" ${vue ? `:max="${max}"` : `max={${max}}`}>\n${['林晓', 'Alex Chen', '王宁', '张悦'].map((name) => `  ${avatar(name)}`).join('\n')}\n</AvatarGroup>`;
+      } else {
+        imports = 'Avatar';
+        body = avatar('林晓');
+      }
       break;
+    }
+    case 'collapse': {
+      imports = 'Collapse';
+      const items =
+        "[{ value: 'one', label: '项目说明', content: '设计与开发保持同步。' }, { value: 'two', label: '团队成员', content: '查看并管理成员。' }, { value: 'three', label: '更多设置', content: '此项目暂不可用。', disabled: true }]";
+      body = `<Collapse ${vue ? `:items="${items}" :default-value="['one']"` : `items={${items}} defaultValue={['one']}`} expandIconPosition="${o.collapseIcon ?? 'start'}"${o.collapseMode === 'accordion' ? ' accordion' : ''}${disabled} />`;
+      break;
+    }
     case 'separator':
       imports = 'Separator';
       body = `<div style=${vue ? '"display:flex;flex-wrap:wrap;align-items:center;gap:12px;min-height:64px"' : "{{display:'flex',flexWrap:'wrap',alignItems:'center',gap:12,minHeight:64}}"}>\n  <span>项目设置</span>\n  <Separator orientation="${o.orientation}" />\n  <span>团队成员</span>\n</div>`;
