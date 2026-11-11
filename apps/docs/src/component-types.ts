@@ -5,6 +5,7 @@ export type ComponentId =
   | 'auto-complete'
   | 'mention'
   | 'upload'
+  | 'upload-dropzone'
   | 'input-tag'
   | 'slider'
   | 'rate'
@@ -73,6 +74,9 @@ export interface DemoOptions {
   treeSize?: 'mini' | 'small' | 'medium' | 'big';
   treeShowLine?: boolean;
   treeShowIcon?: boolean;
+  treeSelectSearchable?: boolean;
+  treeSelectClearable?: boolean;
+  treeSelectShowPath?: boolean;
   multiple?: boolean;
   cascade?: boolean;
   buttonGroupCount?: number;
@@ -141,6 +145,11 @@ export interface DemoOptions {
   dateRangePresets?: boolean;
   uploadMultiple?: boolean;
   uploadAccept?: 'any' | 'image' | 'text';
+  uploadDropzoneAccept?: 'any' | 'image' | 'text';
+  uploadDropzoneMultiple?: boolean;
+  uploadDropzoneSizeLimit?: boolean;
+  uploadDropzoneCountLimit?: boolean;
+  uploadDropzoneExisting?: boolean;
   sliderMarks?: boolean;
   rateShape?: 'star' | 'heart';
   rateHalf?: boolean;

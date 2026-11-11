@@ -1,4 +1,5 @@
 import { treeVariantsExampleCode, treeVariantsOptions } from './TreeVariantsExample';
+import { treeSelectExampleCode, treeSelectPreviewOptions } from './TreeSelectExample';
 import { organizationTransferExampleCode } from './OrganizationTransferExample';
 import { searchSelectExampleCode, searchSelectPreviewOptions } from './SearchSelectExample';
 import { numberInputExampleCode, numberInputPreviewOptions } from './number-input-example-code';
@@ -16,6 +17,7 @@ import { inputTagExample } from './input-tag-preview';
 import { autoCompleteExample } from './auto-complete-preview';
 import { mentionExample } from './mention-preview';
 import { uploadExample } from './upload-preview';
+import { uploadDropzoneExampleCode, uploadDropzonePreviewOptions } from './UploadDropzoneExample';
 import { rateExample } from './rate-preview';
 import { tagExampleCode, type TagPreviewOptions } from './tag-example-code';
 import { timelineExampleCode, type TimelinePreviewOptions } from './timeline-example-code';
@@ -138,6 +140,21 @@ export const catalog = [
       ['name / form', 'string', '—'],
       ['onFilesChange / files-change', '(files: File[], event: Event) => void', '—'],
       ['controlSize', 'sm | md | lg', 'md'],
+    ],
+  },
+  {
+    id: 'upload-dropzone',
+    name: 'UploadDropzone',
+    cn: '文件拖放',
+    category: '文本与字段',
+    description: '选择或拖放本地文件，按类型、大小和数量筛选；文件传输由应用负责。',
+    props: [
+      ['accept', 'string', '—'],
+      ['multiple / disabled', 'boolean', 'false'],
+      ['maxFileSize', 'number（字节）', '—'],
+      ['maxFiles / existingCount', 'number', '— / 0'],
+      ['label', 'string', '选择或拖放文件'],
+      ['onFilesChange / filesChange', '(accepted, rejected, source) => void', '—'],
     ],
   },
   {
@@ -797,6 +814,8 @@ function reactCode(id: ComponentId) {
 export function componentCode(id: ComponentId, framework: Framework, options?: DemoOptions) {
   if (id === 'organization-transfer') return organizationTransferExampleCode(framework, options);
   if (id === 'tree') return treeVariantsExampleCode(framework, treeVariantsOptions(options));
+  if (id === 'tree-select')
+    return treeSelectExampleCode(framework, treeSelectPreviewOptions(options));
   if (id === 'search-select')
     return searchSelectExampleCode(framework, searchSelectPreviewOptions(options));
   if (id === 'number-input')
@@ -811,6 +830,8 @@ export function componentCode(id: ComponentId, framework: Framework, options?: D
   if (id === 'auto-complete') return autoCompleteExample(framework, options ?? defaultDemoOptions);
   if (id === 'mention') return mentionExample(framework, options ?? defaultDemoOptions);
   if (id === 'upload') return uploadExample(framework, options ?? defaultDemoOptions);
+  if (id === 'upload-dropzone')
+    return uploadDropzoneExampleCode(framework, uploadDropzonePreviewOptions(options));
   if (id === 'input-tag') return inputTagExample(framework, options ?? defaultDemoOptions);
   if (isEnterpriseId(id)) return enterpriseComponentCode(id, framework, options);
   if (id === 'tag') return tagExampleCode(framework, tagPreviewOptions(options));
@@ -1082,6 +1103,29 @@ export const componentAnatomy: Record<ComponentId, AnatomyPart[]> = {
       'Field → label / description / error',
       '为文件选择提供清晰的名称和说明。',
       '--f-field-gap',
+    ),
+  ],
+  'upload-dropzone': [
+    part(
+      '拖放区域',
+      'UploadDropzone → drop target',
+      '拖放或使用按钮选择文件。',
+      '--f-overlay-radius',
+      '--f-overlay-padding',
+      '--f-choice-gap',
+    ),
+    part(
+      '选择操作',
+      'button → input[type=file]',
+      '通过键盘和文件选择器操作。',
+      '--f-button-height',
+      '--f-button-radius',
+    ),
+    part(
+      '拒绝原因',
+      'validation → status',
+      '解释不符合限制的文件；应用负责传输和服务端校验。',
+      '--f-danger',
     ),
   ],
   mention: [

@@ -44,6 +44,21 @@ try {
     const variants = [['default', defaults]];
     if (component.id === 'organization-transfer')
       variants.push(['disabled', { ...defaults, state: 'disabled' }]);
+    if (component.id === 'tree-select')
+      variants.push([
+        'configured',
+        {
+          ...defaults,
+          multiple: true,
+          cascade: true,
+          treeSelectSearchable: false,
+          treeSelectClearable: false,
+          treeSelectShowPath: true,
+          treeSize: 'small',
+          treeShowLine: true,
+          treeShowIcon: true,
+        },
+      ]);
     if (enterpriseIds.has(component.id) && component.id !== 'list')
       variants.push(['disabled', { ...defaultDemoOptions, state: 'disabled' }]);
     if (multipleIds.has(component.id))
@@ -116,6 +131,19 @@ try {
       variants.push(['multiple-empty', { ...defaults, multiple: true, searchSelectEmpty: true }]);
     if (component.id === 'number-input')
       variants.push(['stacked', { ...defaults, numberStepperLayout: 'stacked' }]);
+    if (component.id === 'upload-dropzone')
+      variants.push([
+        'limited',
+        {
+          ...defaults,
+          uploadDropzoneAccept: 'image',
+          uploadDropzoneMultiple: false,
+          uploadDropzoneSizeLimit: true,
+          uploadDropzoneCountLimit: true,
+          uploadDropzoneExisting: true,
+          state: 'disabled',
+        },
+      ]);
     if (component.id === 'auto-complete') {
       variants.push([
         'details-suffix',

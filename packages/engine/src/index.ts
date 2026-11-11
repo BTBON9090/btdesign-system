@@ -8,3 +8,4 @@ export * from './autocomplete.js';
 export * from './organization.js';
 
 export * from './organization-transfer-model.js';
+export * from './file-validation.js';

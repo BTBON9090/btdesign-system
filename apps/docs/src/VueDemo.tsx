@@ -1,4 +1,6 @@
 import { treeVariantsVuePreview } from './TreeVariantsVuePreview';
+import { treeSelectVuePreview } from './TreeSelectVuePreview';
+import { treeSelectPreviewOptions } from './TreeSelectExample';
 import { treeVariantsOptions } from './TreeVariantsExample';
 import { createOrganizationTransferVuePreview } from './OrganizationTransferVuePreview';
 import { progressVuePreview } from './ProgressVuePreview';
@@ -8,6 +10,8 @@ import { inputTagVuePreview } from './input-tag-preview';
 import { autoCompleteVuePreview } from './auto-complete-preview';
 import { mentionVuePreview } from './mention-preview';
 import { uploadVuePreview } from './upload-preview';
+import { createUploadDropzoneVuePreview } from './UploadDropzoneVuePreview';
+import { uploadDropzonePreviewOptions } from './UploadDropzoneExample';
 import { rateVuePreview } from './rate-preview';
 import { isEnterpriseId } from './enterprise-catalog';
 import { useEffect, useRef, useState } from 'react';
@@ -94,8 +98,9 @@ export function VueDemo({ kind, onAction, options }: VueDemoProps) {
         const TagVueDemo = createTagVueDemo(vue, ui);
         const AnchorVueDemo = createAnchorVueDemo(vue, ui.Anchor);
         const NumberInputVueDemo = createNumberInputVueDemo(vue, ui.NumberInput, ui.Field);
+        const UploadDropzoneVueDemo = createUploadDropzoneVuePreview(vue, ui.UploadDropzone);
         const OrganizationTransferVueDemo = createOrganizationTransferVuePreview(vue, ui);
-        if (isEnterpriseId(kind) && kind !== 'tree') {
+        if (isEnterpriseId(kind) && kind !== 'tree' && kind !== 'tree-select') {
           app = createApp(
             createEnterpriseVueDemo(
               vue,
@@ -199,7 +204,11 @@ export function VueDemo({ kind, onAction, options }: VueDemoProps) {
                   return h(OrganizationTransferVueDemo, { disabled: o.state === 'disabled' });
                 if (kind === 'number-input')
                   return h(NumberInputVueDemo, { options: numberInputPreviewOptions(o) });
+                if (kind === 'upload-dropzone')
+                  return h(UploadDropzoneVueDemo, { options: uploadDropzonePreviewOptions(o) });
                 if (kind === 'tree') return treeVariantsVuePreview(vue, ui, treeVariantsOptions(o));
+                if (kind === 'tree-select')
+                  return treeSelectVuePreview(vue, ui, treeSelectPreviewOptions(o));
                 if (kind === 'search-select')
                   return searchSelectVuePreview(vue, ui, searchSelectPreviewOptions(o));
                 if (kind === 'tabs') {

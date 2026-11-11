@@ -1,7 +1,7 @@
 export const componentRegistry = {
   schemaVersion: 1,
   library: 'BTDESIGN',
-  version: '0.8.0',
+  version: '0.9.0',
   packages: {
     react: '@btdesign/react',
     vue: '@btdesign/vue',
@@ -130,6 +130,23 @@ export const componentRegistry = {
       vue: { filesChange: '(files:File[])=>void' },
       notes:
         'This is a file-selection control. Upload transport, progress, retries and persistence belong to the application.',
+    },
+    {
+      name: 'UploadDropzone',
+      purpose: 'Choose or drop files for application-managed processing',
+      props: {
+        accept: 'HTML accept list',
+        multiple: 'boolean',
+        maxFileSize: 'number (bytes)',
+        maxFiles: 'number (includes existingCount)',
+        existingCount: 'number (supplied by application)',
+        label: 'string',
+        disabled: 'boolean',
+      },
+      react: { onFilesChange: '(accepted, rejected, source)=>void', children: 'ReactNode' },
+      vue: { filesChange: '(accepted, rejected, source)', 'default slot': 'custom guidance' },
+      notes:
+        'Client metadata checks are not security validation. The application owns files, transfer, authorization and server-side checks. Dropped files are not inserted into a native form input.',
     },
     {
       name: 'SearchSelect',
@@ -1016,14 +1033,25 @@ export const componentRegistry = {
         name: 'string',
         placeholder: 'string',
         disabled: 'boolean',
+        searchable: 'boolean (React defaults true, Vue defaults false)',
+        clearable: 'boolean, default true (individual multi-select tags remain removable)',
+        showPath: 'boolean',
+        expandedKeys: 'string[]',
+        defaultExpandedKeys: 'string[] (React defaults collapsed, Vue expands root nodes)',
+        size: ['mini', 'small', 'medium', 'big'],
+        showLine: 'boolean',
       },
       react: {
         value: 'string | string[]',
         onValueChange: '(value)=>void',
+        onExpandedChange: '(keys)=>void',
+        renderIcon: '(node:FlatTreeNode)=>ReactNode (decorative)',
       },
       vue: {
         modelValue: 'string | string[]',
         'update:modelValue': 'string | string[]',
+        'update:expandedKeys': 'string[]',
+        'icon slot': '{ node: FlatTreeNode } (decorative)',
       },
       notes:
         'Shares Tree selection rules. Selected labels can be removed and cleared; popup closes and restores focus. Search is local, not remote loading.',

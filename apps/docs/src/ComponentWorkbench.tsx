@@ -60,6 +60,7 @@ const disableable: ComponentId[] = [
   'auto-complete',
   'mention',
   'upload',
+  'upload-dropzone',
   'input-tag',
   'textarea',
   'select',
@@ -175,7 +176,7 @@ export function ComponentWorkbench({
               </select>
             </label>
           )}
-          {kind === 'tree' && (
+          {(kind === 'tree' || kind === 'tree-select') && (
             <>
               <label>
                 节点尺寸
@@ -212,6 +213,45 @@ export function ComponentWorkbench({
                 >
                   <option value="hide">隐藏</option>
                   <option value="show">显示</option>
+                </select>
+              </label>
+            </>
+          )}
+          {kind === 'tree-select' && (
+            <>
+              <label>
+                搜索
+                <select
+                  aria-label="预览树选择搜索"
+                  value={options.treeSelectSearchable === false ? 'hide' : 'show'}
+                  onChange={(event) =>
+                    update('treeSelectSearchable', event.target.value === 'show')
+                  }
+                >
+                  <option value="show">开启</option>
+                  <option value="hide">关闭</option>
+                </select>
+              </label>
+              <label>
+                清空
+                <select
+                  aria-label="预览树选择清空"
+                  value={options.treeSelectClearable === false ? 'hide' : 'show'}
+                  onChange={(event) => update('treeSelectClearable', event.target.value === 'show')}
+                >
+                  <option value="show">允许</option>
+                  <option value="hide">不允许</option>
+                </select>
+              </label>
+              <label>
+                已选显示
+                <select
+                  aria-label="预览树选择已选显示"
+                  value={options.treeSelectShowPath ? 'path' : 'label'}
+                  onChange={(event) => update('treeSelectShowPath', event.target.value === 'path')}
+                >
+                  <option value="label">节点名称</option>
+                  <option value="path">完整路径</option>
                 </select>
               </label>
             </>
@@ -430,6 +470,78 @@ export function ComponentWorkbench({
                   <option value="text">文本</option>
                 </select>
               </label>
+            </>
+          )}
+          {kind === 'upload-dropzone' && (
+            <>
+              <label>
+                选择数量
+                <select
+                  aria-label="预览拖放文件数量"
+                  value={options.uploadDropzoneMultiple === false ? 'single' : 'multiple'}
+                  onChange={(event) =>
+                    update('uploadDropzoneMultiple', event.target.value === 'multiple')
+                  }
+                >
+                  <option value="single">单个</option>
+                  <option value="multiple">多个</option>
+                </select>
+              </label>
+              <label>
+                文件类型
+                <select
+                  aria-label="预览拖放文件类型"
+                  value={options.uploadDropzoneAccept ?? 'any'}
+                  onChange={(event) =>
+                    update('uploadDropzoneAccept', event.target.value as 'any' | 'image' | 'text')
+                  }
+                >
+                  <option value="any">全部</option>
+                  <option value="image">图片</option>
+                  <option value="text">文本</option>
+                </select>
+              </label>
+              <label>
+                文件大小
+                <select
+                  aria-label="预览拖放文件大小"
+                  value={options.uploadDropzoneSizeLimit ? 'limited' : 'any'}
+                  onChange={(event) =>
+                    update('uploadDropzoneSizeLimit', event.target.value === 'limited')
+                  }
+                >
+                  <option value="any">不限</option>
+                  <option value="limited">每个最多 1 MB</option>
+                </select>
+              </label>
+              <label>
+                总数上限
+                <select
+                  aria-label="预览拖放文件上限"
+                  value={options.uploadDropzoneCountLimit ? 'limited' : 'any'}
+                  onChange={(event) =>
+                    update('uploadDropzoneCountLimit', event.target.value === 'limited')
+                  }
+                >
+                  <option value="any">不限</option>
+                  <option value="limited">最多 3 个</option>
+                </select>
+              </label>
+              {options.uploadDropzoneCountLimit && (
+                <label>
+                  已有文件
+                  <select
+                    aria-label="预览已有文件数量"
+                    value={options.uploadDropzoneExisting ? 'one' : 'none'}
+                    onChange={(event) =>
+                      update('uploadDropzoneExisting', event.target.value === 'one')
+                    }
+                  >
+                    <option value="none">0 个</option>
+                    <option value="one">1 个</option>
+                  </select>
+                </label>
+              )}
             </>
           )}
           {kind === 'mention' && (

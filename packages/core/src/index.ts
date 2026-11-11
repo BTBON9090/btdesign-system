@@ -187,7 +187,7 @@ export function getProjectFiles(input: ProjectSpec): Record<string, string> {
 
 ## 启动
 
-需要 Node.js 22.12 或更高版本与 npm。先确认 packages 目录包含 btdesign-tokens-0.8.0.tgz 、btdesign-engine-0.8.0.tgz 和 btdesign-${project.framework}-0.8.0.tgz，然后在本目录执行：
+需要 Node.js 22.12 或更高版本与 npm。先确认 packages 目录包含 btdesign-tokens-0.9.0.tgz 、btdesign-engine-0.9.0.tgz 和 btdesign-${project.framework}-0.9.0.tgz，然后在本目录执行：
 
     npm install
     npm run dev

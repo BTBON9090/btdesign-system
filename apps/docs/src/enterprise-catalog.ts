@@ -181,6 +181,10 @@ export const enterpriseCatalog = [
       ['multiple / cascade', 'boolean', 'false'],
       ['value / modelValue', 'string | string[]', '—'],
       ['label / name / placeholder', '字段信息', '—'],
+      ['searchable / clearable / showPath', 'boolean', '双端搜索默认值不同 / true / false'],
+      ['expandedKeys / defaultExpandedKeys', 'string[]', '双端默认展开不同'],
+      ['size / showLine', '树节点尺寸 / boolean', 'medium / false'],
+      ['renderIcon / #icon', '装饰性内容（node）', '—'],
     ],
   },
   {

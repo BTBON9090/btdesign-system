@@ -106,6 +106,11 @@ const partsByComponent: Record<ComponentId, ControlPart[]> = {
     field(),
   ],
   upload: [input(), field()],
+  'upload-dropzone': [
+    part('dropzone', '拖放区域', ['overlayRadius', 'overlayPadding', 'choiceGap'], [0]),
+    button(),
+    part('validation', '拒绝原因', [], [2]),
+  ],
   mention: [input(), part('options', '候选项', ['navigationHeight'], [1]), overlay(), field()],
   'input-tag': [input(), part('tags', '标签与移除', [], [1]), field()],
   slider: [part('track', '滑块与轨道', [], [0, 1]), field()],

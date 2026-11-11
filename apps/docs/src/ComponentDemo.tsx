@@ -1,5 +1,7 @@
 import { OrganizationTransferPreview } from './OrganizationTransferPreview';
 import { TreeVariantsPreview } from './TreeVariantsPreview';
+import { TreeSelectPreview } from './TreeSelectPreview';
+import { treeSelectPreviewOptions } from './TreeSelectExample';
 import { treeVariantsOptions } from './TreeVariantsExample';
 import { SearchSelectPreview } from './SearchSelectPreview';
 import { searchSelectPreviewOptions } from './SearchSelectExample';
@@ -12,6 +14,8 @@ import { InputTagPreview } from './input-tag-preview';
 import { AutoCompletePreview } from './auto-complete-preview';
 import { MentionPreview } from './mention-preview';
 import { UploadPreview } from './upload-preview';
+import { UploadDropzonePreview } from './UploadDropzonePreview';
+import { uploadDropzonePreviewOptions } from './UploadDropzoneExample';
 import { RatePreview } from './rate-preview';
 import { isEnterpriseId } from './enterprise-catalog';
 import { StructureDemo } from './StructureDemo';
@@ -33,6 +37,7 @@ import {
   InputAddon,
   RadioGroup,
   NumberInput,
+  UploadDropzone,
   Breadcrumb,
   Pagination,
   EmptyState,
@@ -139,6 +144,15 @@ export function ComponentDemo({
   if (kind === 'organization-transfer')
     return <OrganizationTransferPreview disabled={options?.state === 'disabled'} />;
   if (kind === 'tree') return <TreeVariantsPreview options={treeVariantsOptions(options)} />;
+  if (kind === 'upload-dropzone')
+    return (
+      <UploadDropzonePreview
+        component={UploadDropzone}
+        options={uploadDropzonePreviewOptions(options)}
+      />
+    );
+  if (kind === 'tree-select')
+    return <TreeSelectPreview options={treeSelectPreviewOptions(options)} />;
   if (kind === 'search-select')
     return <SearchSelectPreview options={searchSelectPreviewOptions(options)} />;
   if (kind === 'number-input')

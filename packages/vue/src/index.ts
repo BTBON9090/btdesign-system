@@ -49,6 +49,9 @@ export type { ProgressStatus, ProgressType } from './progress.js';
 import { ResizeBox } from './resize-box.js';
 import { SearchSelect } from './search-select.js';
 import { OrganizationTransfer } from './organization-transfer.js';
+import { UploadDropzone } from './upload-dropzone.js';
+export { UploadDropzone } from './upload-dropzone.js';
+export type { UploadDropzoneSource } from './upload-dropzone.js';
 export * from './enterprise-choice.js';
 export * from './enterprise-form.js';
 export * from './enterprise-date.js';
@@ -798,6 +801,7 @@ const components = {
   ResizeBox,
   SearchSelect,
   OrganizationTransfer,
+  UploadDropzone,
   Separator,
   Table,
   Skeleton,

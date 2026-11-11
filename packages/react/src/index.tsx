@@ -94,6 +94,8 @@ export * from './statistic.js';
 export * from './tooltip.js';
 export { OrganizationTransfer } from './organization-transfer.js';
 export type { OrganizationTransferProps } from './organization-transfer.js';
+export { UploadDropzone } from './upload-dropzone.js';
+export type { UploadDropzoneProps, UploadDropzoneSource } from './upload-dropzone.js';
 export { AutoComplete } from './auto-complete.js';
 export type { AutoCompleteProps } from './auto-complete.js';
 export * from './image.js';

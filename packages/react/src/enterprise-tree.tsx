@@ -257,6 +257,8 @@ export function Tree({
   );
 }
 export interface TreeSelectProps extends TreeProps {
+  /** Show the clear-all action; individual multi-select tags remain removable. */
+  clearable?: boolean;
   placeholder?: string;
   showPath?: boolean;
 }
@@ -271,6 +273,7 @@ export function TreeSelect({
   disabled,
   name,
   placeholder = '请选择',
+  clearable = true,
   showPath = false,
   className,
   id: idProp,
@@ -339,7 +342,7 @@ export function TreeSelect({
         </span>
         <span aria-hidden="true">⌄</span>
       </button>
-      {keys.length > 0 && (
+      {keys.length > 0 && (multiple || clearable) && (
         <div className="f-tree-select-tags">
           {multiple &&
             keys.map((key) => (
@@ -355,20 +358,22 @@ export function TreeSelect({
                 </button>
               </span>
             ))}
-          <button
-            type="button"
-            className="f-tree-select-clear f-button f-button--ghost f-button--sm"
-            disabled={field.disabled}
-            onClick={() =>
-              change(
-                multiple
-                  ? keys.filter((key) => flat.find((item) => item.key === key)?.disabled)
-                  : '',
-              )
-            }
-          >
-            清空
-          </button>
+          {clearable && (
+            <button
+              type="button"
+              className="f-tree-select-clear f-button f-button--ghost f-button--sm"
+              disabled={field.disabled}
+              onClick={() =>
+                change(
+                  multiple
+                    ? keys.filter((key) => flat.find((item) => item.key === key)?.disabled)
+                    : '',
+                )
+              }
+            >
+              清空
+            </button>
+          )}
         </div>
       )}
       {popup.open && (
@@ -404,7 +409,7 @@ export function OrgPicker({ label = '组织架构', ...props }: TreeSelectProps)
 }
 export interface CascaderProps extends Omit<
   TreeSelectProps,
-  'cascade' | 'expandedKeys' | 'defaultExpandedKeys' | 'onExpandedChange'
+  'cascade' | 'clearable' | 'expandedKeys' | 'defaultExpandedKeys' | 'onExpandedChange'
 > {
   changeOnSelect?: boolean;
 }

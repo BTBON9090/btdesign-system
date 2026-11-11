@@ -4169,3 +4169,36 @@
   color: var(--f-muted);
   pointer-events: none;
 }
+
+/* UploadDropzone is a file handoff surface; transfer state belongs to the application. */
+.f-upload-dropzone {
+  display: grid;
+  justify-items: center;
+  gap: var(--f-choice-gap, 12px);
+  padding: var(--f-overlay-padding, 20px);
+  border: 1px dashed var(--f-border);
+  border-radius: var(--f-overlay-radius, var(--f-radius));
+  background: var(--f-surface);
+  color: var(--f-text);
+  font-family: var(--f-font);
+  text-align: center;
+}
+.f-upload-dropzone[data-dragging] {
+  border-color: var(--f-primary);
+  background: var(--f-primary-soft);
+}
+.f-upload-dropzone[data-disabled] {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+.f-upload-dropzone > p {
+  margin: 0;
+  color: var(--f-muted);
+}
+.f-upload-dropzone-rejections {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--f-danger);
+  overflow-wrap: anywhere;
+}

@@ -255,8 +255,9 @@ export const Tree = defineComponent({
                   ],
                 );
               })
-            : h('div', { class: 'f-tree-empty' }, '无匹配节点'),
+            : [],
         ),
+        nodes.length ? null : h('div', { class: 'f-tree-empty', role: 'status' }, '无匹配节点'),
         props.name
           ? asArray(state.value.value).map((value) =>
               h('input', { type: 'hidden', name: props.name, value, disabled }),
@@ -274,9 +275,13 @@ export const TreeSelect = defineComponent({
     placeholder: { type: String, default: '请选择' },
     showPath: Boolean,
     clearable: { type: Boolean, default: true },
+    expandedKeys: { type: Array as PropType<string[]>, default: undefined },
+    defaultExpandedKeys: { type: Array as PropType<string[]>, default: undefined },
+    size: { type: String as PropType<'mini' | 'small' | 'medium' | 'big'>, default: undefined },
+    showLine: Boolean,
   },
-  emits: ['update:modelValue'],
-  setup(props, { attrs, emit }) {
+  emits: ['update:modelValue', 'update:expandedKeys'],
+  setup(props, { attrs, emit, slots }) {
     const root = ref<HTMLElement>();
     const trigger = ref<HTMLButtonElement>();
     const open = ref(false);
@@ -405,19 +410,28 @@ export const TreeSelect = defineComponent({
                   class: 'f-overlay f-tree-select-popup',
                 },
                 [
-                  h(Tree, {
-                    nodes: props.nodes,
-                    modelValue: state.value.value,
-                    multiple: props.multiple,
-                    cascade: props.cascade,
-                    searchable: props.searchable,
-                    label: props.label,
-                    disabled,
-                    defaultExpandedKeys: flat
-                      .filter((n) => n.depth === 0 && !n.leaf)
-                      .map((n) => n.key),
-                    'onUpdate:modelValue': change,
-                  }),
+                  h(
+                    Tree,
+                    {
+                      nodes: props.nodes,
+                      modelValue: state.value.value,
+                      multiple: props.multiple,
+                      cascade: props.cascade,
+                      searchable: props.searchable,
+                      label: props.label,
+                      disabled,
+                      expandedKeys: props.expandedKeys,
+                      defaultExpandedKeys:
+                        props.defaultExpandedKeys ??
+                        flat.filter((n) => n.depth === 0 && !n.leaf).map((n) => n.key),
+                      size: props.size,
+                      showLine: props.showLine,
+                      'onUpdate:modelValue': change,
+                      'onUpdate:expandedKeys': (keys: string[]) =>
+                        emit('update:expandedKeys', keys),
+                    },
+                    slots.icon ? { icon: slots.icon } : undefined,
+                  ),
                   h(
                     'button',
                     {
