@@ -9,12 +9,42 @@ import React, {
 import { safeHref, type NavItem } from '@btdesign/engine';
 import { cx, useControllable, usePopup } from './enterprise-utils.js';
 
+/** Keys must be stable and unique throughout the navigation tree. */
+export type NavMenuItem = Omit<NavItem, 'children'> & {
+  children?: NavMenuItem[];
+  /** Opt in to a separate parent link; disclosure remains an independent button. */
+  parentLink?: boolean;
+};
 export interface NavigationProps extends Omit<HTMLAttributes<HTMLElement>, 'onSelect'> {
-  items: NavItem[];
+  items: NavMenuItem[];
   activeKey?: string;
   label?: string;
   disabled?: boolean;
   onSelect?: (key: string) => void;
+  expandedKeys?: string[];
+  defaultExpandedKeys?: string[];
+  onExpandedChange?: (keys: string[]) => void;
+  /** Decorative non-interactive content only; item.label remains the accessible name. */
+  renderIcon?: (item: NavMenuItem, depth: number) => React.ReactNode;
+}
+export interface SidebarNavProps extends NavigationProps {
+  collapsed?: boolean;
+  defaultCollapsed?: boolean;
+  onCollapsedChange?: (value: boolean) => void;
+  showCollapseControl?: boolean;
+}
+function hasDecorativeIcon(node: React.ReactNode): boolean {
+  if (node == null || typeof node === 'boolean') return false;
+  if (typeof node === 'string') return node.trim().length > 0;
+  if (Array.isArray(node)) return node.some(hasDecorativeIcon);
+  if (React.isValidElement<{ children?: React.ReactNode }>(node) && node.type === React.Fragment)
+    return hasDecorativeIcon(node.props.children);
+  return true;
+}
+function branchKeys(items: NavMenuItem[]): string[] {
+  return items.flatMap((item) =>
+    item.children?.length ? [item.key, ...branchKeys(item.children)] : [],
+  );
 }
 function Navigation({
   items,
@@ -22,58 +52,180 @@ function Navigation({
   label,
   disabled,
   onSelect,
+  expandedKeys,
+  defaultExpandedKeys,
+  onExpandedChange,
+  renderIcon,
   className,
   orientation,
+  collapsed,
+  defaultCollapsed = false,
+  onCollapsedChange,
+  showCollapseControl = false,
   ...props
-}: NavigationProps & { orientation: 'sidebar' | 'top' }) {
-  const [collapsed, setCollapsed] = useState<string[]>([]);
-  const render = (nodes: NavItem[], inheritedDisabled = false): React.ReactNode => (
+}: SidebarNavProps & { orientation: 'sidebar' | 'top' }) {
+  // The legacy default uses collapsed exceptions so newly added groups are open as before.
+  const implicit = useRef(defaultExpandedKeys === undefined);
+  const [closed, setClosed] = useState<string[]>([]);
+  const [localExpanded, setLocalExpanded] = useState(defaultExpandedKeys ?? []);
+  const [localCollapsed, setLocalCollapsed] = useState(defaultCollapsed);
+  const [flyout, setFlyout] = useState<string | null>(null);
+  const nav = useRef<HTMLElement>(null);
+  const flyoutButtons = useRef(new Map<string, HTMLButtonElement>());
+  const id = useId();
+  const isCollapsed = orientation === 'sidebar' && (collapsed ?? localCollapsed);
+  const allBranches = branchKeys(items);
+  const expanded =
+    expandedKeys ??
+    (implicit.current ? allBranches.filter((key) => !closed.includes(key)) : localExpanded);
+  const changeExpanded = (key: string) => {
+    const wasExpanded = expanded.includes(key);
+    const next = wasExpanded ? expanded.filter((value) => value !== key) : [...expanded, key];
+    if (expandedKeys === undefined) {
+      if (implicit.current)
+        setClosed((previous) =>
+          wasExpanded ? [...previous, key] : previous.filter((value) => value !== key),
+        );
+      else setLocalExpanded(next);
+    }
+    onExpandedChange?.(next);
+  };
+  const changeCollapsed = () => {
+    if (disabled) return;
+    const next = !isCollapsed;
+    if (collapsed === undefined) setLocalCollapsed(next);
+    onCollapsedChange?.(next);
+  };
+  useEffect(() => {
+    if (!isCollapsed || disabled) setFlyout(null);
+  }, [isCollapsed, disabled]);
+  useEffect(() => {
+    if (
+      flyout &&
+      !items.some((item) => item.key === flyout && !item.disabled && item.children?.length)
+    )
+      setFlyout(null);
+  }, [flyout, items]);
+  useEffect(() => {
+    if (!flyout) return;
+    const close = (event: PointerEvent) => {
+      const group = flyoutButtons.current.get(flyout)?.closest('.f-nav-item');
+      if (event.target instanceof Node && !group?.contains(event.target)) setFlyout(null);
+    };
+    document.addEventListener('pointerdown', close);
+    return () => document.removeEventListener('pointerdown', close);
+  }, [flyout]);
+  const render = (nodes: NavMenuItem[], depth = 0, inheritedDisabled = false): React.ReactNode => (
     <ul className="f-nav-list">
       {nodes.map((item) => {
-        const blocked = disabled || inheritedDisabled || item.disabled;
-        return (
-          <li key={item.key} className="f-nav-item">
-            {item.children?.length ? (
-              <>
-                <button
-                  type="button"
-                  className="f-nav-group-toggle"
-                  disabled={blocked}
-                  aria-expanded={!collapsed.includes(item.key)}
-                  onClick={() =>
-                    setCollapsed((previous) =>
-                      previous.includes(item.key)
-                        ? previous.filter((key) => key !== item.key)
-                        : [...previous, item.key],
-                    )
+        const pathId = item.key;
+        const blocked = !!(disabled || inheritedDisabled || item.disabled);
+        const hasChildren = !!item.children?.length;
+        const icon = renderIcon?.(item, depth);
+        const hasIcon = hasDecorativeIcon(icon);
+        const compactItem = isCollapsed && depth === 0;
+        const flyoutItem = compactItem && hasChildren;
+        const open = flyoutItem ? flyout === pathId : expanded.includes(item.key);
+        const panelId = `${id}-nav-${encodeURIComponent(pathId)}`;
+        const safeLink = !blocked ? safeHref(item.href) : undefined;
+        const content = (
+          <>
+            {hasIcon && (
+              <span className="f-nav-icon" aria-hidden="true">
+                {icon}
+              </span>
+            )}
+            <span
+              className={cx(
+                'f-nav-label',
+                compactItem && hasIcon && 'f-nav-label--visually-hidden',
+              )}
+            >
+              {item.label}
+            </span>
+          </>
+        );
+        const select = () => {
+          if (!blocked) onSelect?.(item.key);
+        };
+        const groupButton = (
+          <button
+            type="button"
+            className="f-nav-group-toggle"
+            title={compactItem && hasIcon ? item.label : undefined}
+            disabled={blocked}
+            ref={
+              flyoutItem
+                ? (node) => {
+                    if (node) flyoutButtons.current.set(pathId, node);
+                    else flyoutButtons.current.delete(pathId);
                   }
-                >
-                  <span>{item.label}</span>
-                  <span aria-hidden="true">{collapsed.includes(item.key) ? '›' : '⌄'}</span>
-                </button>
-                {!collapsed.includes(item.key) && (
-                  <div className="f-nav-children">{render(item.children, !!blocked)}</div>
-                )}
-              </>
-            ) : safeHref(item.href) && !blocked ? (
+                : undefined
+            }
+            aria-label={
+              item.parentLink && safeLink ? `${open ? '收起' : '展开'}${item.label}` : undefined
+            }
+            aria-expanded={open}
+            aria-controls={open ? panelId : undefined}
+            onClick={() => {
+              if (blocked) return;
+              if (flyoutItem) setFlyout(open ? null : pathId);
+              else changeExpanded(item.key);
+            }}
+          >
+            {!(item.parentLink && safeLink) && content}
+            <span aria-hidden="true">{open ? '⌄' : '›'}</span>
+          </button>
+        );
+        const control = hasChildren ? (
+          item.parentLink && safeLink ? (
+            <div className="f-nav-parent">
               <a
-                className="f-nav-link"
-                href={safeHref(item.href)}
+                className="f-nav-link f-nav-parent-link"
+                title={compactItem && hasIcon ? item.label : undefined}
+                href={safeLink}
                 aria-current={activeKey === item.key ? 'page' : undefined}
-                onClick={() => onSelect?.(item.key)}
+                onClick={select}
               >
-                {item.label}
+                {content}
               </a>
-            ) : (
-              <button
-                type="button"
-                className="f-nav-link"
-                disabled={blocked}
-                aria-current={activeKey === item.key ? 'page' : undefined}
-                onClick={() => onSelect?.(item.key)}
+              {groupButton}
+            </div>
+          ) : (
+            groupButton
+          )
+        ) : safeLink ? (
+          <a
+            className="f-nav-link"
+            title={compactItem && hasIcon ? item.label : undefined}
+            href={safeLink}
+            aria-current={activeKey === item.key ? 'page' : undefined}
+            onClick={select}
+          >
+            {content}
+          </a>
+        ) : (
+          <button
+            type="button"
+            className="f-nav-link"
+            title={compactItem && hasIcon ? item.label : undefined}
+            disabled={blocked}
+            aria-current={activeKey === item.key ? 'page' : undefined}
+            onClick={select}
+          >
+            {content}
+          </button>
+        );
+        return (
+          <li key={item.key} className={cx('f-nav-item', flyoutItem && 'f-nav-item--popup')}>
+            {control}
+            {hasChildren && open && (
+              <div
+                id={panelId}
+                className={cx('f-nav-children', flyoutItem && 'f-nav-children--popup')}
               >
-                {item.label}
-              </button>
+                {render(item.children!, depth + 1, blocked)}
+              </div>
             )}
           </li>
         );
@@ -83,14 +235,43 @@ function Navigation({
   return (
     <nav
       {...props}
-      className={cx('f-nav', `f-nav--${orientation}`, className)}
+      ref={nav}
+      className={cx('f-nav', `f-nav--${orientation}`, isCollapsed && 'f-nav--collapsed', className)}
       aria-label={label ?? (orientation === 'sidebar' ? '侧边导航' : '顶部导航')}
+      onKeyDown={(event) => {
+        props.onKeyDown?.(event);
+        if (!event.defaultPrevented && event.key === 'Escape' && flyout) {
+          event.preventDefault();
+          event.stopPropagation();
+          const target = flyoutButtons.current.get(flyout);
+          setFlyout(null);
+          target?.focus();
+        }
+      }}
+      onBlur={(event) => {
+        props.onBlur?.(event);
+        if (flyout) {
+          const group = flyoutButtons.current.get(flyout)?.closest('.f-nav-item');
+          if (!(event.relatedTarget instanceof Node && group?.contains(event.relatedTarget)))
+            setFlyout(null);
+        }
+      }}
     >
       {render(items)}
+      {orientation === 'sidebar' && showCollapseControl && (
+        <button
+          type="button"
+          className="f-nav-collapse-control f-button f-button--ghost"
+          disabled={disabled}
+          onClick={changeCollapsed}
+        >
+          {isCollapsed ? '展开侧栏' : '收起侧栏'}
+        </button>
+      )}
     </nav>
   );
 }
-export function SidebarNav(props: NavigationProps) {
+export function SidebarNav(props: SidebarNavProps) {
   return <Navigation {...props} orientation="sidebar" />;
 }
 export function TopNav(props: NavigationProps) {

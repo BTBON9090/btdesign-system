@@ -28,6 +28,13 @@ export interface ComponentOverrides {
   tree?: { rowHeight?: number; indent?: number };
   navigation?: { itemHeight?: number; padding?: number };
   breadcrumb?: { itemGap?: number; separatorGap?: number; fontSize?: number };
+  tabs?: {
+    minHeight?: number;
+    paddingInline?: number;
+    gap?: number;
+    fontSize?: number;
+    iconGap?: number;
+  };
   list?: { rowPadding?: number; gap?: number };
   fileList?: { thumbnailSize?: number; pictureCardSize?: number; pictureRadius?: number };
   overlay?: { radius?: number; padding?: number };
@@ -57,6 +64,19 @@ export const componentGeometry = {
   tree: {
     rowHeight: { min: 28, max: 56, comfortable: 38, compact: 30, token: '--f-tree-row-height' },
     indent: { min: 12, max: 32, comfortable: 20, compact: 16, token: '--f-tree-indent' },
+  },
+  tabs: {
+    minHeight: { min: 24, max: 64, comfortable: 32, compact: 32, token: '--f-tabs-min-height' },
+    paddingInline: {
+      min: 4,
+      max: 32,
+      comfortable: 13,
+      compact: 13,
+      token: '--f-tabs-padding-inline',
+    },
+    gap: { min: 0, max: 24, comfortable: 4, compact: 4, token: '--f-tabs-gap' },
+    fontSize: { min: 11, max: 20, comfortable: 13, compact: 13, token: '--f-tabs-font-size' },
+    iconGap: { min: 0, max: 16, comfortable: 6, compact: 6, token: '--f-tabs-icon-gap' },
   },
   breadcrumb: {
     itemGap: { min: 0, max: 24, comfortable: 8, compact: 8, token: '--f-breadcrumb-item-gap' },

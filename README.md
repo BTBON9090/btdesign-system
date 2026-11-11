@@ -4,9 +4,9 @@ BTDESIGN 是面向 UI 设计师、前端工程师与 AI 编程工具的设计工
 
 工作流程是：**表达意图 → 选择场景 → 理解设计与结构 → 确认共享规则 → 保存版本 → 交付给开发与 AI**。组件文档、开发指南、设计指南和最佳实践随时可查，创作入口围绕当前项目展开。
 
-在线使用：[design.btbon.cn](https://design.btbon.cn)。源码仓库：[BTBON9090/btdesign-system](https://github.com/BTBON9090/btdesign-system)。当前代码版本为 v0.11.0，Studio 与文档网站使用腾讯云 EdgeOne 托管。组件包以本地安装包分发，尚未发布到 npm 公共注册表。DeepSeek 服务端密钥仍待配置。
+在线使用：[design.btbon.cn](https://design.btbon.cn)。源码仓库：[BTBON9090/btdesign-system](https://github.com/BTBON9090/btdesign-system)。当前代码版本为 v0.12.0，Studio 与文档网站使用腾讯云 EdgeOne 托管。组件包以本地安装包分发，尚未发布到 npm 公共注册表。DeepSeek 服务端密钥仍待配置。
 
-## v0.11：企业组件与共享行为层
+## v0.12：企业组件与共享行为层
 
 本轮提供 **70 个组件族、92 个公开组件**，React 与 Vue 使用相同的部件名称、共享行为规则和主题变量。Vue 另提供安装插件 `BTDESIGNPlugin`。
 
@@ -96,10 +96,10 @@ npm run pack:libs
 
 ```sh
 # 目标项目已安装 React / React DOM 18 或 19
-npm install ./btdesign-engine-0.11.0.tgz ./btdesign-tokens-0.11.0.tgz ./btdesign-react-0.11.0.tgz
+npm install ./btdesign-engine-0.12.0.tgz ./btdesign-tokens-0.12.0.tgz ./btdesign-react-0.12.0.tgz
 
 # 或目标项目已安装 Vue 3.4+、低于 4
-npm install ./btdesign-engine-0.11.0.tgz ./btdesign-tokens-0.11.0.tgz ./btdesign-vue-0.11.0.tgz
+npm install ./btdesign-engine-0.12.0.tgz ./btdesign-tokens-0.12.0.tgz ./btdesign-vue-0.12.0.tgz
 ```
 
 包提供 ESM 与 TypeScript 声明。基础使用示例：

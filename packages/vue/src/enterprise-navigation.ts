@@ -1,95 +1,290 @@
-import { defineComponent, getCurrentInstance, h, mergeProps, ref, nextTick, watch } from 'vue';
+import {
+  Comment,
+  Fragment,
+  Text,
+  isVNode,
+  computed,
+  defineComponent,
+  getCurrentInstance,
+  h,
+  mergeProps,
+  ref,
+  nextTick,
+  watch,
+} from 'vue';
 import type { PropType, VNodeChild } from 'vue';
 import type { NavItem } from '@btdesign/engine';
 import { safeHref } from '@btdesign/engine';
 import { useControlId } from './field.js';
 import { useDismiss, useValue } from './enterprise-shared.js';
+
+export type NavigationItem = Omit<NavItem, 'children'> & {
+  children?: NavigationItem[];
+  /** Explicitly opt a group with an href into a separate link and disclosure button. */
+  parentLink?: boolean;
+};
+export type NavMenuItem = NavigationItem;
+/** A blank slot must not hide the only visible label in compact mode. */
+function hasVisibleIcon(content: unknown): boolean {
+  if (Array.isArray(content)) return content.some(hasVisibleIcon);
+  if (content == null || typeof content === 'boolean') return false;
+  if (!isVNode(content)) return String(content).trim().length > 0;
+  if (content.type === Comment) return false;
+  if (content.type === Text)
+    return typeof content.children === 'string' && content.children.trim().length > 0;
+  if (content.type === Fragment) return hasVisibleIcon(content.children);
+  return true;
+}
 function nav(name: string, layout: 'sidebar' | 'top') {
   return defineComponent({
     name,
     inheritAttrs: false,
     props: {
-      items: { type: Array as PropType<NavItem[]>, required: true },
+      items: { type: Array as PropType<NavigationItem[]>, required: true },
       activeKey: String,
       label: { type: String, default: '导航' },
       disabled: Boolean,
+      expandedKeys: { type: Array as PropType<string[]>, default: undefined },
+      defaultExpandedKeys: {
+        type: Array as PropType<string[]>,
+        default: undefined,
+      },
+      collapsed: { type: Boolean, default: undefined },
+      defaultCollapsed: Boolean,
+      showCollapseControl: Boolean,
     },
-    emits: ['select'],
-    setup(props, { attrs, emit }) {
-      const collapsed = ref<string[]>([]);
+    emits: ['select', 'update:expandedKeys', 'update:collapsed'],
+    setup(props, { attrs, emit, slots }) {
+      const root = ref<HTMLElement>();
+      const popup = ref<string>();
+      const triggerRefs = new Map<string, HTMLButtonElement>();
+      const itemRefs = new Map<string, HTMLElement>();
       const id = useControlId('nav');
-      const render = (items: NavItem[], level = 0, parentDisabled = false): VNodeChild =>
+      const defaultProvided = props.defaultExpandedKeys !== undefined;
+      const exceptions = ref<string[]>([]);
+      const expanded = useValue(
+        () => props.expandedKeys,
+        props.defaultExpandedKeys ?? [],
+        (keys) => emit('update:expandedKeys', keys),
+      );
+      const collapsed = useValue(
+        () => props.collapsed,
+        props.defaultCollapsed,
+        (value) => emit('update:collapsed', value),
+      );
+      const compact = computed(() => layout === 'sidebar' && collapsed.value.value);
+      const legacy = computed(() => props.expandedKeys === undefined && !defaultProvided);
+      const groupKeys = () => {
+        const keys: string[] = [];
+        const walk = (nodes: NavigationItem[]) =>
+          nodes.forEach((node) => {
+            if (node.children?.length) {
+              keys.push(node.key);
+              walk(node.children);
+            }
+          });
+        walk(props.items);
+        return keys;
+      };
+      const isExpanded = (key: string) =>
+        legacy.value ? !exceptions.value.includes(key) : expanded.value.value.includes(key);
+      const toggleGroup = (key: string) => {
+        if (legacy.value) {
+          exceptions.value = isExpanded(key)
+            ? [...exceptions.value, key]
+            : exceptions.value.filter((item) => item !== key);
+          emit(
+            'update:expandedKeys',
+            groupKeys().filter((item) => !exceptions.value.includes(item)),
+          );
+        } else {
+          const keys = expanded.value.value;
+          expanded.set(isExpanded(key) ? keys.filter((item) => item !== key) : [...keys, key]);
+        }
+      };
+      const closePopup = (restore = false) => {
+        const previous = popup.value;
+        popup.value = undefined;
+        if (restore && previous) nextTick(() => triggerRefs.get(previous)?.focus());
+      };
+      useDismiss(
+        root,
+        computed(() => Boolean(popup.value)),
+        () => closePopup(),
+      );
+      watch([compact, () => props.disabled], ([isCompact, disabled]) => {
+        if (!isCompact || disabled) closePopup();
+      });
+      watch(
+        () =>
+          props.items.map(
+            (item) => [item.key, item.disabled, Boolean(item.children?.length)] as const,
+          ),
+        (items) => {
+          if (
+            popup.value &&
+            !items.some(
+              ([key, disabled, hasChildren]) => key === popup.value && !disabled && hasChildren,
+            )
+          )
+            closePopup();
+        },
+      );
+      const render = (items: NavigationItem[], depth = 0, parentDisabled = false): VNodeChild =>
         h(
           'ul',
           { class: 'f-nav-list' },
           items.map((item) => {
-            const disabled = props.disabled || parentDisabled || item.disabled;
-            const children = Boolean(item.children?.length);
-            const closed = collapsed.value.includes(item.key);
-            return h('li', { class: 'f-nav-item', key: item.key }, [
-              children
+            const blocked = Boolean(props.disabled || parentDisabled || item.disabled);
+            const hasChildren = Boolean(item.children?.length);
+            const topPopup = compact.value && depth === 0 && hasChildren;
+            const open = topPopup ? popup.value === item.key : isExpanded(item.key);
+            const contentId = `${id}-${encodeURIComponent(item.key)}`;
+            const source = safeHref(item.href);
+            const parentLink = hasChildren && item.parentLink === true && Boolean(source);
+            const icons = slots.icon?.({ item, depth });
+            const hasIcon = hasVisibleIcon(icons);
+            const compactItem = compact.value && depth === 0;
+            const contents = () => [
+              hasIcon ? h('span', { class: 'f-nav-icon', 'aria-hidden': 'true' }, icons) : null,
+              h(
+                'span',
+                {
+                  class:
+                    compactItem && hasIcon
+                      ? 'f-nav-label f-nav-label--visually-hidden'
+                      : 'f-nav-label',
+                },
+                item.label,
+              ),
+            ];
+            const select = () => {
+              if (!blocked) {
+                emit('select', item.key);
+              }
+            };
+            const link = () =>
+              source && !blocked
                 ? h(
+                    'a',
+                    {
+                      class: 'f-nav-link',
+                      href: source,
+                      'aria-current': props.activeKey === item.key ? 'page' : undefined,
+                      title: compactItem && hasIcon ? item.label : undefined,
+                      onClick: select,
+                    },
+                    contents(),
+                  )
+                : h(
                     'button',
                     {
                       type: 'button',
-                      class: 'f-nav-group-toggle',
-                      disabled,
-                      'aria-expanded': !closed,
-                      'aria-controls': `${id}-${encodeURIComponent(item.key)}`,
-                      onClick: () => {
-                        if (!disabled)
-                          collapsed.value = closed
-                            ? collapsed.value.filter((k) => k !== item.key)
-                            : [...collapsed.value, item.key];
-                      },
+                      class: 'f-nav-link',
+                      disabled: blocked,
+                      'aria-current': props.activeKey === item.key ? 'page' : undefined,
+                      title: compactItem && hasIcon ? item.label : undefined,
+                      onClick: select,
                     },
-                    [item.label, h('span', { 'aria-hidden': 'true' }, closed ? '›' : '⌄')],
-                  )
-                : safeHref(item.href) && !disabled
+                    contents(),
+                  );
+            const button = hasChildren
+              ? h(
+                  'button',
+                  {
+                    type: 'button',
+                    class: 'f-nav-group-toggle',
+                    disabled: blocked,
+                    'aria-label': parentLink ? `${open ? '收起' : '展开'}${item.label}` : undefined,
+                    'aria-expanded': open,
+                    'aria-controls': open ? contentId : undefined,
+                    title: compactItem && hasIcon ? item.label : undefined,
+                    ref: (element: unknown) => {
+                      if (element) triggerRefs.set(item.key, element as HTMLButtonElement);
+                      else triggerRefs.delete(item.key);
+                    },
+                    onClick: () => {
+                      if (blocked) return;
+                      if (topPopup) popup.value = open ? undefined : item.key;
+                      else toggleGroup(item.key);
+                    },
+                  },
+                  [
+                    parentLink ? null : contents(),
+                    h('span', { 'aria-hidden': 'true' }, open ? '⌄' : '›'),
+                  ],
+                )
+              : null;
+            return h(
+              'li',
+              {
+                class: ['f-nav-item', topPopup && 'f-nav-item--popup'],
+                ref: topPopup
+                  ? (element: unknown) => {
+                      if (element) itemRefs.set(item.key, element as HTMLElement);
+                      else itemRefs.delete(item.key);
+                    }
+                  : undefined,
+                key: item.key,
+              },
+              [
+                hasChildren
+                  ? parentLink
+                    ? h('div', { class: 'f-nav-parent' }, [link(), button])
+                    : button
+                  : link(),
+                hasChildren && open
                   ? h(
-                      'a',
+                      'div',
                       {
-                        href: safeHref(item.href),
-                        class: 'f-nav-link',
-                        'aria-current': props.activeKey === item.key ? 'page' : undefined,
-                        onClick: () => emit('select', item.key),
+                        id: contentId,
+                        class: ['f-nav-children', topPopup && 'f-nav-children--popup'],
                       },
-                      item.label,
+                      [render(item.children!, depth + 1, blocked)],
                     )
-                  : h(
-                      'button',
-                      {
-                        type: 'button',
-                        class: 'f-nav-link',
-                        disabled,
-                        'aria-current': props.activeKey === item.key ? 'page' : undefined,
-                        onClick: () => {
-                          if (!disabled) emit('select', item.key);
-                        },
-                      },
-                      item.label,
-                    ),
-              children && !closed
-                ? h(
-                    'div',
-                    {
-                      id: `${id}-${encodeURIComponent(item.key)}`,
-                      class: 'f-nav-children',
-                    },
-                    [render(item.children!, level + 1, Boolean(disabled))],
-                  )
-                : null,
-            ]);
+                  : null,
+              ],
+            );
           }),
         );
       return () =>
         h(
           'nav',
           mergeProps(attrs, {
-            class: ['f-nav', `f-nav--${layout}`],
+            ref: root,
+            class: ['f-nav', `f-nav--${layout}`, compact.value && 'f-nav--collapsed'],
             'aria-label': props.label,
+            onKeydown: (event: KeyboardEvent) => {
+              if (event.key === 'Escape' && popup.value) {
+                event.preventDefault();
+                event.stopPropagation();
+                closePopup(true);
+              }
+            },
+            onFocusout: (event: FocusEvent) => {
+              if (!popup.value) return;
+              const next = event.relatedTarget as Node | null;
+              if (!itemRefs.get(popup.value)?.contains(next)) closePopup();
+            },
           }),
-          [render(props.items)],
+          [
+            render(props.items),
+            layout === 'sidebar' && props.showCollapseControl
+              ? h(
+                  'button',
+                  {
+                    type: 'button',
+                    class: 'f-nav-collapse-control f-button f-button--ghost',
+                    disabled: props.disabled,
+                    'aria-label': compact.value ? '展开侧栏' : '收起侧栏',
+                    onClick: () => {
+                      if (!props.disabled) collapsed.set(!collapsed.value.value);
+                    },
+                  },
+                  compact.value ? '展开侧栏' : '收起侧栏',
+                )
+              : null,
+          ],
         );
     },
   });

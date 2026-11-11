@@ -412,7 +412,7 @@
 }
 .f-tabs-list {
   display: flex;
-  gap: 4px;
+  gap: var(--f-tabs-gap, 4px);
   padding: 3px;
   border-radius: var(--f-radius);
   background: var(--f-subtle);
@@ -422,16 +422,39 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 32px;
-  padding: 6px 13px;
+  min-height: max(20px, calc(var(--f-tabs-min-height, 32px) + var(--f-tabs-height-offset, 0px)));
+  padding: 6px
+    max(0px, calc(var(--f-tabs-padding-inline, 13px) + var(--f-tabs-padding-offset, 0px)));
   border: none;
   border-radius: var(--f-radius-sm);
   background: transparent;
   color: var(--f-muted);
   font: inherit;
-  font-size: 13px;
+  font-size: max(10px, calc(var(--f-tabs-font-size, 13px) + var(--f-tabs-font-offset, 0px)));
   white-space: nowrap;
   cursor: pointer;
+}
+.f-tabs--mini {
+  --f-tabs-height-offset: -8px;
+  --f-tabs-padding-offset: -4px;
+  --f-tabs-font-offset: -1px;
+}
+.f-tabs--small {
+  --f-tabs-height-offset: -4px;
+  --f-tabs-padding-offset: -2px;
+}
+.f-tabs--big {
+  --f-tabs-height-offset: 4px;
+  --f-tabs-padding-offset: 2px;
+  --f-tabs-font-offset: 1px;
+}
+.f-tab-icon {
+  display: inline-flex;
+  align-items: center;
+  margin-inline-end: var(--f-tabs-icon-gap, 6px);
+}
+.f-tab-icon:empty {
+  display: none;
 }
 .f-tab[aria-selected='true'] {
   background: var(--f-surface);
@@ -1700,6 +1723,53 @@
 }
 .f-nav {
   width: 100%;
+}
+.f-nav--collapsed {
+  width: max-content;
+}
+.f-nav-parent {
+  display: flex;
+  align-items: center;
+}
+.f-nav-parent > .f-nav-link {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.f-nav-parent > .f-nav-group-toggle {
+  flex: 0 0 auto;
+  width: auto;
+}
+.f-nav-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+}
+.f-nav-label--visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+.f-nav-item--popup {
+  position: relative;
+}
+.f-nav .f-nav-children--popup {
+  position: absolute;
+  z-index: 10;
+  inset-inline-start: 100%;
+  top: 0;
+  margin: 0;
+  min-width: 12rem;
+  padding: var(--f-overlay-padding, 12px);
+  border: 1px solid var(--f-border);
+  border-radius: var(--f-overlay-radius, var(--f-radius));
+  background: var(--f-surface);
 }
 .f-nav-list,
 .f-nav-children {
@@ -3522,6 +3592,10 @@
 .f-tabs--vertical.f-tabs--card > .f-tabs-list > .f-tab,
 .f-tabs--vertical.f-tabs--card-gutter > .f-tabs-list > .f-tab {
   border-radius: var(--f-radius-sm) 0 0 var(--f-radius-sm);
+}
+.f-tabs > .f-tabs-list > .f-tab:hover:not(:disabled):not([aria-selected='true']) {
+  background: var(--f-primary-soft);
+  color: var(--f-text);
 }
 .f-empty-state--compact {
   gap: calc(var(--f-space) * 0.5);

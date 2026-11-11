@@ -82,6 +82,9 @@ test('switch dimensions and native select options never expose unrelated input g
   assert.ok(
     !componentControls.segmented.parts.flatMap((part) => part.controls).includes('choiceGap'),
   );
+  assert.ok(
+    !componentControls['top-nav'].parts.flatMap((part) => part.controls).includes('treeIndent'),
+  );
 });
 
 test('reset removes only visible part fields and preserves sibling rules and other groups', () => {

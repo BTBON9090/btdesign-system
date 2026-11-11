@@ -149,6 +149,23 @@ export function ComponentWorkbench({
           : { ...current, uploadFileListVariant: variant },
       );
   }, [embedded, kind, selectedPart]);
+  useEffect(() => {
+    if (!embedded || kind !== 'sidebar-nav') return;
+    if (selectedPart === 'collapse')
+      setOptions((current) =>
+        current.navShowCollapseControl ? current : { ...current, navShowCollapseControl: true },
+      );
+    if (selectedPart === 'popup')
+      setOptions((current) =>
+        current.navCollapsed ? current : { ...current, navCollapsed: true },
+      );
+  }, [embedded, kind, selectedPart]);
+  useEffect(() => {
+    if (embedded && kind === 'tabs' && selectedPart === 'icon')
+      setOptions((current) =>
+        current.tabsShowIcon ? current : { ...current, tabsShowIcon: true },
+      );
+  }, [embedded, kind, selectedPart]);
   const [savedProject] = useState(() => loadStudio().project);
   const project = liveProject ?? savedProject;
   const [themeSource, setThemeSource] = useState<'workspace' | 'default'>('workspace');
@@ -193,6 +210,75 @@ export function ComponentWorkbench({
                 <option value="multiple">多选</option>
               </select>
             </label>
+          )}
+          {(kind === 'sidebar-nav' || kind === 'top-nav') && (
+            <>
+              <label>
+                初始展开
+                <select
+                  aria-label="预览导航初始展开"
+                  value={options.navInitialExpanded ?? 'all'}
+                  onChange={(event) =>
+                    update('navInitialExpanded', event.target.value as 'all' | 'none')
+                  }
+                >
+                  <option value="all">全部展开</option>
+                  <option value="none">全部收起</option>
+                </select>
+              </label>
+              <label>
+                导航图标
+                <select
+                  aria-label="预览导航图标"
+                  value={options.navIcons ? 'show' : 'hide'}
+                  onChange={(event) => update('navIcons', event.target.value === 'show')}
+                >
+                  <option value="hide">隐藏</option>
+                  <option value="show">显示</option>
+                </select>
+              </label>
+              {kind === 'sidebar-nav' && (
+                <>
+                  <label>
+                    侧栏状态
+                    <select
+                      aria-label="预览侧栏状态"
+                      value={options.navCollapsed ? 'collapsed' : 'expanded'}
+                      onChange={(event) =>
+                        update('navCollapsed', event.target.value === 'collapsed')
+                      }
+                    >
+                      <option value="expanded">展开</option>
+                      <option value="collapsed">收起</option>
+                    </select>
+                  </label>
+                  <label>
+                    收起按钮
+                    <select
+                      aria-label="预览侧栏收起按钮"
+                      value={options.navShowCollapseControl ? 'show' : 'hide'}
+                      onChange={(event) =>
+                        update('navShowCollapseControl', event.target.value === 'show')
+                      }
+                    >
+                      <option value="hide">隐藏</option>
+                      <option value="show">显示</option>
+                    </select>
+                  </label>
+                  <label>
+                    父级入口
+                    <select
+                      aria-label="预览导航父级入口"
+                      value={options.navParentLink ? 'link' : 'group'}
+                      onChange={(event) => update('navParentLink', event.target.value === 'link')}
+                    >
+                      <option value="group">仅展开分组</option>
+                      <option value="link">增加父级链接</option>
+                    </select>
+                  </label>
+                </>
+              )}
+            </>
           )}
           {(kind === 'tree' || kind === 'tree-select') && (
             <>
@@ -1383,6 +1469,30 @@ export function ComponentWorkbench({
           {kind === 'tabs' && (
             <>
               <label>
+                尺寸
+                <select
+                  aria-label="预览标签页尺寸"
+                  value={options.tabsSize ?? 'medium'}
+                  onChange={(event) =>
+                    update('tabsSize', event.target.value as NonNullable<DemoOptions['tabsSize']>)
+                  }
+                >
+                  <option value="mini">迷你</option>
+                  <option value="small">小</option>
+                  <option value="medium">中</option>
+                  <option value="big">大</option>
+                </select>
+              </label>
+              <label>
+                <input
+                  type="checkbox"
+                  aria-label="预览标签图标"
+                  checked={options.tabsShowIcon ?? false}
+                  onChange={(event) => update('tabsShowIcon', event.target.checked)}
+                />
+                装饰图标
+              </label>
+              <label>
                 标签样式
                 <select
                   aria-label="预览标签页样式"
@@ -1411,6 +1521,10 @@ export function ComponentWorkbench({
                 />
                 禁用末项
               </label>
+              {options.tabsVariant === 'card' && <p>无缝卡片的标签间距固定为 0。</p>}
+              {embedded && selectedPart === 'icon' && !options.tabsShowIcon && (
+                <p>显示图标后，图标间距生效。</p>
+              )}
             </>
           )}
           {kind === 'dropdown-menu' && (
@@ -1937,9 +2051,19 @@ export function ComponentWorkbench({
         )}
         <div className={`component-example example-${kind}`} data-theme={mode} style={previewStyle}>
           {framework === 'react' ? (
-            <ComponentDemo kind={kind} options={options} onAction={onAction} />
+            <ComponentDemo
+              kind={kind}
+              options={options}
+              onAction={onAction}
+              onNavCollapsedChange={(value) => update('navCollapsed', value)}
+            />
           ) : (
-            <VueDemo kind={kind} options={options} onAction={onAction} />
+            <VueDemo
+              kind={kind}
+              options={options}
+              onAction={onAction}
+              onNavCollapsedChange={(value) => update('navCollapsed', value)}
+            />
           )}
         </div>
         {embedded ? (

@@ -1,5 +1,8 @@
 import {
   cloneVNode,
+  Comment as VueComment,
+  Fragment,
+  Text,
   computed,
   defineComponent,
   h,
@@ -428,6 +431,17 @@ export const Alert = defineComponent({
 });
 
 let idSequence = 0;
+/** Ignore empty decorative values so they do not leave visual spacing. */
+function hasTabIcon(content: VNodeChild | VNodeChild[]): boolean {
+  if (Array.isArray(content)) return content.some(hasTabIcon);
+  if (content == null || typeof content === 'boolean') return false;
+  if (!isVNode(content)) return String(content).trim().length > 0;
+  if (content.type === VueComment) return false;
+  if (content.type === Text)
+    return typeof content.children === 'string' && content.children.trim().length > 0;
+  if (content.type === Fragment) return hasTabIcon(content.children as VNodeChild | VNodeChild[]);
+  return true;
+}
 export const Tabs = defineComponent({
   name: 'BTDESIGNTabs',
   inheritAttrs: false,
@@ -442,6 +456,9 @@ export const Tabs = defineComponent({
       default: 'default',
     },
     orientation: { type: String as PropType<'horizontal' | 'vertical'>, default: 'horizontal' },
+    size: { type: String as PropType<'mini' | 'small' | 'medium' | 'big'>, default: 'medium' },
+    /** Decorative content only; it must not contain interactive controls. */
+    renderIcon: Function as PropType<(item: TabItem, index: number) => VNodeChild>,
   },
   emits: ['update:modelValue'],
   setup(props, { attrs, slots, emit }) {
@@ -486,6 +503,7 @@ export const Tabs = defineComponent({
             'f-tabs',
             props.variant !== 'default' && `f-tabs--${props.variant}`,
             props.orientation === 'vertical' && 'f-tabs--vertical',
+            props.size !== 'medium' && `f-tabs--${props.size}`,
           ],
         }),
         [
@@ -497,8 +515,9 @@ export const Tabs = defineComponent({
               'aria-label': props.label,
               'aria-orientation': props.orientation,
             },
-            props.items.map((item, index) =>
-              h(
+            props.items.map((item, index) => {
+              const icon = props.renderIcon?.(item, index);
+              return h(
                 'button',
                 {
                   ref: (element: unknown) => {
@@ -517,9 +536,14 @@ export const Tabs = defineComponent({
                   onClick: () => select(item.value),
                   onKeydown: (event: KeyboardEvent) => keyDown(event, item.value),
                 },
-                item.label,
-              ),
-            ),
+                [
+                  hasTabIcon(icon)
+                    ? h('span', { class: 'f-tab-icon', 'aria-hidden': 'true', inert: '' }, [icon])
+                    : null,
+                  item.label,
+                ],
+              );
+            }),
           ),
           ...props.items.map((item, index) =>
             h(

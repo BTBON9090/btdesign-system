@@ -58,6 +58,18 @@ try {
           dropdownSubmenu: true,
         },
       ]);
+    if (component.id === 'sidebar-nav' || component.id === 'top-nav')
+      variants.push([
+        'configured',
+        {
+          ...defaults,
+          navCollapsed: true,
+          navIcons: true,
+          navShowCollapseControl: true,
+          navParentLink: true,
+          navInitialExpanded: 'none',
+        },
+      ]);
     if (component.id === 'tree-select')
       variants.push([
         'configured',
@@ -89,6 +101,18 @@ try {
           treeShowIcon: true,
           multiple: true,
           cascade: true,
+        },
+      ]);
+    if (component.id === 'tabs')
+      variants.push([
+        'big-icon-vertical',
+        {
+          ...defaults,
+          tabsSize: 'big',
+          tabsShowIcon: true,
+          tabsVariant: 'card-gutter',
+          orientation: 'vertical',
+          tabsDisabledItem: true,
         },
       ]);
     if (component.id === 'cascader')

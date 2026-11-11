@@ -1,3 +1,4 @@
+import { tabsDetailExampleCode, tabsDetailOptions } from './TabsDetailExample';
 import { treeVariantsExampleCode, treeVariantsOptions } from './TreeVariantsExample';
 import { treeSelectExampleCode, treeSelectPreviewOptions } from './TreeSelectExample';
 import { organizationTransferExampleCode } from './OrganizationTransferExample';
@@ -28,7 +29,7 @@ import { tooltipExampleCode, type TooltipPreviewOptions } from './tooltip-exampl
 import { pageHeaderExampleCode, type PageHeaderPreviewOptions } from './page-header-example-code';
 import { anchorExampleCode, type AnchorPreviewOptions } from './anchor-example-code';
 import { badgeExampleCode, type BadgePreviewOptions } from './badge-example-code';
-import { tabsExampleCode, type TabsPreviewOptions } from './tabs-example-code';
+import type { TabsPreviewOptions } from './tabs-example-code';
 import { descriptionsCode, descriptionsPreviewOptions } from './DescriptionsExample';
 import { commentExampleCode, commentPreviewOptions } from './CommentExample';
 import { statisticExampleCode, statisticPreviewOptions } from './StatisticExample';
@@ -567,6 +568,8 @@ export const catalog = [
       ['defaultValue', 'string', '首个可用选项'],
       ['variant', 'default | line | text | card | card-gutter | rounded', 'default'],
       ['orientation', 'horizontal | vertical', 'horizontal'],
+      ['size', 'mini | small | medium | big', 'medium'],
+      ['renderIcon', '(item, index) => 装饰内容', '—'],
       ['onValueChange / update:modelValue', 'callback', '—'],
     ],
   },
@@ -843,7 +846,7 @@ export function componentCode(id: ComponentId, framework: Framework, options?: D
   if (id === 'list') return listExampleCode(framework, listPreviewOptions(options));
   if (id === 'breadcrumb')
     return breadcrumbExampleCode(framework, options?.breadcrumbSeparator ?? 'slash');
-  if (id === 'tabs') return tabsExampleCode(framework, tabsPreviewOptions(options));
+  if (id === 'tabs') return tabsDetailExampleCode(framework, tabsDetailOptions(options));
   if (id === 'badge') return badgeExampleCode(framework, badgePreviewOptions(options));
   if (id === 'rate') return rateExample(framework, options ?? defaultDemoOptions);
   if (id === 'auto-complete') return autoCompleteExample(framework, options ?? defaultDemoOptions);
@@ -1486,8 +1489,16 @@ export const componentAnatomy: Record<ComponentId, AnatomyPart[]> = {
       '选项列表',
       'tablist + tab',
       '在同一上下文切换内容，支持方向键与 Home / End。',
-      '--f-primary',
-      '--f-border',
+      '--f-tabs-min-height',
+      '--f-tabs-padding-inline',
+      '--f-tabs-font-size',
+      '--f-tabs-gap',
+    ),
+    part(
+      '装饰图标',
+      'renderIcon(item, index)',
+      '仅显示图标时应用图标间距，图标不可交互。',
+      '--f-tabs-icon-gap',
     ),
     part('内容面板', 'tabpanel', '让激活项与面板通过 ID 关联。', '--f-surface', '--f-text'),
   ],

@@ -1,3 +1,7 @@
+import { TabsDetailPreview } from './TabsDetailPreview';
+import { tabsDetailOptions } from './TabsDetailExample';
+import { NavigationPreview } from './NavigationPreview';
+import { navigationPreviewOptions } from './NavigationExample';
 import { OrganizationTransferPreview } from './OrganizationTransferPreview';
 import { TreeVariantsPreview } from './TreeVariantsPreview';
 import { TreeSelectPreview } from './TreeSelectPreview';
@@ -85,7 +89,6 @@ import {
   pageHeaderPreviewOptions,
   anchorPreviewOptions,
   badgePreviewOptions,
-  tabsPreviewOptions,
 } from './catalog';
 import { DescriptionsDemo } from './DescriptionsDemo';
 import { descriptionsPreviewOptions } from './DescriptionsExample';
@@ -111,30 +114,20 @@ import { TooltipDemo } from './TooltipDemo';
 import { PageHeaderDemo } from './PageHeaderDemo';
 import { AnchorDemo } from './AnchorDemo';
 import { BadgeDemo } from './BadgeDemo';
-import { tabsPreviewItems } from './tabs-example-code';
 export function ComponentDemo({
   kind,
   onAction = () => {},
+  onNavCollapsedChange = () => {},
   options,
 }: {
+  onNavCollapsedChange?: (value: boolean) => void;
   options?: DemoOptions;
   kind: ComponentId;
   onAction?: (message: string) => void;
 }) {
   const [open, setOpen] = useState(false);
   const [checked, setChecked] = useState(true);
-  if (kind === 'tabs') {
-    const tabOptions = tabsPreviewOptions(options);
-    return (
-      <Tabs
-        className="full-width"
-        label="资源类型"
-        items={tabsPreviewItems(tabOptions)}
-        variant={tabOptions.variant}
-        orientation={tabOptions.orientation}
-      />
-    );
-  }
+  if (kind === 'tabs') return <TabsDetailPreview options={tabsDetailOptions(options)} />;
   if (kind === 'badge')
     return <BadgeDemo component={Badge} avatar={Avatar} options={badgePreviewOptions(options)} />;
   if (kind === 'anchor')
@@ -207,6 +200,14 @@ export function ComponentDemo({
       />
     );
   }
+  if (kind === 'sidebar-nav' || kind === 'top-nav')
+    return (
+      <NavigationPreview
+        kind={kind}
+        options={navigationPreviewOptions(options)}
+        onCollapsedChange={onNavCollapsedChange}
+      />
+    );
   if (isEnterpriseId(kind))
     return (
       <EnterpriseDemo

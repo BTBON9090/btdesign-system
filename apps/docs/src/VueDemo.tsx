@@ -1,3 +1,7 @@
+import { tabsDetailVuePreview } from './TabsDetailVuePreview';
+import { tabsDetailOptions } from './TabsDetailExample';
+import { createNavigationVuePreview } from './NavigationVuePreview';
+import { navigationPreviewOptions } from './NavigationExample';
 import { treeVariantsVuePreview } from './TreeVariantsVuePreview';
 import { treeSelectVuePreview } from './TreeSelectVuePreview';
 import { treeSelectPreviewOptions } from './TreeSelectExample';
@@ -29,7 +33,6 @@ import {
   pageHeaderPreviewOptions,
   anchorPreviewOptions,
   badgePreviewOptions,
-  tabsPreviewOptions,
   type DemoOptions,
 } from './catalog';
 import { structureVueDemo } from './StructureVueDemo';
@@ -57,7 +60,6 @@ import { tooltipVueDemo } from './TooltipVueDemo';
 import { pageHeaderVueDemo } from './PageHeaderVueDemo';
 import { createAnchorVueDemo } from './AnchorVueDemo';
 import { badgeVueDemo } from './BadgeVueDemo';
-import { tabsPreviewItems } from './tabs-example-code';
 import { createNumberInputVueDemo } from './NumberInputVueDemo';
 import { numberInputPreviewOptions } from './number-input-example-code';
 import { searchSelectVuePreview } from './SearchSelectVuePreview';
@@ -67,10 +69,13 @@ export interface VueDemoProps {
   kind: string;
   options?: DemoOptions;
   onAction?: (message: string) => void;
+  onNavCollapsedChange?: (value: boolean) => void;
 }
 
 /** Each example mounts the actual Vue package in an isolated, disposable Vue app. */
-export function VueDemo({ kind, onAction, options }: VueDemoProps) {
+export function VueDemo({ kind, onAction, options, onNavCollapsedChange }: VueDemoProps) {
+  const navCollapsedChange = useRef(onNavCollapsedChange);
+  navCollapsedChange.current = onNavCollapsedChange;
   const host = useRef<HTMLDivElement>(null);
   const action = useRef(onAction);
   action.current = onAction;
@@ -105,12 +110,15 @@ export function VueDemo({ kind, onAction, options }: VueDemoProps) {
         const UploadDropzoneVueDemo = createUploadDropzoneVuePreview(vue, ui.UploadDropzone);
         const UploadFileListVueDemo = createUploadFileListVuePreview(vue, ui.UploadFileList);
         const DropdownMenuVueDemo = createDropdownMenuVuePreview(vue, ui.DropdownMenu);
+        const NavigationVueDemo = createNavigationVuePreview(vue, ui);
         const OrganizationTransferVueDemo = createOrganizationTransferVuePreview(vue, ui);
         if (
           isEnterpriseId(kind) &&
           kind !== 'tree' &&
           kind !== 'tree-select' &&
-          kind !== 'dropdown-menu'
+          kind !== 'dropdown-menu' &&
+          kind !== 'sidebar-nav' &&
+          kind !== 'top-nav'
         ) {
           app = createApp(
             createEnterpriseVueDemo(
@@ -211,6 +219,12 @@ export function VueDemo({ kind, onAction, options }: VueDemoProps) {
 
               return () => {
                 const o = optionState.value ?? defaultDemoOptions;
+                if (kind === 'sidebar-nav' || kind === 'top-nav')
+                  return h(NavigationVueDemo, {
+                    kind,
+                    options: navigationPreviewOptions(o),
+                    onCollapsedChange: (value: boolean) => navCollapsedChange.current?.(value),
+                  });
                 if (kind === 'organization-transfer')
                   return h(OrganizationTransferVueDemo, { disabled: o.state === 'disabled' });
                 if (kind === 'number-input')
@@ -226,15 +240,7 @@ export function VueDemo({ kind, onAction, options }: VueDemoProps) {
                   return treeSelectVuePreview(vue, ui, treeSelectPreviewOptions(o));
                 if (kind === 'search-select')
                   return searchSelectVuePreview(vue, ui, searchSelectPreviewOptions(o));
-                if (kind === 'tabs') {
-                  const tabOptions = tabsPreviewOptions(o);
-                  return h(ui.Tabs, {
-                    label: '资源类型',
-                    items: tabsPreviewItems(tabOptions),
-                    variant: tabOptions.variant,
-                    orientation: tabOptions.orientation,
-                  });
-                }
+                if (kind === 'tabs') return tabsDetailVuePreview(vue, ui, tabsDetailOptions(o));
                 if (kind === 'badge') return badgeVueDemo(vue, ui, badgePreviewOptions(o));
                 if (kind === 'anchor')
                   return h(AnchorVueDemo, { options: anchorPreviewOptions(o) });

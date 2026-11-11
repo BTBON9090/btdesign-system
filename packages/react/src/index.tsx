@@ -1,5 +1,9 @@
 import {
+  Children,
+  Fragment,
   forwardRef,
+  isValidElement,
+  version as reactVersion,
   useEffect,
   useId,
   useImperativeHandle,
@@ -310,6 +314,15 @@ export function Alert({
   );
 }
 
+function hasTabIconContent(node: ReactNode): boolean {
+  return Children.toArray(node).some((child) => {
+    if (typeof child === 'string') return Boolean(child.trim());
+    if (isValidElement(child) && child.type === Fragment)
+      return hasTabIconContent((child.props as { children?: ReactNode }).children);
+    return true;
+  });
+}
+
 export interface TabItem {
   value: string;
   label: ReactNode;
@@ -327,6 +340,10 @@ export interface TabsProps extends Omit<
   label?: string;
   variant?: 'default' | 'line' | 'text' | 'card' | 'card-gutter' | 'rounded';
   orientation?: 'horizontal' | 'vertical';
+  /** Relative to the Tabs geometry set by the current theme. */
+  size?: 'mini' | 'small' | 'medium' | 'big';
+  /** Non-interactive decoration; the label supplies the accessible name. */
+  renderIcon?: (item: TabItem, index: number) => ReactNode;
 }
 export function Tabs({
   items,
@@ -336,6 +353,8 @@ export function Tabs({
   label = '内容选项',
   variant = 'default',
   orientation = 'horizontal',
+  size = 'medium',
+  renderIcon,
   className,
   ...props
 }: TabsProps) {
@@ -359,47 +378,62 @@ export function Tabs({
         'f-tabs',
         variant !== 'default' && `f-tabs--${variant}`,
         orientation === 'vertical' && 'f-tabs--vertical',
+        size !== 'medium' && `f-tabs--${size}`,
         className,
       )}
     >
       <div className="f-tabs-list" role="tablist" aria-label={label} aria-orientation={orientation}>
-        {items.map((item, index) => (
-          <button
-            key={item.value}
-            ref={(element) => {
-              refs.current[index] = element;
-            }}
-            type="button"
-            role="tab"
-            id={`${baseId}-tab-${index}`}
-            aria-controls={`${baseId}-panel-${index}`}
-            aria-selected={active === item.value}
-            tabIndex={active === item.value ? 0 : -1}
-            disabled={item.disabled}
-            className="f-tab"
-            onClick={() => select(item.value)}
-            onKeyDown={(event) => {
-              const enabled = items
-                .map((candidate, candidateIndex) => (candidate.disabled ? -1 : candidateIndex))
-                .filter((candidate) => candidate >= 0);
-              const position = enabled.indexOf(index);
-              let next: number | undefined;
-              if (event.key === (orientation === 'vertical' ? 'ArrowDown' : 'ArrowRight'))
-                next = enabled[(position + 1) % enabled.length];
-              if (event.key === (orientation === 'vertical' ? 'ArrowUp' : 'ArrowLeft'))
-                next = enabled[(position - 1 + enabled.length) % enabled.length];
-              if (event.key === 'Home') next = enabled[0];
-              if (event.key === 'End') next = enabled.at(-1);
-              if (next !== undefined) {
-                event.preventDefault();
-                select(items[next].value);
-                refs.current[next]?.focus();
-              }
-            }}
-          >
-            {item.label}
-          </button>
-        ))}
+        {items.map((item, index) => {
+          const icon = renderIcon?.(item, index);
+          const hasIcon = hasTabIconContent(icon);
+          const inertAttribute = Number.parseInt(reactVersion, 10) < 19 ? '' : true;
+          return (
+            <button
+              key={item.value}
+              ref={(element) => {
+                refs.current[index] = element;
+              }}
+              type="button"
+              role="tab"
+              id={`${baseId}-tab-${index}`}
+              aria-controls={`${baseId}-panel-${index}`}
+              aria-selected={active === item.value}
+              tabIndex={active === item.value ? 0 : -1}
+              disabled={item.disabled}
+              className="f-tab"
+              onClick={() => select(item.value)}
+              onKeyDown={(event) => {
+                const enabled = items
+                  .map((candidate, candidateIndex) => (candidate.disabled ? -1 : candidateIndex))
+                  .filter((candidate) => candidate >= 0);
+                const position = enabled.indexOf(index);
+                let next: number | undefined;
+                if (event.key === (orientation === 'vertical' ? 'ArrowDown' : 'ArrowRight'))
+                  next = enabled[(position + 1) % enabled.length];
+                if (event.key === (orientation === 'vertical' ? 'ArrowUp' : 'ArrowLeft'))
+                  next = enabled[(position - 1 + enabled.length) % enabled.length];
+                if (event.key === 'Home') next = enabled[0];
+                if (event.key === 'End') next = enabled.at(-1);
+                if (next !== undefined) {
+                  event.preventDefault();
+                  select(items[next].value);
+                  refs.current[next]?.focus();
+                }
+              }}
+            >
+              {hasIcon && (
+                <span
+                  className="f-tab-icon"
+                  aria-hidden="true"
+                  {...({ inert: inertAttribute } as HTMLAttributes<HTMLSpanElement>)}
+                >
+                  {icon}
+                </span>
+              )}
+              {item.label}
+            </button>
+          );
+        })}
       </div>
       {items.map((item, index) => (
         <div

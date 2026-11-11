@@ -1,10 +1,10 @@
+import { navigationExample } from './NavigationExample';
 import type { AnatomyPart, DemoOptions, Framework } from './component-types';
 import { dropdownPreviewItems } from './dropdown-preview';
 import { dateRangePresets } from './date-range-fixtures';
 import {
   tablePreviewColumns,
   enterpriseFiles,
-  enterpriseNav,
   enterpriseOptions,
   enterpriseRows,
   enterpriseTree,
@@ -237,7 +237,14 @@ export const enterpriseCatalog = [
       ['items', 'NavItem[]', '必填'],
       ['activeKey', 'string', '—'],
       ['onSelect / select', '(key) => void', '—'],
-      ['label', 'string', '—'],
+      ['expandedKeys / defaultExpandedKeys', 'string[]', '默认全部展开'],
+      ['onExpandedChange / update:expandedKeys', '分组展开状态', '—'],
+      ['collapsed / defaultCollapsed', 'boolean', 'false'],
+      ['onCollapsedChange / update:collapsed', '侧栏收起状态', '—'],
+      ['showCollapseControl', 'boolean', 'false'],
+      ['renderIcon / #icon', '装饰性图标', '—'],
+      ['item.parentLink / href', '父级链接与展开按钮分离', 'false'],
+      ['label / disabled', 'string / boolean', '—'],
     ],
   },
   {
@@ -250,7 +257,11 @@ export const enterpriseCatalog = [
       ['items', 'NavItem[]', '必填'],
       ['activeKey', 'string', '—'],
       ['onSelect / select', '(key) => void', '—'],
-      ['label', 'string', '—'],
+      ['expandedKeys / defaultExpandedKeys', 'string[]', '默认全部展开'],
+      ['onExpandedChange / update:expandedKeys', '分组展开状态', '—'],
+      ['renderIcon / #icon', '装饰性图标', '—'],
+      ['item.parentLink / href', '父级链接与展开按钮分离', 'false'],
+      ['label / disabled', 'string / boolean', '—'],
     ],
   },
   {
@@ -560,6 +571,20 @@ export const enterpriseAnatomy: Record<EnterpriseId, AnatomyPart[]> = {
       '--f-tree-indent',
       '--f-primary-soft',
     ),
+    anatomy(
+      '收起按钮',
+      'SidebarNav → button',
+      '控制侧栏展开与收起。',
+      '--f-button-height',
+      '--f-button-radius',
+    ),
+    anatomy(
+      '收起浮层',
+      'SidebarNav → nav / list',
+      '收起时点击分组查看子级。',
+      '--f-overlay-radius',
+      '--f-overlay-padding',
+    ),
   ],
   'top-nav': [
     anatomy(
@@ -640,6 +665,7 @@ export function enterpriseComponentCode(
   framework: Framework,
   o?: DemoOptions,
 ): string {
+  if (id === 'sidebar-nav' || id === 'top-nav') return navigationExample(id, framework, o);
   const groupButtons = Array.from(
     { length: Math.max(2, Math.min(8, o?.buttonGroupCount ?? 3)) },
     (_, i) => i + 1,
@@ -711,11 +737,6 @@ export function enterpriseComponentCode(
         setup = `const [value, setValue] = useState<string | string[]>(${multiple ? "['design']" : "'design'"});`;
         body = `<${name} label="选择组织" nodes={${nodes}} value={value} onValueChange={setValue}${multiple ? ' multiple' : ''}${cascade && id !== 'cascader' ? ' cascade' : ''}${id === 'cascader' && o?.cascaderSearchable === false ? ' searchable={false}' : ''}${id === 'cascader' && o?.cascaderChangeOnSelect ? ' changeOnSelect' : ''}${id === 'tree' ? " searchable defaultExpandedKeys={['company','experience']}" : ''}${reactDisabled}/>`;
         break;
-      case 'sidebar-nav':
-      case 'top-nav':
-        setup = `const [activeKey, setActiveKey] = useState('overview');`;
-        body = `<${name} label="工作空间导航" items={${json(enterpriseNav)}} activeKey={activeKey} onSelect={setActiveKey}${reactDisabled}/>`;
-        break;
       case 'dropdown-menu':
         body = `<DropdownMenu label="项目操作" items={${json(dropdownPreviewItems(o))}} onSelect={key => console.log(key)}${reactDisabled}/>`;
         break;
@@ -776,11 +797,6 @@ export function enterpriseComponentCode(
     case 'org-picker':
       setup = `const value = ref<string | string[]>(${multiple ? "['design']" : "'design'"});\nconst nodes = ${nodes};`;
       body = `<${name} label="选择组织" :nodes="nodes" v-model="value"${multiple ? ' multiple' : ''}${cascade && id !== 'cascader' ? ' cascade' : ''}${id === 'cascader' && o?.cascaderSearchable === false ? ' :searchable="false"' : ''}${id === 'cascader' && o?.cascaderChangeOnSelect ? ' change-on-select' : ''}${id === 'tree' ? ` searchable :defaultExpandedKeys="['company','experience']"` : ''}${vueDisabled}/>`;
-      break;
-    case 'sidebar-nav':
-    case 'top-nav':
-      setup = `const activeKey = ref('overview');\nconst items = ${json(enterpriseNav)};`;
-      body = `<${name} label="工作空间导航" :items="items" :activeKey="activeKey" @select="key => activeKey = key"${vueDisabled}/>`;
       break;
     case 'dropdown-menu':
       setup = `const items = ${json(dropdownPreviewItems(o))};`;

@@ -72,6 +72,11 @@ export type ComponentId =
   | 'data-table';
 
 export interface DemoOptions {
+  navCollapsed?: boolean;
+  navIcons?: boolean;
+  navShowCollapseControl?: boolean;
+  navParentLink?: boolean;
+  navInitialExpanded?: 'all' | 'none';
   treeSize?: 'mini' | 'small' | 'medium' | 'big';
   treeShowLine?: boolean;
   treeShowIcon?: boolean;
@@ -195,6 +200,8 @@ export interface DemoOptions {
   breadcrumbSeparator?: 'slash' | 'dot' | 'arrow';
   tabsVariant?: 'default' | 'line' | 'text' | 'card' | 'card-gutter' | 'rounded';
   tabsDisabledItem?: boolean;
+  tabsSize?: 'mini' | 'small' | 'medium' | 'big';
+  tabsShowIcon?: boolean;
   size: 'sm' | 'md' | 'lg';
   state: 'default' | 'disabled' | 'invalid' | 'loading';
   variant: string;
