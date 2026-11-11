@@ -44,6 +44,20 @@ try {
     const variants = [['default', defaults]];
     if (component.id === 'organization-transfer')
       variants.push(['disabled', { ...defaults, state: 'disabled' }]);
+    if (component.id === 'dropdown-menu')
+      variants.push([
+        'split-checkable',
+        {
+          ...defaults,
+          dropdownSplit: true,
+          dropdownCheckable: true,
+          dropdownHighlight: true,
+          dropdownCloseOnCheck: true,
+          dropdownGroup: true,
+          dropdownSeparator: true,
+          dropdownSubmenu: true,
+        },
+      ]);
     if (component.id === 'tree-select')
       variants.push([
         'configured',

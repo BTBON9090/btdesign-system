@@ -105,7 +105,7 @@ export function App() {
         <header className="site-header">
           <div className="header-inner">
             <Logo />
-            <span className="header-version">v0.10</span>
+            <span className="header-version">v0.11</span>
             <nav className={`desktop-nav ${menu ? 'mobile-open' : ''}`} aria-label="主导航">
               <a
                 href="#/guides/development"

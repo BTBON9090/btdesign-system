@@ -1416,6 +1416,76 @@ export function ComponentWorkbench({
           {kind === 'dropdown-menu' && (
             <>
               <label>
+                触发方式
+                <select
+                  aria-label="预览菜单触发方式"
+                  value={options.dropdownSplit ? 'split' : 'single'}
+                  onChange={(event) => update('dropdownSplit', event.target.value === 'split')}
+                >
+                  <option value="single">普通按钮</option>
+                  <option value="split">分段按钮</option>
+                </select>
+              </label>
+              <label>
+                菜单项目
+                <select
+                  aria-label="预览菜单项目类型"
+                  value={options.dropdownCheckable ? 'checkbox' : 'action'}
+                  onChange={(event) =>
+                    update('dropdownCheckable', event.target.value === 'checkbox')
+                  }
+                >
+                  <option value="action">命令</option>
+                  <option value="checkbox">可多选</option>
+                </select>
+              </label>
+              {options.dropdownCheckable && (
+                <label>
+                  勾选后
+                  <select
+                    aria-label="预览勾选后关闭"
+                    value={options.dropdownCloseOnCheck ? 'close' : 'keep'}
+                    onChange={(event) =>
+                      update('dropdownCloseOnCheck', event.target.value === 'close')
+                    }
+                  >
+                    <option value="keep">保持菜单</option>
+                    <option value="close">关闭菜单</option>
+                  </select>
+                </label>
+              )}
+              <label>
+                <input
+                  type="checkbox"
+                  aria-label="预览菜单高亮"
+                  checked={options.dropdownHighlight ?? false}
+                  onChange={(event) => update('dropdownHighlight', event.target.checked)}
+                />
+                高亮选项
+              </label>
+              {options.dropdownSplit && (
+                <>
+                  <label>
+                    <input
+                      type="checkbox"
+                      aria-label="预览禁用主操作"
+                      checked={options.dropdownPrimaryDisabled ?? false}
+                      onChange={(event) => update('dropdownPrimaryDisabled', event.target.checked)}
+                    />
+                    禁用主操作
+                  </label>
+                  <label>
+                    <input
+                      type="checkbox"
+                      aria-label="预览禁用菜单"
+                      checked={options.dropdownMenuDisabled ?? false}
+                      onChange={(event) => update('dropdownMenuDisabled', event.target.checked)}
+                    />
+                    禁用菜单
+                  </label>
+                </>
+              )}
+              <label>
                 <input
                   type="checkbox"
                   aria-label="预览菜单分组"

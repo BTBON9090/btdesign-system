@@ -1,6 +1,6 @@
 {
   "name": "@btdesign/tokens",
-  "version": "0.10.0",
+  "version": "0.11.0",
   "description": "Framework-independent design tokens and shared component styles for BTDESIGN",
   "type": "module",
   "private": false,

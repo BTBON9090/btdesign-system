@@ -46,6 +46,30 @@ test('a component switch resolves to that component first part and never keeps a
   assert.equal(getSelectedPart({ component: 'page' }), null);
 });
 
+test('breadcrumb path and separator expose the geometry they actually control', () => {
+  assert.deepEqual(getSelectedPart({ component: 'breadcrumb', part: 'path' })?.controls, [
+    'breadcrumbItemGap',
+    'breadcrumbFontSize',
+  ]);
+  assert.deepEqual(getSelectedPart({ component: 'breadcrumb', part: 'separator' })?.controls, [
+    'breadcrumbSeparatorGap',
+  ]);
+  const patched = applyThemePatch(defaultTheme, {
+    components: { breadcrumb: { itemGap: 12, separatorGap: 4, fontSize: 16 } },
+  });
+  const tokens = createTheme(patched);
+  assert.equal(tokens['--f-breadcrumb-item-gap'], '12px');
+  assert.equal(tokens['--f-breadcrumb-separator-gap'], '4px');
+  assert.equal(tokens['--f-breadcrumb-font-size'], '16px');
+  const reset = applyThemePatch(
+    patched,
+    resetPartPatch({ component: 'breadcrumb', part: 'separator' }),
+  );
+  assert.equal(reset.components?.breadcrumb?.separatorGap, undefined);
+  assert.equal(reset.components?.breadcrumb?.itemGap, 12);
+  assert.equal(reset.components?.breadcrumb?.fontSize, 16);
+});
+
 test('switch dimensions and native select options never expose unrelated input geometry', () => {
   assert.deepEqual(
     componentControls.switch.parts.flatMap((part) => part.controls),

@@ -13,6 +13,7 @@ dist/
 !assets/legacy-downloads/0.7.0/*.tgz
 !assets/legacy-downloads/0.8.0/*.tgz
 !assets/legacy-downloads/0.9.0/*.tgz
+!assets/legacy-downloads/0.10.0/*.tgz
 apps/docs/public/downloads/
 .vercel/
 test-results/

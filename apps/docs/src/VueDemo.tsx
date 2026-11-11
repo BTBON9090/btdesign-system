@@ -10,6 +10,8 @@ import { inputTagVuePreview } from './input-tag-preview';
 import { autoCompleteVuePreview } from './auto-complete-preview';
 import { mentionVuePreview } from './mention-preview';
 import { uploadVuePreview } from './upload-preview';
+import { createDropdownMenuVuePreview } from './DropdownMenuVuePreview';
+import { dropdownMenuPreviewOptions } from './DropdownMenuExample';
 import { createUploadDropzoneVuePreview } from './UploadDropzoneVuePreview';
 import { createUploadFileListVuePreview } from './UploadFileListVuePreview';
 import { uploadFileListPreviewOptions } from './UploadFileListExample';
@@ -102,8 +104,14 @@ export function VueDemo({ kind, onAction, options }: VueDemoProps) {
         const NumberInputVueDemo = createNumberInputVueDemo(vue, ui.NumberInput, ui.Field);
         const UploadDropzoneVueDemo = createUploadDropzoneVuePreview(vue, ui.UploadDropzone);
         const UploadFileListVueDemo = createUploadFileListVuePreview(vue, ui.UploadFileList);
+        const DropdownMenuVueDemo = createDropdownMenuVuePreview(vue, ui.DropdownMenu);
         const OrganizationTransferVueDemo = createOrganizationTransferVuePreview(vue, ui);
-        if (isEnterpriseId(kind) && kind !== 'tree' && kind !== 'tree-select') {
+        if (
+          isEnterpriseId(kind) &&
+          kind !== 'tree' &&
+          kind !== 'tree-select' &&
+          kind !== 'dropdown-menu'
+        ) {
           app = createApp(
             createEnterpriseVueDemo(
               vue,
@@ -211,6 +219,8 @@ export function VueDemo({ kind, onAction, options }: VueDemoProps) {
                   return h(UploadDropzoneVueDemo, { options: uploadDropzonePreviewOptions(o) });
                 if (kind === 'upload-file-list')
                   return h(UploadFileListVueDemo, { options: uploadFileListPreviewOptions(o) });
+                if (kind === 'dropdown-menu')
+                  return h(DropdownMenuVueDemo, { options: dropdownMenuPreviewOptions(o) });
                 if (kind === 'tree') return treeVariantsVuePreview(vue, ui, treeVariantsOptions(o));
                 if (kind === 'tree-select')
                   return treeSelectVuePreview(vue, ui, treeSelectPreviewOptions(o));

@@ -1,9 +1,9 @@
-import { defineComponent, h, mergeProps, ref, nextTick } from 'vue';
+import { defineComponent, getCurrentInstance, h, mergeProps, ref, nextTick, watch } from 'vue';
 import type { PropType, VNodeChild } from 'vue';
 import type { NavItem } from '@btdesign/engine';
 import { safeHref } from '@btdesign/engine';
 import { useControlId } from './field.js';
-import { useDismiss } from './enterprise-shared.js';
+import { useDismiss, useValue } from './enterprise-shared.js';
 function nav(name: string, layout: 'sidebar' | 'top') {
   return defineComponent({
     name,
@@ -72,7 +72,10 @@ function nav(name: string, layout: 'sidebar' | 'top') {
               children && !closed
                 ? h(
                     'div',
-                    { id: `${id}-${encodeURIComponent(item.key)}`, class: 'f-nav-children' },
+                    {
+                      id: `${id}-${encodeURIComponent(item.key)}`,
+                      class: 'f-nav-children',
+                    },
                     [render(item.children!, level + 1, Boolean(disabled))],
                   )
                 : null,
@@ -82,7 +85,10 @@ function nav(name: string, layout: 'sidebar' | 'top') {
       return () =>
         h(
           'nav',
-          mergeProps(attrs, { class: ['f-nav', `f-nav--${layout}`], 'aria-label': props.label }),
+          mergeProps(attrs, {
+            class: ['f-nav', `f-nav--${layout}`],
+            'aria-label': props.label,
+          }),
           [render(props.items)],
         );
     },
@@ -94,6 +100,7 @@ export type DropdownMenuItem = Omit<NavItem, 'children'> & {
   children?: DropdownMenuItem[];
   group?: boolean;
   danger?: boolean;
+  kind?: 'action' | 'checkbox';
 };
 export const DropdownMenu = defineComponent({
   name: 'BTDESIGNDropdownMenu',
@@ -102,9 +109,35 @@ export const DropdownMenu = defineComponent({
     items: { type: Array as PropType<DropdownMenuItem[]>, required: true },
     label: { type: String, default: '更多操作' },
     disabled: Boolean,
+    checkedKeys: { type: Array as PropType<string[]>, default: undefined },
+    defaultCheckedKeys: {
+      type: Array as PropType<string[]>,
+      default: () => [],
+    },
+    highlightedKeys: { type: Array as PropType<string[]>, default: () => [] },
+    closeOnAction: { type: Boolean, default: true },
+    closeOnCheck: { type: Boolean, default: false },
+    triggerMode: {
+      type: String as PropType<'single' | 'split'>,
+      default: 'single',
+    },
+    primaryDisabled: Boolean,
+    menuDisabled: Boolean,
   },
-  emits: ['select'],
+  emits: ['select', 'update:checkedKeys', 'primary-action'],
   setup(props, { attrs, emit, slots }) {
+    const instance = getCurrentInstance();
+    const onceConsumed = ref(false);
+    const hasPrimaryListener = () =>
+      Boolean(
+        instance?.vnode.props?.onPrimaryAction ||
+        (!onceConsumed.value && instance?.vnode.props?.onPrimaryActionOnce),
+      );
+    const checked = useValue(
+      () => props.checkedKeys,
+      props.defaultCheckedKeys,
+      (keys) => emit('update:checkedKeys', keys),
+    );
     const root = ref<HTMLElement>();
     const trigger = ref<HTMLButtonElement>();
     const open = ref(false);
@@ -118,16 +151,24 @@ export const DropdownMenu = defineComponent({
       if (restore) nextTick(() => trigger.value?.focus());
     };
     useDismiss(root, open, () => close());
+    watch(
+      () => props.disabled || props.menuDisabled,
+      (disabled) => {
+        if (disabled && open.value) close();
+      },
+    );
     const focusMenu = (path: string, last = false) =>
       nextTick(() => {
         const menu = menus.get(path);
         const nodes = Array.from(
-          menu?.querySelectorAll<HTMLElement>('[role="menuitem"]:not(:disabled)') ?? [],
+          menu?.querySelectorAll<HTMLElement>(
+            '[role="menuitem"]:not(:disabled), [role="menuitemcheckbox"]:not(:disabled)',
+          ) ?? [],
         ).filter((node) => node.closest('[role="menu"]') === menu);
         (last ? nodes.at(-1) : nodes[0])?.focus();
       });
     const show = (last = false) => {
-      if (props.disabled) return;
+      if (props.disabled || props.menuDisabled) return;
       chain.value = [];
       open.value = true;
       focusMenu('[]', last);
@@ -157,7 +198,9 @@ export const DropdownMenu = defineComponent({
         event.stopPropagation();
         const menu = menus.get(path);
         const nodes = Array.from(
-          menu?.querySelectorAll<HTMLElement>('[role="menuitem"]:not(:disabled)') ?? [],
+          menu?.querySelectorAll<HTMLElement>(
+            '[role="menuitem"]:not(:disabled), [role="menuitemcheckbox"]:not(:disabled)',
+          ) ?? [],
         ).filter((node) => node.closest('[role="menu"]') === menu);
         if (!nodes.length) return;
         const index = nodes.indexOf(document.activeElement as HTMLElement);
@@ -181,11 +224,20 @@ export const DropdownMenu = defineComponent({
         const pathId = JSON.stringify(path);
         const blocked = !!(props.disabled || inheritedDisabled || item.disabled);
         if (item.separator)
-          return h('div', { key: item.key, role: 'separator', class: 'f-menu-separator' });
+          return h('div', {
+            key: item.key,
+            role: 'separator',
+            class: 'f-menu-separator',
+          });
         if (item.group)
           return h(
             'div',
-            { key: item.key, role: 'group', 'aria-label': item.label, class: 'f-menu-group' },
+            {
+              key: item.key,
+              role: 'group',
+              'aria-label': item.label,
+              class: 'f-menu-group',
+            },
             [
               h('div', { class: 'f-menu-group-label' }, item.label),
               renderEntries(item.children ?? [], path, depth, blocked),
@@ -193,11 +245,15 @@ export const DropdownMenu = defineComponent({
           );
         const hasChildren = !!item.children?.length;
         const expanded = chain.value[depth] === pathId;
-        const href = !hasChildren && !blocked ? safeHref(item.href) : undefined;
+        const checkbox = item.kind === 'checkbox' && !hasChildren && item.href === undefined;
+        const selected = checkbox && checked.value.value.includes(item.key);
+        const href = !checkbox && !hasChildren && !blocked ? safeHref(item.href) : undefined;
         const control = h(
           href ? 'a' : 'button',
           {
-            role: 'menuitem',
+            role: checkbox ? 'menuitemcheckbox' : 'menuitem',
+            'aria-checked': checkbox ? selected : undefined,
+            'data-highlighted': props.highlightedKeys.includes(item.key) || undefined,
             tabindex: -1,
             class: 'f-menu-item',
             'data-danger': item.danger || undefined,
@@ -218,13 +274,22 @@ export const DropdownMenu = defineComponent({
             onClick: () => {
               if (blocked) return;
               if (hasChildren) openSubmenu(pathId, depth);
-              else {
+              else if (checkbox) {
+                const current = checked.value.value;
+                checked.set(
+                  selected ? current.filter((key) => key !== item.key) : [...current, item.key],
+                );
+                if (props.closeOnCheck) close(true);
+              } else {
                 emit('select', item.key);
-                close(true);
+                if (props.closeOnAction) close(true);
               }
             },
           },
           [
+            checkbox
+              ? h('span', { class: 'f-menu-check', 'aria-hidden': 'true' }, selected ? '✓' : '')
+              : null,
             item.label,
             hasChildren
               ? h('span', { class: 'f-menu-submenu-arrow', 'aria-hidden': 'true' }, '›')
@@ -262,28 +327,57 @@ export const DropdownMenu = defineComponent({
       );
     };
     return () =>
-      h('div', mergeProps(attrs, { class: 'f-dropdown', ref: root }), [
-        h(
-          'button',
-          {
-            type: 'button',
-            class: 'f-button f-button--secondary f-dropdown-trigger',
-            ref: trigger,
-            disabled: props.disabled,
-            'aria-haspopup': 'menu',
-            'aria-expanded': open.value,
-            'aria-controls': open.value ? id : undefined,
-            onClick: () => (open.value ? close() : show()),
-            onKeydown: (event: KeyboardEvent) => {
-              if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
-                event.preventDefault();
-                show(event.key === 'ArrowUp');
-              }
+      h(
+        'div',
+        mergeProps(attrs, {
+          class: ['f-dropdown', props.triggerMode === 'split' && 'f-dropdown--split'],
+          ref: root,
+        }),
+        [
+          props.triggerMode === 'split'
+            ? h(
+                'button',
+                {
+                  type: 'button',
+                  class: 'f-button f-button--secondary f-dropdown-primary',
+                  disabled: props.disabled || props.primaryDisabled || !hasPrimaryListener(),
+                  onClick: () => {
+                    if (!props.disabled && !props.primaryDisabled && hasPrimaryListener()) {
+                      if (instance?.vnode.props?.onPrimaryActionOnce) onceConsumed.value = true;
+                      emit('primary-action');
+                    }
+                  },
+                },
+                props.label,
+              )
+            : null,
+          h(
+            'button',
+            {
+              type: 'button',
+              class: 'f-button f-button--secondary f-dropdown-trigger',
+              ref: trigger,
+              disabled: props.disabled || props.menuDisabled,
+              'aria-haspopup': 'menu',
+              'aria-label': props.triggerMode === 'split' ? `${props.label}菜单` : undefined,
+              'aria-expanded': open.value,
+              'aria-controls': open.value ? id : undefined,
+              onClick: () => {
+                if (!props.disabled && !props.menuDisabled) open.value ? close() : show();
+              },
+              onKeydown: (event: KeyboardEvent) => {
+                if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+                  event.preventDefault();
+                  show(event.key === 'ArrowUp');
+                }
+              },
             },
-          },
-          slots.default?.() ?? [props.label, h('span', { 'aria-hidden': 'true' }, '⌄')],
-        ),
-        open.value ? renderMenu(props.items, [], 0, props.label) : null,
-      ]);
+            props.triggerMode === 'split'
+              ? h('span', { 'aria-hidden': 'true' }, '⌄')
+              : (slots.default?.() ?? [props.label, h('span', { 'aria-hidden': 'true' }, '⌄')]),
+          ),
+          open.value ? renderMenu(props.items, [], 0, props.label) : null,
+        ],
+      );
   },
 });

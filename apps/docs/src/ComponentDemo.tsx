@@ -14,6 +14,8 @@ import { InputTagPreview } from './input-tag-preview';
 import { AutoCompletePreview } from './auto-complete-preview';
 import { MentionPreview } from './mention-preview';
 import { UploadPreview } from './upload-preview';
+import { DropdownMenuPreview } from './DropdownMenuPreview';
+import { dropdownMenuPreviewOptions } from './DropdownMenuExample';
 import { UploadDropzonePreview } from './UploadDropzonePreview';
 import { UploadFileListPreview } from './UploadFileListPreview';
 import { uploadFileListPreviewOptions } from './UploadFileListExample';
@@ -41,6 +43,7 @@ import {
   NumberInput,
   UploadDropzone,
   UploadFileList,
+  DropdownMenu,
   Breadcrumb,
   Pagination,
   EmptyState,
@@ -160,6 +163,10 @@ export function ComponentDemo({
         component={UploadFileList}
         options={uploadFileListPreviewOptions(options)}
       />
+    );
+  if (kind === 'dropdown-menu')
+    return (
+      <DropdownMenuPreview component={DropdownMenu} options={dropdownMenuPreviewOptions(options)} />
     );
   if (kind === 'tree-select')
     return <TreeSelectPreview options={treeSelectPreviewOptions(options)} />;

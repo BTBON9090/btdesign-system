@@ -27,6 +27,7 @@ export interface ComponentOverrides {
   calendar?: { cellSize?: number; gap?: number };
   tree?: { rowHeight?: number; indent?: number };
   navigation?: { itemHeight?: number; padding?: number };
+  breadcrumb?: { itemGap?: number; separatorGap?: number; fontSize?: number };
   list?: { rowPadding?: number; gap?: number };
   fileList?: { thumbnailSize?: number; pictureCardSize?: number; pictureRadius?: number };
   overlay?: { radius?: number; padding?: number };
@@ -56,6 +57,17 @@ export const componentGeometry = {
   tree: {
     rowHeight: { min: 28, max: 56, comfortable: 38, compact: 30, token: '--f-tree-row-height' },
     indent: { min: 12, max: 32, comfortable: 20, compact: 16, token: '--f-tree-indent' },
+  },
+  breadcrumb: {
+    itemGap: { min: 0, max: 24, comfortable: 8, compact: 8, token: '--f-breadcrumb-item-gap' },
+    separatorGap: {
+      min: 0,
+      max: 24,
+      comfortable: 8,
+      compact: 8,
+      token: '--f-breadcrumb-separator-gap',
+    },
+    fontSize: { min: 11, max: 20, comfortable: 13, compact: 13, token: '--f-breadcrumb-font-size' },
   },
   navigation: {
     itemHeight: { min: 30, max: 56, comfortable: 40, compact: 32, token: '--f-nav-item-height' },

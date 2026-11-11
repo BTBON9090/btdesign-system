@@ -1,7 +1,7 @@
 export const componentRegistry = {
   schemaVersion: 1,
   library: 'BTDESIGN',
-  version: '0.10.0',
+  version: '0.11.0',
   packages: {
     react: '@btdesign/react',
     vue: '@btdesign/vue',
@@ -61,6 +61,9 @@ export const componentRegistry = {
       '--f-file-thumbnail-size',
       '--f-file-picture-card-size',
       '--f-file-picture-radius',
+      '--f-breadcrumb-item-gap',
+      '--f-breadcrumb-separator-gap',
+      '--f-breadcrumb-font-size',
     ],
   },
   composition: {
@@ -1177,20 +1180,33 @@ export const componentRegistry = {
     },
     {
       name: 'DropdownMenu',
-      purpose: 'Action menu with optional groups and nested submenus',
+      purpose: 'Action and checkbox menu with groups, submenus and an optional split trigger',
       props: {
-        items: 'DropdownMenuItem[] with optional separator, group, danger and children',
+        items:
+          'DropdownMenuItem[] with optional kind (action | checkbox), separator, group, danger and children',
         label: 'string',
         disabled: 'boolean',
+        checkedKeys: 'string[] (checkbox item keys)',
+        defaultCheckedKeys: 'string[]',
+        highlightedKeys: 'string[] (visual highlight, independent of checked state)',
+        closeOnAction: 'boolean, default true',
+        closeOnCheck: 'boolean, default false',
+        triggerMode: 'single | split, default single',
+        primaryDisabled: 'boolean',
+        menuDisabled: 'boolean',
       },
       react: {
         onSelect: '(key)=>void',
+        onCheckedKeysChange: '(keys:string[])=>void',
+        onPrimaryAction: '()=>void',
       },
       vue: {
         select: 'key',
+        'update:checkedKeys': 'string[]',
+        'primary-action': 'void',
       },
       notes:
-        'Supports grouped items, separators, nested menus, directional/Home/End focus and Escape/Tab/outside dismiss. Submenus do not automatically flip at viewport edges.',
+        'Checkbox kind applies only to leaf items without href; conflicting href or children keep action/submenu behavior. Checkbox keys must be unique across the tree and checkbox changes do not emit select. Highlight is visual only. Submenus do not automatically flip at viewport edges.',
     },
     {
       name: 'DataTable',

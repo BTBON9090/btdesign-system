@@ -176,6 +176,12 @@ export interface DemoOptions {
   dropdownGroup?: boolean;
   dropdownSeparator?: boolean;
   dropdownSubmenu?: boolean;
+  dropdownCheckable?: boolean;
+  dropdownHighlight?: boolean;
+  dropdownCloseOnCheck?: boolean;
+  dropdownSplit?: boolean;
+  dropdownPrimaryDisabled?: boolean;
+  dropdownMenuDisabled?: boolean;
   fieldLayout?: 'vertical' | 'horizontal';
   numberStepperLayout?: 'sides' | 'stacked';
   cascaderSearchable?: boolean;

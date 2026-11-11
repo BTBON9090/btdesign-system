@@ -18,6 +18,7 @@ import { autoCompleteExample } from './auto-complete-preview';
 import { mentionExample } from './mention-preview';
 import { uploadExample } from './upload-preview';
 import { uploadDropzoneExampleCode, uploadDropzonePreviewOptions } from './UploadDropzoneExample';
+import { dropdownMenuExampleCode, dropdownMenuPreviewOptions } from './DropdownMenuExample';
 import { uploadFileListExampleCode, uploadFileListPreviewOptions } from './UploadFileListExample';
 import { rateExample } from './rate-preview';
 import { tagExampleCode, type TagPreviewOptions } from './tag-example-code';
@@ -828,6 +829,8 @@ function reactCode(id: ComponentId) {
 }
 
 export function componentCode(id: ComponentId, framework: Framework, options?: DemoOptions) {
+  if (id === 'dropdown-menu')
+    return dropdownMenuExampleCode(framework, dropdownMenuPreviewOptions(options));
   if (id === 'organization-transfer') return organizationTransferExampleCode(framework, options);
   if (id === 'tree') return treeVariantsExampleCode(framework, treeVariantsOptions(options));
   if (id === 'tree-select')
@@ -1771,9 +1774,22 @@ export const componentAnatomy: Record<ComponentId, AnatomyPart[]> = {
     ),
   ],
   breadcrumb: [
-    part('层级路径', 'Breadcrumb → nav + ol', '表达页面位置，不用它替代主要导航。', '--f-muted'),
+    part(
+      '层级路径',
+      'Breadcrumb → nav + ol',
+      '表达页面位置，不用它替代主要导航。',
+      '--f-muted',
+      '--f-breadcrumb-item-gap',
+      '--f-breadcrumb-font-size',
+    ),
     part('上级入口', 'items[].href → a', '只有真正可以导航的层级才提供链接。', '--f-primary'),
     part('当前位置', 'aria-current=page', '最后一级是当前页面，保留清楚的名称。', '--f-text'),
+    part(
+      '分隔符',
+      'items → separator',
+      '区分路径层级并调整分隔符与文字的间距。',
+      '--f-breadcrumb-separator-gap',
+    ),
   ],
   pagination: [
     part(

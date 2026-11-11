@@ -7,7 +7,7 @@ import React, {
   type KeyboardEvent,
 } from 'react';
 import { safeHref, type NavItem } from '@btdesign/engine';
-import { cx, usePopup } from './enterprise-utils.js';
+import { cx, useControllable, usePopup } from './enterprise-utils.js';
 
 export interface NavigationProps extends Omit<HTMLAttributes<HTMLElement>, 'onSelect'> {
   items: NavItem[];
@@ -100,32 +100,65 @@ export type DropdownMenuItem = Omit<NavItem, 'children'> & {
   children?: DropdownMenuItem[];
   group?: boolean;
   danger?: boolean;
+  /** Checkbox applies only to leaf items without href; conflicts retain action/submenu semantics. */
+  kind?: 'action' | 'checkbox';
 };
 export interface DropdownMenuProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onSelect'> {
   items: DropdownMenuItem[];
   label?: string;
   disabled?: boolean;
   onSelect?: (key: string) => void;
+  checkedKeys?: string[];
+  defaultCheckedKeys?: string[];
+  onCheckedKeysChange?: (keys: string[]) => void;
+  highlightedKeys?: string[];
+  closeOnAction?: boolean;
+  closeOnCheck?: boolean;
+  triggerMode?: 'single' | 'split';
+  primaryDisabled?: boolean;
+  menuDisabled?: boolean;
+  onPrimaryAction?: () => void;
 }
 export function DropdownMenu({
   items,
   label = '更多操作',
   disabled,
   onSelect,
+  checkedKeys,
+  defaultCheckedKeys = [],
+  onCheckedKeysChange,
+  highlightedKeys = [],
+  closeOnAction = true,
+  closeOnCheck = false,
+  triggerMode = 'single',
+  primaryDisabled = false,
+  menuDisabled = false,
+  onPrimaryAction,
   className,
   ...props
 }: DropdownMenuProps) {
-  const popup = usePopup(!!disabled);
+  const popup = usePopup(!!disabled || menuDisabled);
+  const [checked, setChecked] = useControllable(
+    checkedKeys,
+    defaultCheckedKeys,
+    onCheckedKeysChange,
+  );
   const id = useId();
   const [chain, setChain] = useState<string[]>([]);
   const menus = useRef(new Map<string, HTMLDivElement>());
   const menuItems = useRef(new Map<string, HTMLElement>());
-  const pending = useRef<{ menu?: string; item?: string; last?: boolean } | null>(null);
+  const pending = useRef<{
+    menu?: string;
+    item?: string;
+    last?: boolean;
+  } | null>(null);
   const rootPath = '[]';
   const focusMenu = (path: string, last = false) => {
     const menu = menus.current.get(path);
     const nodes = Array.from(
-      menu?.querySelectorAll<HTMLElement>('[role="menuitem"]:not(:disabled)') ?? [],
+      menu?.querySelectorAll<HTMLElement>(
+        '[role="menuitem"]:not(:disabled), [role="menuitemcheckbox"]:not(:disabled)',
+      ) ?? [],
     ).filter((node) => node.closest('[role="menu"]') === menu);
     (last ? nodes.at(-1) : nodes[0])?.focus();
   };
@@ -160,7 +193,9 @@ export function DropdownMenu({
       event.stopPropagation();
       const menu = menus.current.get(menuPath);
       const nodes = Array.from(
-        menu?.querySelectorAll<HTMLElement>('[role="menuitem"]:not(:disabled)') ?? [],
+        menu?.querySelectorAll<HTMLElement>(
+          '[role="menuitem"]:not(:disabled), [role="menuitemcheckbox"]:not(:disabled)',
+        ) ?? [],
       ).filter((node) => node.closest('[role="menu"]') === menu);
       if (!nodes.length) return;
       const index = nodes.indexOf(document.activeElement as HTMLElement);
@@ -182,7 +217,7 @@ export function DropdownMenu({
     entries.map((item) => {
       const path = [...parentPath, item.key];
       const pathId = JSON.stringify(path);
-      const blocked = !!(disabled || inheritedDisabled || item.disabled);
+      const blocked = !!(disabled || menuDisabled || inheritedDisabled || item.disabled);
       if (item.separator)
         return <div key={item.key} role="separator" className="f-menu-separator" />;
       if (item.group)
@@ -193,13 +228,16 @@ export function DropdownMenu({
           </div>
         );
       const hasChildren = !!item.children?.length;
+      const checkable = item.kind === 'checkbox' && !hasChildren && item.href === undefined;
       const expanded = chain[depth] === pathId;
       const href = !hasChildren && !blocked ? safeHref(item.href) : undefined;
       const common = {
-        role: 'menuitem' as const,
+        role: checkable ? ('menuitemcheckbox' as const) : ('menuitem' as const),
+        'aria-checked': checkable ? checked.includes(item.key) : undefined,
         tabIndex: -1,
         className: 'f-menu-item',
         'data-danger': item.danger || undefined,
+        'data-highlighted': highlightedKeys.includes(item.key) || undefined,
         ref: (node: HTMLElement | null) => {
           if (node) menuItems.current.set(pathId, node);
           else menuItems.current.delete(pathId);
@@ -214,14 +252,26 @@ export function DropdownMenu({
         onClick: () => {
           if (blocked) return;
           if (hasChildren) openSubmenu(pathId, depth);
-          else {
+          else if (checkable) {
+            setChecked(
+              checked.includes(item.key)
+                ? checked.filter((key) => key !== item.key)
+                : [...checked, item.key],
+            );
+            if (closeOnCheck) popup.close(true);
+          } else {
             onSelect?.(item.key);
-            popup.close(true);
+            if (closeOnAction) popup.close(true);
           }
         },
       };
       const content = (
         <>
+          {checkable && (
+            <span className="f-menu-check" aria-hidden="true">
+              {checked.includes(item.key) ? '✓' : ''}
+            </span>
+          )}
           {item.label}
           {hasChildren && (
             <span className="f-menu-submenu-arrow" aria-hidden="true">
@@ -278,12 +328,27 @@ export function DropdownMenu({
     );
   }
   return (
-    <div {...props} ref={popup.root} className={cx('f-dropdown', className)}>
+    <div
+      {...props}
+      ref={popup.root}
+      className={cx('f-dropdown', triggerMode === 'split' && 'f-dropdown--split', className)}
+    >
+      {triggerMode === 'split' && (
+        <button
+          type="button"
+          className="f-dropdown-primary f-button f-button--secondary f-button--md"
+          disabled={!!disabled || primaryDisabled || !onPrimaryAction}
+          onClick={onPrimaryAction}
+        >
+          {label}
+        </button>
+      )}
       <button
         className="f-dropdown-trigger f-button f-button--secondary f-button--md"
         type="button"
         ref={popup.trigger}
-        disabled={disabled}
+        disabled={!!disabled || menuDisabled}
+        aria-label={triggerMode === 'split' ? `${label}菜单` : undefined}
         aria-haspopup="menu"
         aria-expanded={popup.open}
         aria-controls={popup.open ? id : undefined}
@@ -304,7 +369,7 @@ export function DropdownMenu({
           }
         }}
       >
-        {label}
+        {triggerMode === 'single' && label}
         <span aria-hidden="true">⌄</span>
       </button>
       {popup.open && renderMenu(items, [], 0, label)}
