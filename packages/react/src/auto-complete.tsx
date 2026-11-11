@@ -1,4 +1,4 @@
-import { forwardRef, useEffect, useId, useRef, useState } from 'react';
+import { forwardRef, useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import {
   filterAutocompleteOptions,
   moveAutocompleteFocus,
@@ -13,6 +13,34 @@ export interface AutoCompleteProps extends Omit<InputProps, 'value' | 'defaultVa
   onValueChange?: (value: string) => void;
   onSelectOption?: (option: ChoiceOption) => void;
   emptyText?: string;
+  /** Optional decorative, non-interactive content; selecting the option remains unchanged. */
+  renderOptionSuffix?: (option: ChoiceOption) => ReactNode;
+}
+/** Shared option text; decorative suffix is excluded from the option's accessible name. */
+export function AutoCompleteOptionContent({
+  option,
+  suffix,
+}: {
+  option: ChoiceOption;
+  suffix?: ReactNode;
+}) {
+  return (
+    <>
+      <span>{option.label}</span>
+      {(option.description || suffix != null) && (
+        <span className="f-autocomplete-trailing">
+          {option.description && (
+            <span className="f-autocomplete-description">{option.description}</span>
+          )}
+          {suffix != null && (
+            <span className="f-autocomplete-suffix" aria-hidden="true">
+              {suffix}
+            </span>
+          )}
+        </span>
+      )}
+    </>
+  );
 }
 /** Editable local suggestions. Network requests and business-specific option data remain application-owned. */
 export const AutoComplete = forwardRef<HTMLInputElement, AutoCompleteProps>(function AutoComplete(
@@ -23,6 +51,7 @@ export const AutoComplete = forwardRef<HTMLInputElement, AutoCompleteProps>(func
     onValueChange,
     onSelectOption,
     emptyText = '没有匹配结果',
+    renderOptionSuffix,
     onChange,
     onFocus,
     onBlur,
@@ -175,30 +204,30 @@ export const AutoComplete = forwardRef<HTMLInputElement, AutoCompleteProps>(func
       {displayed && (
         <div className="f-overlay f-autocomplete-popup">
           <ul role="listbox" id={listId} className="f-autocomplete-options">
-            {filtered.map((option, index) => (
-              <li
-                key={`${option.value}-${index}`}
-                id={optionId(index)}
-                role="option"
-                aria-disabled={option.disabled || undefined}
-                aria-selected={index === active}
-                className="f-autocomplete-option"
-                onMouseMove={() => {
-                  if (!option.disabled) setActive(index);
-                }}
-                onPointerDown={(event) => {
-                  if (event.pointerType === 'mouse' && event.button !== 0) return;
-                  event.preventDefault();
-                  choose(option);
-                }}
-                onClick={() => choose(option)}
-              >
-                <span>{option.label}</span>
-                {option.description && (
-                  <span className="f-autocomplete-description">{option.description}</span>
-                )}
-              </li>
-            ))}
+            {filtered.map((option, index) => {
+              const suffix = renderOptionSuffix?.(option);
+              return (
+                <li
+                  key={`${option.value}-${index}`}
+                  id={optionId(index)}
+                  role="option"
+                  aria-disabled={option.disabled || undefined}
+                  aria-selected={index === active}
+                  className="f-autocomplete-option"
+                  onMouseMove={() => {
+                    if (!option.disabled) setActive(index);
+                  }}
+                  onPointerDown={(event) => {
+                    if (event.pointerType === 'mouse' && event.button !== 0) return;
+                    event.preventDefault();
+                    choose(option);
+                  }}
+                  onClick={() => choose(option)}
+                >
+                  <AutoCompleteOptionContent option={option} suffix={suffix} />
+                </li>
+              );
+            })}
           </ul>
           {!filtered.length && (
             <div role="status" className="f-autocomplete-empty">

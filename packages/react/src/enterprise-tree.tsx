@@ -10,6 +10,7 @@ import {
 } from '@btdesign/engine';
 import { Input, useFieldControl } from './fields.js';
 import { checkedRef, cx, useControllable, usePopup } from './enterprise-utils.js';
+import { visibleTransferSelection } from './transfer-utils.js';
 
 export interface TreeProps extends Omit<
   HTMLAttributes<HTMLDivElement>,
@@ -686,10 +687,9 @@ export function Transfer({
   const [queries, setQueries] = useState(['', '']);
   const sideOptions = (side: number) =>
     options.filter((option) => target.includes(option.value) === (side === 1));
+  // Move only checked items in the current filter; hidden checks stay available after clearing it.
   const chosen = (side: number) =>
-    sideOptions(side)
-      .filter((option) => !option.disabled && checked.includes(option.value))
-      .map((option) => option.value);
+    visibleTransferSelection(sideOptions(side), checked, queries[side]);
   const move = (toTarget: boolean) => {
     if (disabled) return;
     const moving = chosen(toTarget ? 0 : 1);
@@ -713,7 +713,12 @@ export function Transfer({
         const all = count > 0 && count === available.length;
         const state = all ? true : count ? 'mixed' : false;
         return (
-          <div className="f-transfer-panel" key={side}>
+          <div
+            className="f-transfer-panel"
+            key={side}
+            role="group"
+            aria-label={`${titles[side]}列表`}
+          >
             <div className="f-transfer-header">
               <label>
                 <input
@@ -737,7 +742,9 @@ export function Transfer({
                 />
                 {titles[side]}
               </label>
-              <span>{source.length}</span>
+              <span aria-label={`${titles[side]}总数 ${source.length} 项`}>
+                总数 {source.length} 项
+              </span>
             </div>
             <Input
               type="search"
@@ -772,7 +779,11 @@ export function Transfer({
                   <span>{option.label}</span>
                 </label>
               ))}
-              {!visible.length && <p className="f-tree-empty">没有匹配的选项</p>}
+              {!visible.length && (
+                <p className="f-tree-empty" role="status">
+                  没有匹配的选项
+                </p>
+              )}
             </div>
             <button
               type="button"

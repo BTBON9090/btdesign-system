@@ -1,6 +1,6 @@
 import type { Framework } from './component-types';
 export interface ProgressPreviewOptions {
-  type: 'line' | 'circle';
+  type: 'line' | 'circle' | 'mini';
   status: 'normal' | 'success' | 'warning' | 'error';
   value: number;
   showValue: boolean;

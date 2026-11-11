@@ -5,11 +5,13 @@ import {
   leafColumns,
   processTableRows,
   type DataColumn,
+  type TableNumberRange,
   type TableSort,
 } from '@btdesign/engine';
 import { Input } from './fields.js';
 import { Pagination } from './composition.js';
 import { checkedRef, cx, useControllable } from './enterprise-utils.js';
+import { TableFilter } from './table-filter.js';
 
 export interface DataTableColumn<
   R extends Record<string, unknown> = Record<string, unknown>,
@@ -43,6 +45,9 @@ export interface DataTableProps<
   onSortChange?: (sort: TableSort | null) => void;
   filters?: Record<string, string | string[]>;
   onFiltersChange?: (filters: Record<string, string | string[]>) => void;
+  /** Inclusive numeric bounds. Missing or empty ranges do not filter. */
+  numberRanges?: Record<string, TableNumberRange>;
+  onNumberRangesChange?: (ranges: Record<string, TableNumberRange>) => void;
   selectable?: boolean;
   selectedKeys?: string[];
   defaultSelectedKeys?: string[];
@@ -81,6 +86,8 @@ export function DataTable<R extends Record<string, unknown>>({
   onSortChange,
   filters,
   onFiltersChange,
+  numberRanges,
+  onNumberRangesChange,
   selectable = false,
   selectedKeys,
   defaultSelectedKeys = [],
@@ -110,6 +117,11 @@ export function DataTable<R extends Record<string, unknown>>({
     {},
     onFiltersChange,
   );
+  const [ranges, setRanges] = useControllable<Record<string, TableNumberRange>>(
+    numberRanges,
+    {},
+    onNumberRangesChange,
+  );
   const [currentPage, setPage] = useControllable(page, 1, onPageChange);
   const [selected, setSelected] = useControllable(
     selectedKeys,
@@ -129,6 +141,7 @@ export function DataTable<R extends Record<string, unknown>>({
     query: search,
     sort: order,
     filters: filter,
+    numberRanges: ranges,
     expandedKeys: expanded,
     page: currentPage,
     pageSize,
@@ -143,7 +156,12 @@ export function DataTable<R extends Record<string, unknown>>({
   );
   const hasFilter =
     !!search.trim() ||
-    Object.values(filter).some((value) => (Array.isArray(value) ? value.length > 0 : !!value));
+    Object.values(filter).some((value) => (Array.isArray(value) ? value.length > 0 : !!value)) ||
+    leaves.some(
+      (column) =>
+        ranges[column.key] &&
+        (ranges[column.key].min !== undefined || ranges[column.key].max !== undefined),
+    );
   const enabledRows = result.rows.filter((row) => !rowDisabled?.(row.record));
   const selectedCount = enabledRows.filter((row) => selected.includes(row.key)).length;
   const allChecked = enabledRows.length > 0 && selectedCount === enabledRows.length;
@@ -376,7 +394,30 @@ export function DataTable<R extends Record<string, unknown>>({
                     ) : (
                       header.title
                     )}
-                    {header.leaf && header.column.filterOptions?.length ? (
+                    {header.leaf && header.column.filterMode ? (
+                      <TableFilter
+                        title={header.title}
+                        mode={header.column.filterMode}
+                        options={header.column.filterOptions}
+                        selected={filter[header.key]}
+                        range={ranges[header.key]}
+                        disabled={blocked}
+                        onApplySelection={(value) => {
+                          const next = { ...filter };
+                          if (value.length) next[header.key] = value;
+                          else delete next[header.key];
+                          setFilter(next);
+                          setPage(1);
+                        }}
+                        onApplyRange={(value) => {
+                          const next = { ...ranges };
+                          if (value) next[header.key] = value;
+                          else delete next[header.key];
+                          setRanges(next);
+                          setPage(1);
+                        }}
+                      />
+                    ) : header.leaf && header.column.filterOptions?.length ? (
                       <select
                         className="f-select f-data-table-filter"
                         aria-label={`筛选${header.title}`}

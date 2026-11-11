@@ -80,6 +80,18 @@ export const enterpriseColumns: DataColumn[] = [
     ],
   },
 ];
+/** Explicit demo modes keep the old single select alongside advanced filters. */
+export function tablePreviewColumns(advanced: boolean): DataColumn[] {
+  if (!advanced) return enterpriseColumns;
+  return enterpriseColumns.map((group) => ({
+    ...group,
+    children: group.children?.map((column) => ({
+      ...column,
+      ...(column.key === 'status' ? { filterMode: 'multiple' as const } : {}),
+      ...(column.key === 'budget' ? { filterMode: 'numberRange' as const } : {}),
+    })),
+  }));
+}
 export const enterpriseRows: Record<string, unknown>[] = [
   {
     id: 'brand',

@@ -81,6 +81,8 @@ export interface DataColumn {
   children?: DataColumn[];
   sortable?: boolean;
   filterOptions?: ChoiceOption[];
+  /** Opt in to a confirmed multi-select or numeric range; omitted keeps the native single select. */
+  filterMode?: 'multiple' | 'numberRange';
   width?: number;
   align?: 'left' | 'center' | 'right';
   fixed?: 'left' | 'right';
@@ -100,10 +102,16 @@ export interface TableSort {
   key: string;
   direction: 'asc' | 'desc';
 }
+/** Inclusive bounds; omitted bounds are unbounded. Only finite numeric cells match. */
+export interface TableNumberRange {
+  min?: number;
+  max?: number;
+}
 export interface TableOptions {
   query?: string;
   sort?: TableSort | null;
   filters?: Record<string, string | string[]>;
+  numberRanges?: Record<string, TableNumberRange>;
   expandedKeys?: readonly string[];
   page?: number;
   pageSize?: number;

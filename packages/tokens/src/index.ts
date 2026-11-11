@@ -20,7 +20,7 @@ export interface ComponentOverrides {
   button?: { radius?: number; height?: number };
   input?: { radius?: number; height?: number };
   card?: { radius?: number; padding?: number };
-  field?: { gap?: number; labelSize?: number };
+  field?: { gap?: number; labelSize?: number; labelWidth?: number };
   table?: { cellPadding?: number; rowHeight?: number };
   form?: { gap?: number; sectionGap?: number };
   choice?: { size?: number; gap?: number };
@@ -30,7 +30,13 @@ export interface ComponentOverrides {
   list?: { rowPadding?: number; gap?: number };
   overlay?: { radius?: number; padding?: number };
   resize?: { handleSize?: number };
-  progress?: { lineHeight?: number; circleSize?: number; circleStroke?: number };
+  progress?: {
+    lineHeight?: number;
+    circleSize?: number;
+    circleStroke?: number;
+    miniSize?: number;
+    miniStroke?: number;
+  };
 }
 /** One geometry contract drives normalization, Lab controls and import/export. */
 export const componentGeometry = {
@@ -66,6 +72,8 @@ export const componentGeometry = {
     handleSize: { min: 4, max: 24, comfortable: 8, compact: 6, token: '--f-resize-handle-size' },
   },
   progress: {
+    miniSize: { min: 20, max: 64, comfortable: 32, compact: 28, token: '--f-progress-mini-size' },
+    miniStroke: { min: 1, max: 8, comfortable: 4, compact: 4, token: '--f-progress-mini-stroke' },
     lineHeight: { min: 2, max: 16, comfortable: 6, compact: 4, token: '--f-progress-line-height' },
     circleSize: {
       min: 48,
@@ -142,7 +150,7 @@ function componentOverrides(input: unknown): ComponentOverrides | undefined {
     if (Object.keys(values).length) output[key] = values;
   }
   for (const [section, fields] of [
-    ['field', { gap: [4, 20], labelSize: [11, 16] }],
+    ['field', { gap: [4, 20], labelSize: [11, 16], labelWidth: [64, 240] }],
     ['table', { cellPadding: [6, 24], rowHeight: [28, 72] }],
   ] as const) {
     const candidate = record(source[section]);
@@ -319,6 +327,7 @@ export function createTheme(input: ThemeConfig, mode: ThemeMode = 'light'): Reco
     '--f-card-padding': `${config.components?.card?.padding ?? (config.density === 'compact' ? 15 : 20)}px`,
     '--f-field-gap': `${config.components?.field?.gap ?? (config.density === 'compact' ? 6 : 8)}px`,
     '--f-field-label-size': `${config.components?.field?.labelSize ?? 13}px`,
+    '--f-field-label-width': `${config.components?.field?.labelWidth ?? 120}px`,
     '--f-table-cell-padding': `${config.components?.table?.cellPadding ?? (config.density === 'compact' ? 8 : 12)}px`,
     '--f-table-row-height': `${config.components?.table?.rowHeight ?? (config.density === 'compact' ? 36 : 44)}px`,
     '--f-font': fonts[config.font],

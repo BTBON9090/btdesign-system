@@ -28,6 +28,7 @@ export interface FieldProps extends Omit<HTMLAttributes<HTMLDivElement>, 'childr
   error?: ReactNode;
   required?: boolean;
   disabled?: boolean;
+  layout?: 'vertical' | 'horizontal';
   children: ReactNode;
 }
 /** Wrap one control (or one RadioGroup) so its name, instructions and error stay linked. */
@@ -38,6 +39,7 @@ export function Field({
   error,
   required,
   disabled,
+  layout = 'vertical',
   children,
   className,
   ...props
@@ -57,7 +59,7 @@ export function Field({
     >
       <div
         {...props}
-        className={cx('f-field', className)}
+        className={cx('f-field', layout === 'horizontal' && 'f-field--horizontal', className)}
         data-disabled={disabled || undefined}
         data-invalid={hasError || undefined}
       >

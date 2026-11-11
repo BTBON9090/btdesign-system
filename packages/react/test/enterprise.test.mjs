@@ -403,6 +403,44 @@ test('table applies controlled sort/filter and column visibility while preservin
   assert.match(filtered, /子成员/);
   assert.match(filtered, /aria-expanded="true"[^>]*aria-label="收起行 1"/);
 });
+test('DataTable preserves legacy select and opts into multiple and inclusive numeric range filters', () => {
+  const filteredColumns = [
+    { key: 'name', title: '名称' },
+    { key: 'legacy', title: '旧筛选', filterOptions: [{ value: 'a', label: '甲' }] },
+    {
+      key: 'status',
+      title: '状态',
+      filterMode: 'multiple',
+      filterOptions: [{ value: 'active', label: '活跃' }],
+    },
+    { key: 'score', title: '得分', filterMode: 'numberRange' },
+  ];
+  const rows = [
+    {
+      id: 'parent',
+      name: '父',
+      score: 99,
+      status: 'active',
+      children: [{ id: 'child', name: '命中', score: 0, status: 'active' }],
+    },
+    { id: 'other', name: '未命中', score: 1, status: 'active' },
+  ];
+  const html = render(
+    h(ui.DataTable, {
+      columns: filteredColumns,
+      data: rows,
+      filters: { status: ['active'] },
+      numberRanges: { score: { min: 0, max: 0 } },
+      pagination: false,
+    }),
+  );
+  assert.match(html, /<select[^>]*aria-label="筛选旧筛选"/);
+  assert.match(html, /aria-label="筛选状态" aria-haspopup="dialog" aria-expanded="false"/);
+  assert.match(html, /aria-label="筛选得分" aria-haspopup="dialog" aria-expanded="false"/);
+  assert.match(html, /命中/);
+  assert.doesNotMatch(html, /未命中/);
+  assert.match(html, /aria-expanded="true"[^>]*aria-label="收起行 parent"/);
+});
 test('loading and empty table states remain understandable without data or fake totals', () => {
   const empty = render(
     h(ui.DataTable, { columns, data: [], emptyText: '没有符合条件的成员', loading: false }),

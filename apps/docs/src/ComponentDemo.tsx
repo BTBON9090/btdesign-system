@@ -159,7 +159,7 @@ export function ComponentDemo({
   if (isEnterpriseId(kind))
     return (
       <EnterpriseDemo
-        key={`${kind}:${options?.multiple}:${options?.cascade}`}
+        key={`${kind}:${options?.multiple}:${options?.cascade}:${options?.tableAdvancedFilters}`}
         kind={kind}
         options={options ?? defaultDemoOptions}
         onAction={onAction}
@@ -729,6 +729,7 @@ function ConfiguredDemo({
       return (
         <Field
           className="demo-form"
+          layout={o.fieldLayout ?? 'vertical'}
           label="工作邮箱"
           description="用于接收团队邀请"
           error={error}

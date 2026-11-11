@@ -2,7 +2,7 @@ import type { AnatomyPart, DemoOptions, Framework } from './component-types';
 import { dropdownPreviewItems } from './dropdown-preview';
 import { dateRangePresets } from './date-range-fixtures';
 import {
-  enterpriseColumns,
+  tablePreviewColumns,
   enterpriseFiles,
   enterpriseNav,
   enterpriseOptions,
@@ -21,6 +21,7 @@ export const enterpriseCatalog = [
       ['initialValues / values', 'Record<string, unknown>', '{}'],
       ['rules', 'Record<string, ValidationRule[]>', '{}'],
       ['FormField / FormSection / FormActions', '字段、分组、操作部件', '—'],
+      ['FormField layout', 'vertical | horizontal', 'vertical'],
       ['onSubmit / submit', '校验成功后的值', '—'],
     ],
   },
@@ -269,6 +270,8 @@ export const enterpriseCatalog = [
     description: '把多级表头、树形行、筛选排序和选择编辑组合为可维护的业务表格。',
     props: [
       ['columns / data', 'DataColumn[] / Record[]', '必填'],
+      ['column.filterMode', 'multiple | numberRange', '默认单选'],
+      ['numberRanges', 'Record<string, { min?, max? }>', '—'],
       ['rowKey / childrenKey', 'string', 'id / children'],
       ['selectable / searchable / pagination', 'boolean', '按用法配置'],
       ['selectedKeys / expandedKeys', 'string[]', '—'],
@@ -642,7 +645,7 @@ export function enterpriseComponentCode(
     switch (id) {
       case 'form':
         imports = 'Form, FormField, FormSection, FormActions, Button';
-        body = `<Form initialValues={{ email: '', team: 'design' }} onSubmit={values => console.log(values)}${reactDisabled}>\n      <FormSection title="成员资料">\n        <FormField name="email" label="工作邮箱" type="email" required rules={[{ type: 'email', message: '请输入有效的邮箱地址' }]} />\n        <FormField name="team" label="所属团队" type="select" options={${options}} />\n      </FormSection>\n      <FormActions><Button type="submit">保存成员</Button><Button type="reset" variant="secondary">重置</Button></FormActions>\n    </Form>`;
+        body = `<Form initialValues={{ email: '', team: 'design' }} onSubmit={values => console.log(values)}${reactDisabled}>\n      <FormSection title="成员资料">\n        <FormField layout="${o?.fieldLayout ?? 'vertical'}" name="email" label="工作邮箱" type="email" required rules={[{ type: 'email', message: '请输入有效的邮箱地址' }]} />\n        <FormField layout="${o?.fieldLayout ?? 'vertical'}" name="team" label="所属团队" type="select" options={${options}} />\n      </FormSection>\n      <FormActions><Button type="submit">保存成员</Button><Button type="reset" variant="secondary">重置</Button></FormActions>\n    </Form>`;
         break;
       case 'calendar':
       case 'date-picker':
@@ -696,7 +699,7 @@ export function enterpriseComponentCode(
         body = `<DropdownMenu label="项目操作" items={${json(dropdownPreviewItems(o))}} onSelect={key => console.log(key)}${reactDisabled}/>`;
         break;
       case 'data-table':
-        setup = `const columns: DataColumn[] = ${json(enterpriseColumns)};\n  const [data, setData] = useState<Record<string,unknown>[]>(${json(enterpriseRows)});\n  ${updateRowsCode}`;
+        setup = `const columns: DataColumn[] = ${json(tablePreviewColumns(o?.tableAdvancedFilters ?? false))};\n  const [data, setData] = useState<Record<string,unknown>[]>(${json(enterpriseRows)});\n  ${updateRowsCode}`;
         body = `<DataTable caption="项目交付清单" columns={columns} data={data} expandColumn="${o?.tableExpandColumn ?? 'inline'}" searchable selectable pageSize={3} onCellChange={({key,column,value}) => setData(rows => updateRows(rows, key, column, value))}${o?.state === 'loading' ? ' loading' : ''}${reactDisabled}/>`;
         break;
     }
@@ -706,7 +709,7 @@ export function enterpriseComponentCode(
   switch (id) {
     case 'form':
       imports = 'Form, FormField, FormSection, FormActions, Button';
-      body = `<Form :initialValues="{email:'',team:'design'}" @submit="values => console.log(values)"${vueDisabled}>\n    <FormSection title="成员资料"><FormField name="email" label="工作邮箱" type="email" required :rules="[{type:'email',message:'请输入有效的邮箱地址'}]"/><FormField name="team" label="所属团队" type="select" :options="options"/></FormSection>\n    <FormActions><Button type="submit">保存成员</Button><Button type="reset" variant="secondary">重置</Button></FormActions>\n  </Form>`;
+      body = `<Form :initialValues="{email:'',team:'design'}" @submit="values => console.log(values)"${vueDisabled}>\n    <FormSection title="成员资料"><FormField layout="${o?.fieldLayout ?? 'vertical'}" name="email" label="工作邮箱" type="email" required :rules="[{type:'email',message:'请输入有效的邮箱地址'}]"/><FormField layout="${o?.fieldLayout ?? 'vertical'}" name="team" label="所属团队" type="select" :options="options"/></FormSection>\n    <FormActions><Button type="submit">保存成员</Button><Button type="reset" variant="secondary">重置</Button></FormActions>\n  </Form>`;
       setup = `const options = ${options};`;
       break;
     case 'calendar':
@@ -763,7 +766,7 @@ export function enterpriseComponentCode(
       body = `<DropdownMenu label="项目操作" :items="items" @select="key => console.log(key)"${vueDisabled}/>`;
       break;
     case 'data-table':
-      setup = `const columns: DataColumn[] = ${json(enterpriseColumns)};\nconst data = ref<Record<string,unknown>[]>(${json(enterpriseRows)});\n${updateRowsCode}\nfunction edit({key,column,value}: {key:string,column:string,value:unknown}) { data.value = updateRows(data.value, key, column, value); }`;
+      setup = `const columns: DataColumn[] = ${json(tablePreviewColumns(o?.tableAdvancedFilters ?? false))};\nconst data = ref<Record<string,unknown>[]>(${json(enterpriseRows)});\n${updateRowsCode}\nfunction edit({key,column,value}: {key:string,column:string,value:unknown}) { data.value = updateRows(data.value, key, column, value); }`;
       body = `<DataTable caption="项目交付清单" :columns="columns" :data="data" expand-column="${o?.tableExpandColumn ?? 'inline'}" searchable selectable :pageSize="3" @cell-change="edit"${o?.state === 'loading' ? ' loading' : ''}${vueDisabled}/>`;
       break;
   }

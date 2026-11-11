@@ -115,7 +115,11 @@ export function processTableRows<R extends Record<string, unknown>>(
     ([key, values]) =>
       byKey.has(key) && (Array.isArray(values) ? values.length > 0 : values !== ''),
   );
-  const filtering = Boolean(query || filters.length);
+  const numberRanges = Object.entries(options.numberRanges ?? {}).filter(
+    ([key, range]) =>
+      byKey.has(key) && range != null && (range.min !== undefined || range.max !== undefined),
+  );
+  const filtering = Boolean(query || filters.length || numberRanges.length);
   function matches(record: R) {
     return (
       (!query ||
@@ -126,7 +130,23 @@ export function processTableRows<R extends Record<string, unknown>>(
         (Array.isArray(values) ? values : [values]).includes(
           text(cellValue(record, byKey.get(key)!)),
         ),
-      )
+      ) &&
+      numberRanges.every(([key, range]) => {
+        const { min, max } = range;
+        if (
+          (min !== undefined && !Number.isFinite(min)) ||
+          (max !== undefined && !Number.isFinite(max)) ||
+          (min !== undefined && max !== undefined && min > max)
+        )
+          return false;
+        const value = cellValue(record, byKey.get(key)!);
+        return (
+          typeof value === 'number' &&
+          Number.isFinite(value) &&
+          (min === undefined || value >= min) &&
+          (max === undefined || value <= max)
+        );
+      })
     );
   }
   const sort = options.sort,

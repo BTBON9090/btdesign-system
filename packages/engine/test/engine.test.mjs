@@ -351,6 +351,63 @@ test('table filters preserve matching descendant paths and open them without cha
   assert.deepEqual(expandedKeys, []);
   assert.deepEqual(processTableRows(records, columns, { query: 'no matches' }).rows, []);
 });
+test('numeric ranges use inclusive finite numeric bounds and preserve matching tree ancestors', () => {
+  const values = [
+    {
+      id: 'root',
+      amount: 100,
+      state: 'active',
+      children: [
+        { id: 'zero', amount: 0, state: 'active' },
+        { id: 'decimal', amount: -1.5, state: 'active' },
+      ],
+    },
+    { id: 'numeric-string', amount: '0', state: 'active' },
+    { id: 'blank', amount: null, state: 'active' },
+    { id: 'outside', amount: 2, state: 'active' },
+  ];
+  const cols = [
+    { key: 'amount', title: '金额' },
+    { key: 'state', title: '状态' },
+  ];
+  const result = processTableRows(values, cols, {
+    filters: { state: ['active'] },
+    numberRanges: { amount: { min: -1.5, max: 0 } },
+    pagination: false,
+  });
+  assert.deepEqual(
+    result.rows.map((row) => row.key),
+    ['root', 'zero', 'decimal'],
+  );
+  assert.equal(result.total, 1);
+  assert.deepEqual(
+    processTableRows(values, cols, {
+      numberRanges: { amount: { min: 2 } },
+      pagination: false,
+    }).rows.map((row) => row.key),
+    ['root', 'outside'],
+  );
+  assert.deepEqual(
+    processTableRows(values, cols, { numberRanges: { amount: {} }, pagination: false }).rows.map(
+      (row) => row.key,
+    ),
+    ['root', 'numeric-string', 'blank', 'outside'],
+  );
+  assert.equal(
+    processTableRows(values, cols, {
+      numberRanges: { amount: { min: 3, max: 2 } },
+      pagination: false,
+    }).total,
+    0,
+  );
+  assert.equal(
+    processTableRows(values, cols, {
+      numberRanges: { amount: { min: Infinity } },
+      pagination: false,
+    }).total,
+    0,
+  );
+});
 
 test('table pagination applies to roots and includes expanded descendants of the page', () => {
   const first = processTableRows(records, columns, { page: 1, pageSize: 1, expandedKeys: ['a'] });

@@ -126,6 +126,8 @@ export interface DemoOptions {
   inputAddon?: 'none' | 'start' | 'end' | 'both';
   inputTagDuplicates?: boolean;
   autoCompleteEmpty?: boolean;
+  autoCompleteDetail?: boolean;
+  autoCompleteSuffix?: 'none' | 'arrow' | 'dot';
   mentionEmpty?: boolean;
   dateReadOnly?: boolean;
   dateClearable?: boolean;
@@ -156,12 +158,14 @@ export interface DemoOptions {
   dropdownGroup?: boolean;
   dropdownSeparator?: boolean;
   dropdownSubmenu?: boolean;
+  fieldLayout?: 'vertical' | 'horizontal';
   cascaderSearchable?: boolean;
   cascaderChangeOnSelect?: boolean;
-  progressType?: 'line' | 'circle';
+  progressType?: 'line' | 'circle' | 'mini';
   progressStatus?: 'normal' | 'success' | 'warning' | 'error';
   progressShowValue?: boolean;
   tableExpandColumn?: 'inline' | 'separate';
+  tableAdvancedFilters?: boolean;
   checkboxIndeterminate?: boolean;
   breadcrumbSeparator?: 'slash' | 'dot' | 'arrow';
   tabsVariant?: 'default' | 'line' | 'text' | 'card' | 'card-gutter' | 'rounded';

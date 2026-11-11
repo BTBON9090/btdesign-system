@@ -198,6 +198,7 @@ export interface FormFieldProps extends Omit<HTMLAttributes<HTMLDivElement>, 'ch
   name: string;
   label: string;
   description?: string;
+  layout?: 'vertical' | 'horizontal';
   rules?: ValidationRule | ValidationRule[];
   required?: boolean;
   disabled?: boolean;
@@ -210,6 +211,7 @@ export function FormField({
   name,
   label,
   description,
+  layout = 'vertical',
   rules,
   required = false,
   disabled = false,
@@ -312,6 +314,7 @@ export function FormField({
       id={id}
       label={label}
       description={description}
+      layout={layout}
       error={error}
       required={field.required}
       disabled={blocked}

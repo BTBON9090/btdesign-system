@@ -3740,3 +3740,97 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+/* Horizontal field layout */
+.f-field--horizontal {
+  grid-template-columns: minmax(0, var(--f-field-label-width, 120px)) minmax(0, 1fr);
+  align-items: start;
+}
+.f-field--horizontal > .f-field-label {
+  grid-column: 1;
+  grid-row: 1;
+}
+.f-field--horizontal > :not(.f-field-label):not(.f-field-description):not(.f-field-error) {
+  grid-column: 2;
+  grid-row: 1;
+}
+.f-field--horizontal > .f-field-description,
+.f-field--horizontal > .f-field-error {
+  grid-column: 2;
+}
+.f-field--horizontal:has(> input[type='checkbox']) {
+  grid-template-columns: minmax(0, var(--f-field-label-width, 120px)) minmax(0, 1fr);
+}
+.f-field--horizontal:has(> input[type='checkbox']) > .f-field-label {
+  grid-column: 1;
+  grid-row: 1;
+}
+.f-field--horizontal:has(> input[type='checkbox']) > input {
+  grid-column: 2;
+  grid-row: 1;
+}
+.f-field--horizontal:has(> input[type='checkbox']) > p {
+  grid-column: 2;
+}
+@media (max-width: 640px) {
+  .f-field--horizontal {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .f-field--horizontal > .f-field-label,
+  .f-field--horizontal > :not(.f-field-label):not(.f-field-description):not(.f-field-error),
+  .f-field--horizontal > .f-field-description,
+  .f-field--horizontal > .f-field-error {
+    grid-column: 1;
+    grid-row: auto;
+  }
+  .f-field--horizontal:has(> input[type='checkbox']) {
+    grid-template-columns: var(--f-choice-size) minmax(0, 1fr);
+  }
+  .f-field--horizontal:has(> input[type='checkbox']) > .f-field-label {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  .f-field--horizontal:has(> input[type='checkbox']) > input {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .f-field--horizontal:has(> input[type='checkbox']) > p {
+    grid-column: 1 / -1;
+  }
+}
+
+/* Mini progress ring */
+.f-progress-wrap--mini {
+  flex-direction: row;
+  gap: calc(var(--f-space) * 0.5);
+}
+.f-progress-wrap--mini .f-progress-circle {
+  width: var(--f-progress-mini-size, 32px);
+  flex: none;
+}
+.f-progress-wrap--mini .f-progress-circle-track,
+.f-progress-wrap--mini .f-progress-circle-fill {
+  stroke-width: var(--f-progress-mini-stroke, 4px);
+}
+.f-progress-mini-content {
+  display: inline-flex;
+  gap: calc(var(--f-space) * 0.5);
+  align-items: center;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* AutoComplete option suffix */
+.f-autocomplete-trailing {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--f-choice-gap, 8px);
+  margin-inline-start: auto;
+  flex-shrink: 0;
+}
+.f-autocomplete-suffix {
+  display: inline-flex;
+  align-items: center;
+  color: var(--f-muted);
+  pointer-events: none;
+}

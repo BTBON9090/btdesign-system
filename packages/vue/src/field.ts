@@ -55,6 +55,7 @@ export const Field = defineComponent({
     id: String,
     label: { type: String, required: true },
     description: String,
+    layout: { type: String as PropType<'vertical' | 'horizontal'>, default: 'vertical' },
     error: String,
     required: Boolean,
     disabled: Boolean,
@@ -79,7 +80,10 @@ export const Field = defineComponent({
     return () =>
       h(
         'div',
-        mergeProps(attrs, { class: 'f-field', 'data-invalid': props.error ? '' : undefined }),
+        mergeProps(attrs, {
+          class: ['f-field', props.layout === 'horizontal' && 'f-field--horizontal'],
+          'data-invalid': props.error ? '' : undefined,
+        }),
         [
           h('label', { class: 'f-field-label', id: context.value.labelId, for: context.value.id }, [
             props.label,

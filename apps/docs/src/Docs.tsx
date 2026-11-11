@@ -70,7 +70,7 @@ export function Docs({
         ))}
         <div className="sidebar-foot">
           <span className="status-dot" />
-          BTDESIGN v0.6.0
+          BTDESIGN v0.7.0
         </div>
       </aside>
       <div className="docs-main">
@@ -754,7 +754,7 @@ function Guide({
           description="先带入熟悉的品牌风格，再识别旧系统的组件与差异，按业务页面逐步迁入同一套规则。"
         />
         <Alert variant="info" title="兼容的边界">
-          BTDESIGN v0.6 支持 React 18 / 19 与 Vue 3.4+。现有 Ant Design、Arco、shadcn/ui 等组件的
+          BTDESIGN v0.7 支持 React 18 / 19 与 Vue 3.4+。现有 Ant Design、Arco、shadcn/ui 等组件的
           API 需要逐项适配，并非替换包名即可完成。
         </Alert>
         <h2>1. 带入已有的品牌风格</h2>
@@ -906,7 +906,7 @@ function Guide({
       <p>也可以在仓库运行打包命令，再将安装包复制到目标项目：</p>
       <CodeBlock
         label="Terminal"
-        code={`# 在 BTDESIGN 仓库中\nnpm run pack:libs\n\n# 在目标项目中，替换为实际文件路径\nnpm install /path/to/btdesign-tokens-0.6.0.tgz \\\n  /path/to/btdesign-engine-0.6.0.tgz \\\n  /path/to/btdesign-${framework}-0.6.0.tgz${framework === 'react' ? '\n\n# 使用导出的 React 场景时\nnpm install lucide-react' : ''}`}
+        code={`# 在 BTDESIGN 仓库中\nnpm run pack:libs\n\n# 在目标项目中，替换为实际文件路径\nnpm install /path/to/btdesign-tokens-0.7.0.tgz \\\n  /path/to/btdesign-engine-0.7.0.tgz \\\n  /path/to/btdesign-${framework}-0.7.0.tgz${framework === 'react' ? '\n\n# 使用导出的 React 场景时\nnpm install lucide-react' : ''}`}
       />
       <h2>4. 单独使用组件</h2>
       <CodeBlock

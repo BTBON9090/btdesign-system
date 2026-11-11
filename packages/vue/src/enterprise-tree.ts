@@ -783,12 +783,12 @@ export const Transfer = defineComponent({
     );
     const checked = ref<string[]>([]);
     const queries = ref(['', '']);
+    const source = (side: number) =>
+      props.options.filter((option) => state.value.value.includes(option.value) === (side === 1));
     const available = (side: number) =>
-      props.options
-        .filter((option) => state.value.value.includes(option.value) === (side === 1))
-        .filter((option) =>
-          option.label.toLocaleLowerCase().includes(queries.value[side].toLocaleLowerCase()),
-        );
+      source(side).filter((option) =>
+        option.label.toLocaleLowerCase().includes(queries.value[side].toLocaleLowerCase()),
+      );
     const move = (side: number) => {
       if (props.disabled) return;
       const keys = available(side)
@@ -807,10 +807,14 @@ export const Transfer = defineComponent({
         mergeProps(attrs, { class: 'f-transfer', role: 'group', 'aria-label': props.label }),
         [
           ...[0, 1].map((side) =>
-            h('section', { class: 'f-transfer-panel' }, [
+            h('section', { class: 'f-transfer-panel', 'aria-label': `${props.titles[side]}列表` }, [
               h('header', { class: 'f-transfer-header' }, [
                 h('strong', {}, props.titles[side]),
-                h('span', {}, `${available(side).length} 项`),
+                h(
+                  'span',
+                  { 'aria-label': `${props.titles[side]}总数 ${source(side).length} 项` },
+                  `总数 ${source(side).length} 项`,
+                ),
               ]),
               h('input', {
                 class: 'f-input f-transfer-search',
@@ -828,6 +832,7 @@ export const Transfer = defineComponent({
                 h('input', {
                   type: 'checkbox',
                   class: 'f-checkbox',
+                  'aria-label': `全选${props.titles[side]}搜索结果`,
                   disabled: props.disabled || !available(side).some((o) => !o.disabled),
                   checked:
                     available(side).filter((o) => !o.disabled).length > 0 &&
@@ -839,6 +844,15 @@ export const Transfer = defineComponent({
                     !available(side)
                       .filter((o) => !o.disabled)
                       .every((o) => checked.value.includes(o.value)),
+                  'aria-checked': available(side).some(
+                    (o) => !o.disabled && checked.value.includes(o.value),
+                  )
+                    ? available(side)
+                        .filter((o) => !o.disabled)
+                        .every((o) => checked.value.includes(o.value))
+                      ? 'true'
+                      : 'mixed'
+                    : 'false',
                   onChange: (e: Event) => {
                     const keys = available(side)
                       .filter((o) => !o.disabled)
@@ -874,7 +888,7 @@ export const Transfer = defineComponent({
                         ]),
                       ]),
                     )
-                  : h('p', { class: 'f-transfer-empty' }, '没有匹配项'),
+                  : h('p', { class: 'f-transfer-empty', role: 'status' }, '没有匹配的选项'),
               ),
               h(
                 'button',

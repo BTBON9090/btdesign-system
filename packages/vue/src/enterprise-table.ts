@@ -1,9 +1,10 @@
 import { computed, defineComponent, h, mergeProps, nextTick, ref, getCurrentInstance } from 'vue';
 import type { PropType, VNodeChild, CSSProperties } from 'vue';
 import { buildHeaderRows, cellValue, leafColumns, processTableRows } from '@btdesign/engine';
-import type { DataColumn, TableSort } from '@btdesign/engine';
+import type { DataColumn, TableNumberRange, TableSort } from '@btdesign/engine';
 import { Pagination } from './granular.js';
 import { useValue, useModel } from './enterprise-shared.js';
+import { TableFilter } from './table-filter.js';
 export interface DataTableColumn extends Omit<DataColumn, 'children'> {
   children?: DataTableColumn[];
   render?: (value: unknown, row: Record<string, unknown>) => VNodeChild;
@@ -30,6 +31,11 @@ export const DataTable = defineComponent({
     query: { type: String, default: undefined },
     sort: { type: Object as PropType<TableSort | null>, default: undefined },
     filters: { type: Object as PropType<Record<string, string | string[]>>, default: undefined },
+    /** Inclusive numeric bounds. Missing or empty ranges do not filter. */
+    numberRanges: {
+      type: Object as PropType<Record<string, TableNumberRange>>,
+      default: undefined,
+    },
     hiddenKeys: { type: Array as PropType<string[]>, default: undefined },
     defaultHiddenKeys: { type: Array as PropType<string[]>, default: () => [] },
     defaultSelectedKeys: { type: Array as PropType<string[]>, default: () => [] },
@@ -52,6 +58,7 @@ export const DataTable = defineComponent({
     'update:query',
     'update:sort',
     'update:filters',
+    'update:numberRanges',
     'update:hiddenKeys',
   ],
   setup(props, { attrs, slots, emit }) {
@@ -82,6 +89,11 @@ export const DataTable = defineComponent({
       {},
       (v) => emit('update:filters', v),
     );
+    const ranges = useModel<Record<string, TableNumberRange>>(
+      () => props.numberRanges,
+      {},
+      (value) => emit('update:numberRanges', value),
+    );
     const hidden = useModel(
       () => props.hiddenKeys,
       props.defaultHiddenKeys,
@@ -99,6 +111,7 @@ export const DataTable = defineComponent({
         query: query.value,
         sort: sort.value,
         filters: filters.value,
+        numberRanges: ranges.value,
         expandedKeys: expanded.value.value,
         page: page.value,
         pageSize: props.pageSize,
@@ -208,7 +221,13 @@ export const DataTable = defineComponent({
           row.hasChildren &&
           Boolean(
             query.value.trim() ||
-            Object.values(filters.value).some((v) => (Array.isArray(v) ? v.length : v)),
+            Object.values(filters.value).some((v) => (Array.isArray(v) ? v.length : v)) ||
+            leaves.value.some(
+              (column) =>
+                ranges.value[column.key] &&
+                (ranges.value[column.key].min !== undefined ||
+                  ranges.value[column.key].max !== undefined),
+            ),
           );
         const cells: VNodeChild[] = [];
         const expansionControl = () =>
@@ -523,34 +542,57 @@ export const DataTable = defineComponent({
                                   ],
                                 )
                               : cell.title,
-                            cell.leaf && cell.column.filterOptions
-                              ? h(
-                                  'select',
-                                  {
-                                    class: 'f-select f-data-table-filter',
-                                    'aria-label': `筛选${cell.title}`,
-                                    disabled: blocked(),
-                                    value: filters.value[cell.key] ?? '',
-                                    onChange: (event: Event) => {
-                                      filters.value = {
-                                        ...filters.value,
-                                        [cell.key]: (event.target as HTMLSelectElement).value,
-                                      };
-                                      page.value = 1;
-                                    },
+                            cell.leaf && cell.column.filterMode
+                              ? h(TableFilter, {
+                                  title: cell.title,
+                                  mode: cell.column.filterMode,
+                                  options: cell.column.filterOptions,
+                                  selected: filters.value[cell.key],
+                                  range: ranges.value[cell.key],
+                                  disabled: blocked(),
+                                  onApplySelection: (value: string[]) => {
+                                    const next = { ...filters.value };
+                                    if (value.length) next[cell.key] = value;
+                                    else delete next[cell.key];
+                                    filters.value = next;
+                                    page.value = 1;
                                   },
-                                  [
-                                    h('option', { value: '' }, '全部'),
-                                    ...cell.column.filterOptions.map((option) =>
-                                      h(
-                                        'option',
-                                        { value: option.value, disabled: option.disabled },
-                                        option.label,
+                                  onApplyRange: (value: TableNumberRange | undefined) => {
+                                    const next = { ...ranges.value };
+                                    if (value) next[cell.key] = value;
+                                    else delete next[cell.key];
+                                    ranges.value = next;
+                                    page.value = 1;
+                                  },
+                                })
+                              : cell.leaf && cell.column.filterOptions
+                                ? h(
+                                    'select',
+                                    {
+                                      class: 'f-select f-data-table-filter',
+                                      'aria-label': `筛选${cell.title}`,
+                                      disabled: blocked(),
+                                      value: filters.value[cell.key] ?? '',
+                                      onChange: (event: Event) => {
+                                        filters.value = {
+                                          ...filters.value,
+                                          [cell.key]: (event.target as HTMLSelectElement).value,
+                                        };
+                                        page.value = 1;
+                                      },
+                                    },
+                                    [
+                                      h('option', { value: '' }, '全部'),
+                                      ...cell.column.filterOptions.map((option) =>
+                                        h(
+                                          'option',
+                                          { value: option.value, disabled: option.disabled },
+                                          option.label,
+                                        ),
                                       ),
-                                    ),
-                                  ],
-                                )
-                              : null,
+                                    ],
+                                  )
+                                : null,
                           ],
                         ),
                       ),

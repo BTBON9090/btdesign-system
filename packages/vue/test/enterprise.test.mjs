@@ -24,6 +24,13 @@ function mount(component, props = {}, children) {
       let node = this;
       while (node) {
         if (selector === '[role="menu"]' && node.props.role === 'menu') return node;
+        if (
+          selector === '.f-data-table' &&
+          String(node.props.class ?? '')
+            .split(/\s+/)
+            .includes('f-data-table')
+        )
+          return node;
         node = node.parent;
       }
       return null;
@@ -663,6 +670,108 @@ test('DataTable sorts, filters and selects the visible page rather than hidden r
   );
   view.app.unmount();
 });
+test('DataTable multi-select draft searches without losing hidden choices, and cancel does not commit', async () => {
+  const changes = [];
+  const view = mount(ui.DataTable, {
+    columns: [
+      { key: 'name', title: '名称' },
+      {
+        key: 'status',
+        title: '状态',
+        filterMode: 'multiple',
+        filterOptions: [
+          { value: 'a', label: '活跃' },
+          { value: 'b', label: '暂停' },
+        ],
+      },
+    ],
+    data: [
+      { id: '1', name: '项目甲', status: 'a' },
+      { id: '2', name: '项目乙', status: 'b' },
+    ],
+    filters: { status: ['a'] },
+    'onUpdate:filters': (value) => changes.push(value),
+  });
+  const trigger = () => view.all('button').find((node) => node.props['aria-label'] === '筛选状态');
+  const byText = (label) => view.all('button').find((node) => node.text === label);
+  const optionChecks = () =>
+    view.all('input').filter((node) => {
+      let parent = node.parent;
+      while (parent && parent.props.role !== 'dialog') parent = parent.parent;
+      return node.props.type === 'checkbox' && parent;
+    });
+  trigger().props.onClick();
+  await nextTick();
+  let search = view.all('input').find((node) => node.props['aria-label'] === '搜索状态选项');
+  search.props.onInput(event({ value: '暂停' }));
+  await nextTick();
+  let checks = optionChecks();
+  assert.equal(checks.length, 1);
+  checks[0].props.onChange(event({ checked: true }));
+  await nextTick();
+  byText('取消').props.onClick();
+  await nextTick();
+  assert.deepEqual(changes, []);
+  trigger().props.onClick();
+  await nextTick();
+  search = view.all('input').find((node) => node.props['aria-label'] === '搜索状态选项');
+  search.props.onInput(event({ value: '暂停' }));
+  await nextTick();
+  checks = optionChecks();
+  assert.equal(checks[0].props.checked, false);
+  checks[0].props.onChange(event({ checked: true }));
+  await nextTick();
+  byText('确定').props.onClick();
+  await nextTick();
+  assert.deepEqual(changes, [{ status: ['a', 'b'] }]);
+  assert.deepEqual(
+    view.where((node) => node.props['data-row-key']).map((node) => node.props['data-row-key']),
+    ['1'],
+  );
+  view.app.unmount();
+});
+test('DataTable range validates drafts, commits zero inclusively and retains tree paths', async () => {
+  const changes = [];
+  const view = mount(ui.DataTable, {
+    columns: [
+      { key: 'name', title: '名称' },
+      { key: 'score', title: '得分', filterMode: 'numberRange' },
+    ],
+    data: [
+      {
+        id: 'parent',
+        name: '父项',
+        score: 99,
+        children: [{ id: 'child', name: '命中', score: 0 }],
+      },
+      { id: 'other', name: '其他', score: 2 },
+    ],
+    'onUpdate:numberRanges': (value) => changes.push(value),
+  });
+  const find = (label) =>
+    view.all('button').find((node) => node.props['aria-label'] === label || node.text === label);
+  find('筛选得分').props.onClick();
+  await nextTick();
+  const min = view.all('input').find((node) => node.props['aria-label'] === '得分最小值');
+  const max = view.all('input').find((node) => node.props['aria-label'] === '得分最大值');
+  min.props.onInput(event({ value: '2', validity: { badInput: false } }));
+  max.props.onInput(event({ value: '0', validity: { badInput: false } }));
+  await nextTick();
+  assert.equal(find('确定').props.disabled, true);
+  find('确定').props.onClick();
+  assert.deepEqual(changes, []);
+  min.props.onInput(event({ value: '0', validity: { badInput: false } }));
+  await nextTick();
+  find('确定').props.onClick();
+  await nextTick();
+  assert.deepEqual(changes, [{ score: { min: 0, max: 0 } }]);
+  assert.deepEqual(
+    view.where((node) => node.props['data-row-key']).map((node) => node.props['data-row-key']),
+    ['parent', 'child'],
+  );
+  assert.equal(find('收起行 parent').props.disabled, true);
+  view.app.unmount();
+});
 
 test('Form respects disabled sections, inherited required rules and automatic email validation', async () => {
   const submitted = [];
@@ -879,5 +988,52 @@ test('Cascader search shows an accessible empty state and keeps disabled results
     view.all('button').find((node) => node.text.includes('亚洲 / 北京')).props.disabled,
     true,
   );
+  view.app.unmount();
+});
+
+test('Transfer counts all items and moves only checked filtered results', async () => {
+  const changes = [];
+  const view = mount(ui.Transfer, {
+    options: [
+      { value: 'design', label: '设计' },
+      { value: 'dev', label: '开发' },
+      { value: 'locked', label: '受限', disabled: true },
+      { value: 'legal', label: '法务', disabled: true },
+    ],
+    defaultValue: ['legal'],
+    'onUpdate:modelValue': (value) => changes.push(value),
+  });
+  const text = (node) => node.text + node.children.map(text).join('');
+  const option = (label) =>
+    view
+      .all('label')
+      .find((node) => node.props.class === 'f-choice-option' && text(node).includes(label))
+      .children.find((node) => node.type === 'input');
+  const search = () => view.all('input').find((node) => node.props['aria-label'] === '搜索待选');
+  const move = () => view.all('button').find((node) => node.text === '移入 →');
+  option('设计').props.onChange(event({ checked: true }));
+  await nextTick();
+  assert.equal(
+    view.all('input').find((node) => node.props['aria-label'] === '全选待选搜索结果').props[
+      'aria-checked'
+    ],
+    'mixed',
+  );
+  search().props.onInput(event({ value: '开发' }));
+  await nextTick();
+  assert.equal(view.where((node) => node.props['aria-label'] === '待选总数 3 项').length, 1);
+  assert.equal(move().props.disabled, true);
+  option('开发').props.onChange(event({ checked: true }));
+  await nextTick();
+  move().props.onClick();
+  await nextTick();
+  assert.deepEqual(changes.at(-1), ['legal', 'dev']);
+  search().props.onInput(event({ value: '' }));
+  await nextTick();
+  assert.equal(option('设计').props.checked, true);
+  assert.equal(option('受限').props.disabled, true);
+  move().props.onClick();
+  await nextTick();
+  assert.deepEqual(changes.at(-1), ['legal', 'dev', 'design']);
   view.app.unmount();
 });

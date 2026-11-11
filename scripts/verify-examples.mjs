@@ -53,6 +53,10 @@ try {
         'parent-no-search',
         { ...defaults, multiple: true, cascaderSearchable: false, cascaderChangeOnSelect: true },
       ]);
+    if (component.id === 'field' || component.id === 'form')
+      variants.push(['horizontal', { ...defaults, fieldLayout: 'horizontal' }]);
+    if (component.id === 'progress')
+      variants.push(['mini', { ...defaults, progressType: 'mini', progressShowValue: true }]);
     if (component.id === 'progress')
       variants.push([
         'circle-warning',
@@ -95,6 +99,10 @@ try {
       variants.push(['duplicates', { ...defaults, inputTagDuplicates: true }]);
     }
     if (component.id === 'auto-complete') {
+      variants.push([
+        'details-suffix',
+        { ...defaults, autoCompleteDetail: true, autoCompleteSuffix: 'arrow' },
+      ]);
       variants.push(['empty', { ...defaults, autoCompleteEmpty: true }]);
       variants.push(['disabled', { ...defaults, state: 'disabled' }]);
       variants.push(['invalid', { ...defaults, state: 'invalid' }]);
@@ -172,7 +180,10 @@ try {
         { ...defaults, backTopShape: 'circle', backTopVariant: 'primary', backTopContent: 'top' },
       ]);
     if (component.id === 'data-table')
-      variants.push(['separate-expand', { ...defaults, tableExpandColumn: 'separate' }]);
+      variants.push([
+        'separate-expand',
+        { ...defaults, tableExpandColumn: 'separate', tableAdvancedFilters: true },
+      ]);
     if (component.id === 'breadcrumb')
       variants.push(['arrow', { ...defaults, breadcrumbSeparator: 'arrow' }]);
     if (component.id === 'checkbox')

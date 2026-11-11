@@ -230,7 +230,7 @@ export function parseThemeImport(text: string): ThemeImport {
             button: { radius: [0, 20], height: [28, 56] },
             input: { radius: [0, 20], height: [28, 56] },
             card: { radius: [0, 20], padding: [8, 40] },
-            field: { gap: [4, 20], labelSize: [11, 16] },
+            field: { gap: [4, 20], labelSize: [11, 16], labelWidth: [64, 240] },
             table: { cellPadding: [6, 24], rowHeight: [28, 72] },
           };
           unknown(data.components, Object.keys(componentFields), `${prefix}components.`);
@@ -300,6 +300,7 @@ export function parseThemeImport(text: string): ThemeImport {
       '--f-card-padding': ['components.card.padding', 8, 40],
       '--f-field-gap': ['components.field.gap', 4, 20],
       '--f-field-label-size': ['components.field.labelSize', 11, 16],
+      '--f-field-label-width': ['components.field.labelWidth', 64, 240],
       '--f-table-cell-padding': ['components.table.cellPadding', 6, 24],
       '--f-table-row-height': ['components.table.rowHeight', 28, 72],
     };

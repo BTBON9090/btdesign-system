@@ -1000,6 +1000,54 @@ export function ComponentWorkbench({
               </label>
             </>
           )}
+          {(kind === 'field' || kind === 'form') && (
+            <label>
+              字段布局
+              <select
+                aria-label="预览字段布局"
+                value={options.fieldLayout ?? 'vertical'}
+                onChange={(event) =>
+                  update(
+                    'fieldLayout',
+                    event.target.value as NonNullable<DemoOptions['fieldLayout']>,
+                  )
+                }
+              >
+                <option value="vertical">纵向</option>
+                <option value="horizontal">横向</option>
+              </select>
+            </label>
+          )}
+          {kind === 'auto-complete' && (
+            <>
+              <label>
+                <input
+                  type="checkbox"
+                  aria-label="预览候选说明"
+                  checked={options.autoCompleteDetail ?? false}
+                  onChange={(event) => update('autoCompleteDetail', event.target.checked)}
+                />
+                候选说明
+              </label>
+              <label>
+                附加图标
+                <select
+                  aria-label="预览候选图标"
+                  value={options.autoCompleteSuffix ?? 'none'}
+                  onChange={(event) =>
+                    update(
+                      'autoCompleteSuffix',
+                      event.target.value as NonNullable<DemoOptions['autoCompleteSuffix']>,
+                    )
+                  }
+                >
+                  <option value="none">无</option>
+                  <option value="arrow">箭头</option>
+                  <option value="dot">圆点</option>
+                </select>
+              </label>
+            </>
+          )}
           {kind === 'cascader' && (
             <>
               <label>
@@ -1021,6 +1069,17 @@ export function ComponentWorkbench({
                 父级可选
               </label>
             </>
+          )}
+          {kind === 'data-table' && (
+            <label>
+              <input
+                type="checkbox"
+                aria-label="预览高级筛选"
+                checked={options.tableAdvancedFilters ?? false}
+                onChange={(event) => update('tableAdvancedFilters', event.target.checked)}
+              />
+              多选与范围筛选
+            </label>
           )}
           {kind === 'data-table' && (
             <label>
@@ -1506,6 +1565,7 @@ export function ComponentWorkbench({
                 >
                   <option value="line">线形</option>
                   <option value="circle">圆环</option>
+                  <option value="mini">小圆环</option>
                 </select>
               </label>
               <label>

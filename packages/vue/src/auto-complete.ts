@@ -9,6 +9,7 @@ import {
   ref,
   watch,
   type PropType,
+  type VNodeChild,
 } from 'vue';
 import {
   filterAutocompleteOptions,
@@ -26,10 +27,12 @@ export const AutoComplete = defineComponent({
     modelValue: { type: String, default: undefined },
     defaultValue: { type: String, default: '' },
     emptyText: { type: String, default: '没有匹配结果' },
+    /** Decorative, non-interactive content; the option keeps its normal selection behavior. */
+    renderOptionSuffix: Function as PropType<(option: ChoiceOption) => VNodeChild>,
     ...controlProps,
   },
   emits: ['update:modelValue', 'select'],
-  setup(props, { attrs, emit, expose }) {
+  setup(props, { attrs, emit, expose, slots }) {
     const field = useFieldControl();
     const local = ref(props.defaultValue);
     const current = computed(() => props.modelValue ?? local.value);
@@ -179,8 +182,11 @@ export const AutoComplete = defineComponent({
               h(
                 'ul',
                 { role: 'listbox', id: listId, class: 'f-autocomplete-options' },
-                filtered.value.map((option, index) =>
-                  h(
+                filtered.value.map((option, index) => {
+                  const suffix = slots['option-suffix']
+                    ? slots['option-suffix']({ option })
+                    : props.renderOptionSuffix?.(option);
+                  return h(
                     'li',
                     {
                       key: `${option.value}-${index}`,
@@ -201,12 +207,27 @@ export const AutoComplete = defineComponent({
                     },
                     [
                       h('span', option.label),
-                      option.description
-                        ? h('span', { class: 'f-autocomplete-description' }, option.description)
+                      option.description || suffix != null
+                        ? h('span', { class: 'f-autocomplete-trailing' }, [
+                            option.description
+                              ? h(
+                                  'span',
+                                  { class: 'f-autocomplete-description' },
+                                  option.description,
+                                )
+                              : null,
+                            suffix != null
+                              ? h(
+                                  'span',
+                                  { class: 'f-autocomplete-suffix', 'aria-hidden': 'true' },
+                                  suffix,
+                                )
+                              : null,
+                          ])
                         : null,
                     ],
-                  ),
-                ),
+                  );
+                }),
               ),
               filtered.value.length
                 ? null

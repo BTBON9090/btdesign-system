@@ -284,21 +284,21 @@ test('granular component geometry imports from JSON and CSS without resetting ot
   const json = parseThemeImport(
     JSON.stringify({
       components: {
-        field: { gap: 10, labelSize: 14 },
+        field: { gap: 10, labelSize: 14, labelWidth: 140 },
         table: { cellPadding: 16, rowHeight: 60 },
       },
     }),
   );
   assert.deepEqual(json.patch.components, {
-    field: { gap: 10, labelSize: 14 },
+    field: { gap: 10, labelSize: 14, labelWidth: 140 },
     table: { cellPadding: 16, rowHeight: 60 },
   });
   assert.deepEqual(json.warnings, []);
   const css = parseThemeImport(
-    ':root { --f-field-gap: 10px; --f-table-cell-padding: 16px; --f-table-row-height: 60px; }',
+    ':root { --f-field-gap: 10px; --f-field-label-width: 140px; --f-table-cell-padding: 16px; --f-table-row-height: 60px; }',
   );
   assert.deepEqual(css.patch.components, {
-    field: { gap: 10 },
+    field: { gap: 10, labelWidth: 140 },
     table: { cellPadding: 16, rowHeight: 60 },
   });
   const bounded = parseThemeImport('--f-field-label-size: 99px;');

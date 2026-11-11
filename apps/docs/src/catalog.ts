@@ -99,6 +99,7 @@ export const catalog = [
       ['defaultValue', 'string', "''"],
       ['onValueChange / update:modelValue', 'callback', '—'],
       ['onSelectOption / select', 'callback', '—'],
+      ['renderOptionSuffix / option-suffix slot', '候选项附加装饰', '—'],
       ['emptyText', 'string', '没有匹配结果'],
       ['controlSize / invalid', 'sm | md | lg / boolean', 'md / false'],
       ['disabled / readOnly', 'boolean', 'false'],
@@ -590,7 +591,7 @@ export const catalog = [
       ['value', 'number', 'React 必填 / Vue 0'],
       ['max', 'number', '100'],
       ['label', 'string', '—'],
-      ['type', 'line | circle', 'line'],
+      ['type', 'line | circle | mini', 'line'],
       ['status', 'normal | success | warning | error', 'normal（由应用传入）'],
       ['showValue', 'boolean', '按形状与标签'],
     ],
@@ -604,6 +605,7 @@ export const catalog = [
     props: [
       ['label', 'ReactNode / string', '必填'],
       ['description / error', 'ReactNode / string', '—'],
+      ['layout', 'vertical | horizontal', 'vertical'],
       ['required / disabled', 'boolean', 'false'],
       ['id', 'string', '自动生成'],
     ],
@@ -1760,7 +1762,7 @@ function configuredComponentCode(
       break;
     case 'field':
       imports = 'Field, Input';
-      body = `<Field label="工作邮箱" description="用于接收团队邀请"${error} required${disabled}>\n  <Input controlSize="${o.size}" type="email" placeholder="you@company.com" />\n</Field>`;
+      body = `<Field label="工作邮箱" description="用于接收团队邀请" layout="${o.fieldLayout ?? 'vertical'}"${error} required${disabled}>\n  <Input controlSize="${o.size}" type="email" placeholder="you@company.com" />\n</Field>`;
       break;
     case 'input-group':
       imports = 'Field, InputGroup, InputAddon, Input';

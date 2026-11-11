@@ -1,7 +1,7 @@
 import type { CSSProperties, HTMLAttributes } from 'react';
 import { cx } from './enterprise-utils.js';
 
-export type ProgressType = 'line' | 'circle';
+export type ProgressType = 'line' | 'circle' | 'mini';
 export type ProgressStatus = 'normal' | 'success' | 'warning' | 'error';
 export interface ProgressProps extends HTMLAttributes<HTMLDivElement> {
   value: number;
@@ -27,7 +27,7 @@ export function Progress({
   const safeValue = Number.isFinite(value) ? Math.max(0, Math.min(limit, value)) : 0;
   const percent = Math.round((safeValue / limit) * 100);
   const text = statusText[status];
-  const showPercent = showValue ?? (type === 'circle' || !!label);
+  const showPercent = showValue ?? (type === 'circle' || (type === 'line' && !!label));
   const accessibleValue = props['aria-valuetext'] ?? (text ? `${percent}%，${text}` : undefined);
   const aria = {
     role: 'progressbar',
@@ -37,18 +37,19 @@ export function Progress({
     'aria-valuemax': limit,
     'aria-valuetext': accessibleValue,
   } as const;
-  if (type === 'circle')
+  if (type === 'circle' || type === 'mini')
     return (
       <div
         {...props}
         className={cx(
           'f-progress-wrap',
           'f-progress-wrap--circle',
+          type === 'mini' && 'f-progress-wrap--mini',
           `f-progress--${status}`,
           className,
         )}
       >
-        {label && <span className="f-progress-circle-label">{label}</span>}
+        {label && type === 'circle' && <span className="f-progress-circle-label">{label}</span>}
         <div className="f-progress-circle" {...aria}>
           <svg
             className="f-progress-circle-svg"
@@ -71,13 +72,25 @@ export function Progress({
               }
             />
           </svg>
-          {(showPercent || text) && (
+          {type === 'circle' && (showPercent || text) && (
             <span className="f-progress-circle-content" aria-hidden="true">
               {showPercent && <span>{percent}%</span>}
               {text && <small>{text}</small>}
             </span>
           )}
         </div>
+        {type === 'mini' && (label || showPercent || text) && (
+          <span className="f-progress-mini-content">
+            {label && <span>{label}</span>}
+            {(showPercent || text) && (
+              <span aria-hidden="true">
+                {showPercent && `${percent}%`}
+                {showPercent && text && ' · '}
+                {text}
+              </span>
+            )}
+          </span>
+        )}
       </div>
     );
   return (

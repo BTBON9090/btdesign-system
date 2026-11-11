@@ -1,6 +1,6 @@
 {
   "name": "@btdesign/core",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "Portable project specifications and AI handoff contracts for BTDESIGN",
   "type": "module",
   "main": "./dist/index.js",
@@ -22,7 +22,7 @@
     "test": "node --test test/*.test.mjs"
   },
   "dependencies": {
-    "@btdesign/tokens": "0.6.0"
+    "@btdesign/tokens": "0.7.0"
   },
   "license": "MIT",
   "devDependencies": {

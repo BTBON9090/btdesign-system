@@ -1,7 +1,7 @@
 export const componentRegistry = {
   schemaVersion: 1,
   library: 'BTDESIGN',
-  version: '0.6.0',
+  version: '0.7.0',
   packages: {
     react: '@btdesign/react',
     vue: '@btdesign/vue',
@@ -35,6 +35,7 @@ export const componentRegistry = {
       '--f-card-padding',
       '--f-field-gap',
       '--f-field-label-size',
+      '--f-field-label-width',
       '--f-table-cell-padding',
       '--f-table-row-height',
       '--f-form-gap',
@@ -55,6 +56,8 @@ export const componentRegistry = {
       '--f-progress-line-height',
       '--f-progress-circle-size',
       '--f-progress-circle-stroke',
+      '--f-progress-mini-size',
+      '--f-progress-mini-stroke',
     ],
   },
   composition: {
@@ -137,15 +140,17 @@ export const componentRegistry = {
         defaultValue: 'string',
         onValueChange: '(value:string)=>void',
         onSelectOption: '(option:ChoiceOption)=>void',
+        renderOptionSuffix: '(option:ChoiceOption)=>ReactNode',
       },
       vue: {
         modelValue: 'string',
         defaultValue: 'string',
         'update:modelValue': 'string',
         select: 'ChoiceOption',
+        'option-suffix': 'decorative slot receiving option',
       },
       notes:
-        'The application provides options and any remote requests. Disabled options cannot be selected.',
+        'The application provides options and remote requests. Descriptions are text; suffixes are decorative and do not navigate. Disabled options cannot be selected.',
     },
     {
       name: 'Mention',
@@ -566,7 +571,7 @@ export const componentRegistry = {
         value: 'number',
         max: 'number, default 100',
         label: 'string',
-        type: 'line | circle',
+        type: 'line | circle | mini',
         status: 'normal | success | warning | error',
         showValue: 'boolean',
       },
@@ -579,6 +584,7 @@ export const componentRegistry = {
       props: {
         id: 'string',
         label: 'required text/content',
+        layout: 'vertical | horizontal',
         description: 'text/content',
         error: 'text/content',
         required: 'boolean',
@@ -708,7 +714,7 @@ export const componentRegistry = {
         invalid: 'FormErrors',
       },
       notes:
-        'Compose FormField, FormSection and FormActions. Field names are flat keys. Validate before submit, show error summary and focus first invalid field; reset restores initial values. Custom FormField children/slot binds any control through value/setValue/id/disabled/required/invalid/describedBy. Async validation and submitting state remain application responsibilities.',
+        'Compose FormField, FormSection and FormActions. FormField layout supports vertical or horizontal. Field names are flat keys. Validate before submit, show error summary and focus first invalid field; reset restores initial values. Custom FormField children/slot binds any control through value/setValue/id/disabled/required/invalid/describedBy. Async validation and submitting state remain application responsibilities.',
     },
     {
       name: 'Calendar',
@@ -1035,7 +1041,7 @@ export const componentRegistry = {
         'update:modelValue': 'string[]',
       },
       notes:
-        'Search each pane, select visible enabled choices, transfer in either direction. Existing disabled selected keys are preserved. Local flat options only; no server synchronization or virtual rows.',
+        'Each pane shows total items. Search, select all and move apply to visible enabled choices; hidden selections remain selected. Existing disabled selected keys are preserved. Local flat options only; no server synchronization or virtual rows.',
     },
     {
       name: 'SidebarNav',
@@ -1109,6 +1115,7 @@ export const componentRegistry = {
         query: 'string; controlled global filter',
         sort: '{key:string,direction:"asc"|"desc"} | null',
         filters: 'Record<string,string|string[]>',
+        numberRanges: 'Record<string,{min?:number,max?:number}>',
         selectable: 'boolean',
         selectedKeys: 'string[]',
         defaultSelectedKeys: 'string[]',
@@ -1127,6 +1134,7 @@ export const componentRegistry = {
         onQueryChange: '(query)=>void',
         onSortChange: '(sort)=>void',
         onFiltersChange: '(filters)=>void',
+        onNumberRangesChange: '(ranges)=>void',
         onHiddenChange: '(keys)=>void',
         onCellChange: '({key,column,value})=>void',
         renderExpanded: '(row)=>ReactNode',
@@ -1138,12 +1146,13 @@ export const componentRegistry = {
         'update:query': 'string',
         'update:sort': '{key,direction} | null',
         'update:filters': 'Record<string,string|string[]>',
+        'update:numberRanges': 'Record<string,{min?:number,max?:number}>',
         'update:hiddenKeys': 'string[]',
         'cell-change': '{key,column,value}',
         slots: 'expanded({row})',
       },
       notes:
-        'Native table with multi-level headers, tree rows, row details, stable sorting, column/global filters, root-row pagination, visible-page selection, column visibility, sticky header/fixed columns and basic controlled cell editing. Columns and ids must be stable/unique. Values use literal dataIndex keys. Application accepts edits and persists data. No virtual rendering, drag resize/reorder, Excel grid, formulas, arbitrary cell merging, export or automatic remote loading; retain unsupported capabilities during migration.',
+        'Native table with multi-level headers, tree rows, row details, stable sorting, single/multiple option and inclusive numeric range filters, root-row pagination, visible-page selection, column visibility, sticky header/fixed columns and basic controlled cell editing. Columns and ids must be stable/unique. Values use literal dataIndex keys. Application accepts edits and persists data. No virtual rendering, drag resize/reorder, Excel grid, formulas, arbitrary cell merging, export or automatic remote loading; retain unsupported capabilities during migration.',
     },
   ],
 } as const;

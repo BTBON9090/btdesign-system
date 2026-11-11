@@ -38,3 +38,21 @@ test('autocomplete inherits disabled field state and remains closed', () => {
   assert.match(html, /disabled=""/);
   assert.match(html, /aria-expanded="false"/);
 });
+
+test('option description remains text while a caller-provided icon is decorative', async () => {
+  const { AutoCompleteOptionContent } = await import('../dist/auto-complete.js');
+  const html = renderToStaticMarkup(
+    h(
+      'div',
+      { role: 'option' },
+      h(AutoCompleteOptionContent, {
+        option: { value: 'bj', label: '北京', description: '28' },
+        suffix: h('span', { 'aria-label': '其他含义' }, '↗'),
+      }),
+    ),
+  );
+  assert.match(html, /北京/);
+  assert.match(html, /f-autocomplete-description">28/);
+  assert.match(html, /f-autocomplete-suffix" aria-hidden="true"/);
+  assert.match(html, /↗/);
+});

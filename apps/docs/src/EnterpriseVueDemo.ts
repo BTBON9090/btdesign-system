@@ -6,7 +6,7 @@ import { dateRangePresets } from './date-range-fixtures';
 import { listVuePreview } from './ListVuePreview';
 import { listPreviewOptions } from './ListExample';
 import {
-  enterpriseColumns,
+  tablePreviewColumns,
   enterpriseFiles,
   enterpriseNav,
   enterpriseOptions,
@@ -88,6 +88,7 @@ export function createEnterpriseVueDemo(
                   { title: '邀请新成员', description: '先填写基本资料，再选择协作范围。' },
                   () => [
                     h(ui.FormField, {
+                      layout: o.fieldLayout ?? 'vertical',
                       name: 'email',
                       label: '工作邮箱',
                       type: 'email',
@@ -96,12 +97,14 @@ export function createEnterpriseVueDemo(
                       rules: [{ type: 'email', message: '请输入有效的邮箱地址' }],
                     }),
                     h(ui.FormField, {
+                      layout: o.fieldLayout ?? 'vertical',
                       name: 'team',
                       label: '所属团队',
                       type: 'select',
                       options: enterpriseOptions,
                     }),
                     h(ui.FormField, {
+                      layout: o.fieldLayout ?? 'vertical',
                       name: 'agreement',
                       label: '允许查看团队项目',
                       type: 'checkbox',
@@ -297,7 +300,7 @@ export function createEnterpriseVueDemo(
               h(ui.DataTable, {
                 caption: '项目交付清单',
                 expandColumn: o.tableExpandColumn ?? 'inline',
-                columns: enterpriseColumns,
+                columns: tablePreviewColumns(o.tableAdvancedFilters ?? false),
                 data: rows.value,
                 searchable: true,
                 selectable: true,

@@ -37,6 +37,7 @@ export const controlDefinitions = {
   cardPadding: rule('card', 'padding', '内容内边距', '--f-card-padding', 8, 40),
   fieldGap: rule('field', 'gap', '标签与内容间距', '--f-field-gap', 4, 20),
   fieldLabelSize: rule('field', 'labelSize', '标签字号', '--f-field-label-size', 11, 16),
+  fieldLabelWidth: rule('field', 'labelWidth', '标签宽度', '--f-field-label-width', 64, 240),
   tablePadding: rule('table', 'cellPadding', '单元格内边距', '--f-table-cell-padding', 6, 24),
   tableRowHeight: rule('table', 'rowHeight', '最小行高', '--f-table-row-height', 28, 72),
   formGap: geometry('form', 'gap', '字段间距'),
@@ -57,6 +58,8 @@ export const controlDefinitions = {
   progressLineHeight: geometry('progress', 'lineHeight', '线条粗细'),
   progressCircleSize: geometry('progress', 'circleSize', '圆环尺寸'),
   progressCircleStroke: geometry('progress', 'circleStroke', '圆环粗细'),
+  progressMiniSize: geometry('progress', 'miniSize', '小圆环尺寸'),
+  progressMiniStroke: geometry('progress', 'miniStroke', '小圆环粗细'),
 } as const;
 export type ControlId = keyof typeof controlDefinitions;
 export type ControlPart = { id: string; label: string; controls: ControlId[]; anatomy?: number[] };
@@ -73,7 +76,7 @@ const part = (
   anatomy?: number[],
 ): ControlPart => ({ id, label, controls, anatomy });
 const input = () => part('input', '输入区域', ['inputHeight', 'inputRadius'], [0]);
-const field = () => part('field', '标签与说明', ['fieldLabelSize', 'fieldGap']);
+const field = () => part('field', '标签与说明', ['fieldLabelSize', 'fieldGap', 'fieldLabelWidth']);
 const calendar = () => part('calendar', '日期网格', ['calendarCellSize', 'calendarGap']);
 const overlay = () => part('overlay', '选择浮层', ['overlayRadius', 'overlayPadding']);
 const choice = () => part('selection', '勾选标记', ['choiceSize']);
@@ -174,9 +177,10 @@ const partsByComponent: Record<ComponentId, ControlPart[]> = {
   progress: [
     part('line', '线形轨道', ['progressLineHeight'], [0, 1]),
     part('circle', '圆环轨道', ['progressCircleSize', 'progressCircleStroke'], [2]),
+    part('mini', '小圆环轨道', ['progressMiniSize', 'progressMiniStroke'], [2]),
   ],
   field: [
-    part('label', '标签', ['fieldLabelSize'], [0]),
+    part('label', '标签', ['fieldLabelSize', 'fieldLabelWidth'], [0]),
     part('spacing', '标签与内容间距', ['fieldGap'], [1]),
     part('validation', '校验信息', [], [2]),
   ],

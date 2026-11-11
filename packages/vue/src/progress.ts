@@ -1,5 +1,5 @@
 import { defineComponent, h, mergeProps, type PropType } from 'vue';
-export type ProgressType = 'line' | 'circle';
+export type ProgressType = 'line' | 'circle' | 'mini';
 export type ProgressStatus = 'normal' | 'success' | 'warning' | 'error';
 const statusText = { normal: '', success: '成功', warning: '警告', error: '错误' };
 export const Progress = defineComponent({
@@ -19,7 +19,8 @@ export const Progress = defineComponent({
       const value = Number.isFinite(props.value) ? Math.min(max, Math.max(0, props.value)) : 0;
       const percent = Math.round((value / max) * 100);
       const text = statusText[props.status];
-      const showPercent = props.showValue ?? (props.type === 'circle' || !!props.label);
+      const showPercent =
+        props.showValue ?? (props.type === 'circle' || (props.type === 'line' && !!props.label));
       const aria = {
         role: 'progressbar',
         'aria-label': attrs['aria-label'] ?? props.label ?? '进度',
@@ -28,12 +29,21 @@ export const Progress = defineComponent({
         'aria-valuemax': max,
         'aria-valuetext': attrs['aria-valuetext'] ?? (text ? `${percent}%，${text}` : undefined),
       };
-      if (props.type === 'circle')
+      if (props.type === 'circle' || props.type === 'mini')
         return h(
           'div',
-          { class: ['f-progress-wrap', 'f-progress-wrap--circle', `f-progress--${props.status}`] },
+          {
+            class: [
+              'f-progress-wrap',
+              'f-progress-wrap--circle',
+              props.type === 'mini' && 'f-progress-wrap--mini',
+              `f-progress--${props.status}`,
+            ],
+          },
           [
-            props.label ? h('span', { class: 'f-progress-circle-label' }, props.label) : null,
+            props.label && props.type === 'circle'
+              ? h('span', { class: 'f-progress-circle-label' }, props.label)
+              : null,
             h('div', mergeProps(attrs, { class: 'f-progress-circle', ...aria }), [
               h(
                 'svg',
@@ -58,13 +68,25 @@ export const Progress = defineComponent({
                   }),
                 ],
               ),
-              showPercent || text
+              props.type === 'circle' && (showPercent || text)
                 ? h('span', { class: 'f-progress-circle-content', 'aria-hidden': 'true' }, [
                     showPercent ? h('span', `${percent}%`) : null,
                     text ? h('small', text) : null,
                   ])
                 : null,
             ]),
+            props.type === 'mini' && (props.label || showPercent || text)
+              ? h('span', { class: 'f-progress-mini-content' }, [
+                  props.label ? h('span', props.label) : null,
+                  showPercent || text
+                    ? h(
+                        'span',
+                        { 'aria-hidden': 'true' },
+                        `${showPercent ? `${percent}%` : ''}${showPercent && text ? ' · ' : ''}${text}`,
+                      )
+                    : null,
+                ])
+              : null,
           ],
         );
       return h('div', { class: ['f-progress-wrap', `f-progress--${props.status}`] }, [

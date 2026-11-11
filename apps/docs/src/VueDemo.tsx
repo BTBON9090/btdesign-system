@@ -412,6 +412,7 @@ export function VueDemo({ kind, onAction, options }: VueDemoProps) {
                         ui.Field,
                         {
                           class: 'demo-form',
+                          layout: o.fieldLayout ?? 'vertical',
                           label: '工作邮箱',
                           description: '用于接收团队邀请',
                           error,
