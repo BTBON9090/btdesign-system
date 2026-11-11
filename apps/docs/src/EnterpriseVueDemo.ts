@@ -1,6 +1,7 @@
 import type { DemoOptions } from './catalog';
 import type { EnterpriseId } from './enterprise-catalog';
 import type { FileItem } from '@btdesign/engine';
+import type { Ref } from 'vue';
 import { dropdownPreviewItems } from './dropdown-preview';
 import { dateRangePresets } from './date-range-fixtures';
 import { listVuePreview } from './ListVuePreview';
@@ -32,19 +33,22 @@ export function createEnterpriseVueDemo(
   vue: typeof import('vue'),
   ui: typeof import('@btdesign/vue'),
   kind: EnterpriseId,
-  o: DemoOptions,
+  options: Ref<DemoOptions>,
   onAction: (message: string) => void,
 ) {
-  const { defineComponent, h, ref } = vue;
-  const dateOptions = o as DemoOptions & {
-    dateRangeCalendar?: boolean;
-    dateRangePresets?: boolean;
-  };
+  const { defineComponent, h, ref, watch } = vue;
   return defineComponent({
     name: 'EnterpriseVueExample',
     setup() {
-      const disabled = o.state === 'disabled';
-      const value = ref<string | string[]>(o.multiple ? ['design'] : 'design');
+      const value = ref<string | string[]>(options.value.multiple ? ['design'] : 'design');
+      if (['tree', 'tree-select', 'org-picker', 'cascader', 'toggle-group'].includes(kind)) {
+        watch(
+          () => Boolean(options.value.multiple),
+          (multiple) => {
+            value.value = multiple ? ['design'] : 'design';
+          },
+        );
+      }
       const selected = ref(['design']);
       const access = ref('team');
       const date = ref('2026-11-10');
@@ -58,6 +62,12 @@ export function createEnterpriseVueDemo(
         h('div', { class: 'enterprise-narrow' }, [child]);
       const result = (text: string) => h('p', { class: 'enterprise-demo-result' }, text);
       return () => {
+        const o = options.value;
+        const disabled = o.state === 'disabled';
+        const dateOptions = o as DemoOptions & {
+          dateRangeCalendar?: boolean;
+          dateRangePresets?: boolean;
+        };
         const choice = { options: enterpriseOptions, disabled };
         const tree = {
           nodes: enterpriseTree,

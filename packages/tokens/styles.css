@@ -3834,3 +3834,338 @@
   color: var(--f-muted);
   pointer-events: none;
 }
+
+/* NumberInput stacked stepper */
+.f-number-input--stacked > .f-number-input-steppers {
+  display: flex;
+  flex: 0 0
+    calc(var(--f-local-control-height, var(--f-input-height, var(--f-control-height))) * 0.8);
+  flex-direction: column;
+  border-inline-start: 1px solid var(--f-border);
+  border-start-end-radius: inherit;
+  border-end-end-radius: inherit;
+}
+.f-number-input > input[type='number'] {
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+.f-number-input > input[type='number']::-webkit-inner-spin-button,
+.f-number-input > input[type='number']::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.f-number-input--stacked .f-number-input-steppers > .f-number-input-step {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+.f-number-input--stacked .f-number-input-steppers > .f-number-input-step + .f-number-input-step {
+  border-block-start: 1px solid var(--f-border);
+}
+.f-number-input--stacked .f-number-input-steppers > .f-number-input-step:first-child {
+  border-start-end-radius: inherit;
+}
+.f-number-input--stacked .f-number-input-steppers > .f-number-input-step:last-child {
+  border-end-end-radius: inherit;
+}
+.f-number-input--stacked .f-number-input-steppers > .f-number-input-step:hover:not(:disabled) {
+  background: var(--f-primary-soft);
+}
+.f-number-input--stacked .f-number-input-step svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* Searchable selection */
+.f-search-select {
+  position: relative;
+  min-width: 0;
+}
+.f-search-select-control {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: calc(var(--f-choice-gap) * 0.5);
+  min-height: var(--f-input-height, var(--f-control-height));
+  padding: 4px calc(var(--f-space) * 0.6);
+  border: 1px solid var(--f-border);
+  border-radius: var(--f-input-radius, var(--f-radius));
+  background: var(--f-surface);
+  color: var(--f-text);
+}
+.f-search-select-control:focus-within {
+  outline: 2px solid var(--f-focus);
+  outline-offset: 1px;
+}
+.f-search-select-control[data-invalid] {
+  border-color: var(--f-danger);
+}
+.f-search-select[data-disabled] .f-search-select-control {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.f-search-select-input {
+  flex: 1 1 6rem;
+  width: 0;
+  min-width: 6rem;
+  border: 0;
+  outline: 0;
+  padding: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+}
+.f-search-select-input:disabled {
+  cursor: not-allowed;
+}
+.f-search-select-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 100%;
+  background: var(--f-subtle);
+  border-radius: var(--f-radius-sm);
+  padding: 2px 4px 2px 8px;
+  overflow-wrap: anywhere;
+}
+.f-search-select-tag button {
+  font: inherit;
+  color: inherit;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+.f-search-select-tag button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.f-search-select-tag button:focus-visible {
+  outline: 2px solid var(--f-focus);
+}
+.f-search-select-chevron {
+  flex: none;
+  color: var(--f-muted);
+}
+.f-search-select-popup {
+  position: absolute;
+  z-index: 20;
+  inset-inline: 0;
+  top: calc(100% + 4px);
+  max-height: 16rem;
+  overflow-y: auto;
+}
+.f-search-select-option {
+  min-height: var(--f-nav-item-height);
+  padding: calc(var(--f-space) * 0.35) var(--f-nav-padding);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--f-choice-gap);
+  cursor: pointer;
+  border-radius: var(--f-radius-sm);
+}
+.f-search-select-option[data-active] {
+  background: var(--f-subtle);
+}
+.f-search-select-option[aria-selected='true'] {
+  color: var(--f-primary);
+  font-weight: 600;
+}
+.f-search-select-option[aria-disabled='true'] {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.f-search-select-empty {
+  color: var(--f-muted);
+  padding: var(--f-space);
+  text-align: center;
+}
+
+.f-org-transfer {
+  color: var(--f-text);
+  font-family: var(--f-font);
+  background: var(--f-surface);
+  border: 1px solid var(--f-border);
+  border-radius: var(--f-overlay-radius, var(--f-radius));
+  padding: var(--f-overlay-padding, 12px);
+}
+.f-org-transfer .f-checkbox {
+  width: var(--f-choice-size, 16px);
+  height: var(--f-choice-size, 16px);
+}
+.f-org-transfer-header h2,
+.f-org-transfer h3 {
+  margin: 0;
+  color: var(--f-text);
+}
+.f-org-transfer-header h2 {
+  font-size: 16px;
+}
+.f-org-transfer h3 {
+  font-size: 13px;
+}
+.f-org-transfer p {
+  margin: var(--f-field-gap, 8px) 0;
+  color: var(--f-muted);
+}
+.f-org-transfer-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: var(--f-space, 12px);
+}
+.f-org-transfer-source,
+.f-org-transfer-selected {
+  min-width: 0;
+  border: 1px solid var(--f-border);
+  border-radius: var(--f-radius-sm);
+  padding: var(--f-overlay-padding, 12px);
+}
+.f-org-transfer-search {
+  display: grid;
+  grid-template-columns: minmax(95px, auto) minmax(0, 1fr);
+  gap: var(--f-field-gap, 8px);
+}
+.f-org-transfer-search label {
+  display: grid;
+  gap: var(--f-field-gap, 8px);
+  color: var(--f-text);
+}
+.f-org-transfer-list {
+  margin-block-start: var(--f-space, 12px);
+  max-height: 420px;
+  overflow: auto;
+}
+.f-org-transfer-row {
+  display: grid;
+  gap: var(--f-field-gap, 8px);
+  padding: var(--f-list-row-padding, 8px);
+  border-bottom: 1px solid var(--f-border);
+}
+.f-org-transfer-row > div:first-child {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--f-field-gap, 8px);
+}
+.f-org-transfer-row small,
+.f-org-transfer-selected small {
+  color: var(--f-muted);
+  font-size: 12px;
+}
+.f-org-transfer-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--f-choice-gap, 8px);
+  align-items: center;
+}
+.f-org-transfer-actions label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.f-org-transfer-scope,
+.f-org-transfer-selected-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--f-field-gap, 8px);
+}
+.f-org-transfer-selected ul {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  max-height: 420px;
+  overflow: auto;
+}
+.f-org-transfer-selected li {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--f-field-gap, 8px);
+  padding: var(--f-list-row-padding, 8px);
+  border-bottom: 1px solid var(--f-border);
+}
+.f-org-transfer-selected li small {
+  overflow-wrap: anywhere;
+}
+.f-org-transfer-selected li > button {
+  border: 0;
+  background: transparent;
+  color: var(--f-primary);
+  font: inherit;
+  cursor: pointer;
+}
+.f-org-transfer-selected li > button:disabled {
+  color: var(--f-muted);
+  cursor: not-allowed;
+}
+.f-org-transfer-selected li > button:focus-visible {
+  outline: 2px solid var(--f-focus);
+  outline-offset: 2px;
+}
+.f-org-transfer-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--f-space, 12px);
+  margin-block-start: var(--f-space, 12px);
+}
+.f-org-transfer-footer button {
+  margin-inline-start: auto;
+}
+@media (max-width: 700px) {
+  .f-org-transfer-body {
+    grid-template-columns: 1fr;
+  }
+  .f-org-transfer-footer {
+    flex-wrap: wrap;
+  }
+}
+
+/* Sizes adjust the row height around the value configured in Design Lab. */
+.f-tree[data-size='mini'] {
+  --f-tree-size-offset: -8px;
+}
+.f-tree[data-size='small'] {
+  --f-tree-size-offset: -4px;
+}
+.f-tree[data-size='medium'] {
+  --f-tree-size-offset: 0px;
+}
+.f-tree[data-size='big'] {
+  --f-tree-size-offset: 4px;
+}
+.f-tree[data-size] .f-tree-row {
+  min-height: max(28px, calc(var(--f-tree-row-height, 38px) + var(--f-tree-size-offset, 0px)));
+  position: relative;
+}
+.f-tree-guide {
+  position: absolute;
+  inset-block: 0;
+  width: 0;
+  border-inline-start: 1px solid var(--f-border);
+  pointer-events: none;
+}
+.f-tree-guide[data-last] {
+  bottom: 50%;
+}
+.f-tree-guide[data-branch]::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  inset-inline-start: 0;
+  width: var(--f-tree-indent, 20px);
+  border-block-start: 1px solid var(--f-border);
+}
+.f-tree-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  color: var(--f-muted);
+  pointer-events: none;
+}

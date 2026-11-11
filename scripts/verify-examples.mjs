@@ -42,12 +42,26 @@ try {
       variant: component.id === 'alert' ? 'info' : component.id === 'badge' ? 'default' : 'primary',
     };
     const variants = [['default', defaults]];
+    if (component.id === 'organization-transfer')
+      variants.push(['disabled', { ...defaults, state: 'disabled' }]);
     if (enterpriseIds.has(component.id) && component.id !== 'list')
       variants.push(['disabled', { ...defaultDemoOptions, state: 'disabled' }]);
     if (multipleIds.has(component.id))
       variants.push(['multiple', { ...defaultDemoOptions, multiple: true }]);
     if (cascadeIds.has(component.id))
       variants.push(['cascade', { ...defaultDemoOptions, multiple: true, cascade: true }]);
+    if (component.id === 'tree')
+      variants.push([
+        'mini-lines-icons',
+        {
+          ...defaults,
+          treeSize: 'mini',
+          treeShowLine: true,
+          treeShowIcon: true,
+          multiple: true,
+          cascade: true,
+        },
+      ]);
     if (component.id === 'cascader')
       variants.push([
         'parent-no-search',
@@ -98,6 +112,10 @@ try {
       variants.push(['invalid', { ...defaults, state: 'invalid' }]);
       variants.push(['duplicates', { ...defaults, inputTagDuplicates: true }]);
     }
+    if (component.id === 'search-select')
+      variants.push(['multiple-empty', { ...defaults, multiple: true, searchSelectEmpty: true }]);
+    if (component.id === 'number-input')
+      variants.push(['stacked', { ...defaults, numberStepperLayout: 'stacked' }]);
     if (component.id === 'auto-complete') {
       variants.push([
         'details-suffix',

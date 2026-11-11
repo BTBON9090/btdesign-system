@@ -92,6 +92,8 @@ export * from './input-tag.js';
 export * from './steps.js';
 export * from './statistic.js';
 export * from './tooltip.js';
+export { OrganizationTransfer } from './organization-transfer.js';
+export type { OrganizationTransferProps } from './organization-transfer.js';
 export { AutoComplete } from './auto-complete.js';
 export type { AutoCompleteProps } from './auto-complete.js';
 export * from './image.js';
@@ -104,6 +106,7 @@ export * from './mention.js';
 export * from './back-top.js';
 export * from './upload.js';
 export * from './resize-box.js';
+export * from './search-select.js';
 export type {
   ChoiceOption,
   TreeNode,

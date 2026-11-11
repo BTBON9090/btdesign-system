@@ -139,6 +139,8 @@ export interface NumberInputProps
   step?: number;
   decrementLabel?: string;
   incrementLabel?: string;
+  /** `sides` retains the existing minus/input/plus layout. */
+  stepperLayout?: 'sides' | 'stacked';
 }
 export const NumberInput = forwardRef<HTMLInputElement, NumberInputProps>(function NumberInput(
   {
@@ -155,6 +157,7 @@ export const NumberInput = forwardRef<HTMLInputElement, NumberInputProps>(functi
     onBlur,
     decrementLabel = '减少数值',
     incrementLabel = '增加数值',
+    stepperLayout = 'sides',
     ...props
   },
   forwardedRef,
@@ -175,20 +178,49 @@ export const NumberInput = forwardRef<HTMLInputElement, NumberInputProps>(functi
     inputRef.current?.focus();
   };
   const disabled = field.disabled || props.readOnly;
+  const stepButton = (direction: -1 | 1) => (
+    <button
+      type="button"
+      className="f-number-input-step"
+      aria-label={direction === -1 ? decrementLabel : incrementLabel}
+      disabled={
+        disabled ||
+        (current !== '' &&
+          (direction === -1
+            ? bounds.min !== undefined && current <= bounds.min
+            : bounds.max !== undefined && current >= bounds.max))
+      }
+      onClick={() => move(direction)}
+    >
+      {stepperLayout === 'stacked' ? (
+        <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24">
+          <path
+            fill="none"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            d={direction === 1 ? 'm18 15l-6-6l-6 6' : 'm6 9l6 6l6-6'}
+          />
+        </svg>
+      ) : direction === -1 ? (
+        '−'
+      ) : (
+        '+'
+      )}
+    </button>
+  );
   return (
     <div
-      className={cx('f-number-input', `f-control--${controlSize}`, className)}
+      className={cx(
+        'f-number-input',
+        `f-control--${controlSize}`,
+        stepperLayout === 'stacked' && 'f-number-input--stacked',
+        className,
+      )}
       data-disabled={field.disabled || undefined}
     >
-      <button
-        type="button"
-        className="f-number-input-step"
-        aria-label={decrementLabel}
-        disabled={disabled || (current !== '' && bounds.min !== undefined && current <= bounds.min)}
-        onClick={() => move(-1)}
-      >
-        −
-      </button>
+      {stepperLayout !== 'stacked' && stepButton(-1)}
       <Input
         {...props}
         {...field}
@@ -219,15 +251,14 @@ export const NumberInput = forwardRef<HTMLInputElement, NumberInputProps>(functi
           );
         }}
       />
-      <button
-        type="button"
-        className="f-number-input-step"
-        aria-label={incrementLabel}
-        disabled={disabled || (current !== '' && bounds.max !== undefined && current >= bounds.max)}
-        onClick={() => move(1)}
-      >
-        +
-      </button>
+      {stepperLayout === 'stacked' ? (
+        <span className="f-number-input-steppers">
+          {stepButton(1)}
+          {stepButton(-1)}
+        </span>
+      ) : (
+        stepButton(1)
+      )}
     </div>
   );
 });
@@ -242,7 +273,13 @@ function safeHref(href?: string) {
     return undefined;
   return href;
 }
-export function Breadcrumb({ items, label = '面包屑导航', separator = 'slash', className, ...props }: BreadcrumbProps) {
+export function Breadcrumb({
+  items,
+  label = '面包屑导航',
+  separator = 'slash',
+  className,
+  ...props
+}: BreadcrumbProps) {
   return (
     <nav
       {...props}

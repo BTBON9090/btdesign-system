@@ -293,6 +293,59 @@ test('NumberInput steps decimals, preserves empty values and clamps on blur', as
   assert.ok(updates.every((value) => value === '' || Number.isFinite(value)));
   view.app.unmount();
 });
+test('NumberInput stepper layouts share empty, bounds, stepping and controlled behavior', async () => {
+  for (const stepperLayout of ['sides', 'stacked']) {
+    const updates = [];
+    const view = mount(NumberInput, {
+      stepperLayout,
+      defaultValue: '',
+      min: 0,
+      max: 0.2,
+      step: 0.1,
+      'aria-label': '席位',
+      'onUpdate:modelValue': (value) => updates.push(value),
+    });
+    const input = view.findAll('input')[0];
+    const byLabel = (label) =>
+      view.findAll('button').find((node) => node.props['aria-label'] === label);
+    assert.equal(input.props['aria-label'], '席位');
+    assert.equal(input.props.value, '');
+    assert.equal(byLabel('减少数值').props.disabled, false);
+    assert.equal(byLabel('增加数值').props.disabled, false);
+    provideNativeSteps(input, [0.1, 0.2, 0.1, 0]);
+    byLabel('增加数值').props.onClick();
+    await nextTick();
+    byLabel('增加数值').props.onClick();
+    await nextTick();
+    assert.equal(byLabel('增加数值').props.disabled, true);
+    byLabel('减少数值').props.onClick();
+    await nextTick();
+    byLabel('减少数值').props.onClick();
+    await nextTick();
+    assert.equal(byLabel('减少数值').props.disabled, true);
+    assert.deepEqual(updates, [0.1, 0.2, 0.1, 0]);
+    view.app.unmount();
+
+    const controlledUpdates = [];
+    const controlled = mount(NumberInput, {
+      stepperLayout,
+      modelValue: 0.1,
+      min: 0,
+      max: 0.2,
+      step: 0.1,
+      'onUpdate:modelValue': (value) => controlledUpdates.push(value),
+    });
+    provideNativeSteps(controlled.findAll('input')[0], [0.2]);
+    controlled
+      .findAll('button')
+      .find((node) => node.props['aria-label'] === '增加数值')
+      .props.onClick();
+    await nextTick();
+    assert.deepEqual(controlledUpdates, [0.2]);
+    assert.equal(controlled.findAll('input')[0].props.value, 0.1);
+    controlled.app.unmount();
+  }
+});
 
 test('controlled number inputs wait for v-model updates; disabled inputs do not emit', async () => {
   const updates = [];

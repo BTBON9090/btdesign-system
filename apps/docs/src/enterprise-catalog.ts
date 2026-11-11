@@ -166,6 +166,8 @@ export const enterpriseCatalog = [
       ['multiple / cascade', 'boolean', 'false'],
       ['value / modelValue', 'string | string[]', '—'],
       ['expandedKeys / searchable', 'string[] / boolean', '—'],
+      ['size / showLine', 'mini | small | medium | big / boolean', 'medium / false'],
+      ['renderIcon / #icon', '装饰性内容（node）', '—'],
     ],
   },
   {

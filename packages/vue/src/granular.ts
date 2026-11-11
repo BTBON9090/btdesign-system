@@ -169,6 +169,7 @@ export const NumberInput = defineComponent({
     step: { type: Number, default: 1 },
     decrementLabel: { type: String, default: '减少数值' },
     incrementLabel: { type: String, default: '增加数值' },
+    stepperLayout: { type: String as PropType<'sides' | 'stacked'>, default: 'sides' },
     disabled: { type: Boolean, default: undefined },
     ...controlProps,
   },
@@ -219,12 +220,44 @@ export const NumberInput = defineComponent({
         if (next !== current.value) update(next);
         input.value?.focus?.();
       };
+      const stepButton = (direction: -1 | 1) =>
+        h(
+          'button',
+          {
+            class: 'f-number-input-step',
+            type: 'button',
+            'aria-label': direction === -1 ? props.decrementLabel : props.incrementLabel,
+            disabled:
+              disabled ||
+              readOnly ||
+              (current.value !== '' &&
+                (direction === -1 ? current.value <= min : current.value >= max)),
+            onClick: () => change(direction),
+          },
+          props.stepperLayout === 'stacked'
+            ? [
+                h('svg', { 'aria-hidden': 'true', focusable: 'false', viewBox: '0 0 24 24' }, [
+                  h('path', {
+                    fill: 'none',
+                    stroke: 'currentColor',
+                    'stroke-linecap': 'round',
+                    'stroke-linejoin': 'round',
+                    'stroke-width': 2,
+                    d: direction === 1 ? 'm18 15l-6-6l-6 6' : 'm6 9l6 6l6-6',
+                  }),
+                ]),
+              ]
+            : direction === -1
+              ? '−'
+              : '+',
+        );
       return h(
         'div',
         {
           class: [
             'f-number-input',
             `f-control--${props.controlSize}`,
+            props.stepperLayout === 'stacked' && 'f-number-input--stacked',
             invalid && 'f-control--invalid',
             className,
           ],
@@ -232,17 +265,7 @@ export const NumberInput = defineComponent({
           'data-disabled': disabled || undefined,
         },
         [
-          h(
-            'button',
-            {
-              class: 'f-number-input-step',
-              type: 'button',
-              'aria-label': props.decrementLabel,
-              disabled: disabled || readOnly || (current.value !== '' && current.value <= min),
-              onClick: () => change(-1),
-            },
-            '−',
-          ),
+          props.stepperLayout !== 'stacked' ? stepButton(-1) : null,
           h(
             'input',
             mergeProps(inputAttrs, bound, {
@@ -275,17 +298,9 @@ export const NumberInput = defineComponent({
               },
             }),
           ),
-          h(
-            'button',
-            {
-              class: 'f-number-input-step',
-              type: 'button',
-              'aria-label': props.incrementLabel,
-              disabled: disabled || readOnly || (current.value !== '' && current.value >= max),
-              onClick: () => change(1),
-            },
-            '+',
-          ),
+          props.stepperLayout === 'stacked'
+            ? h('span', { class: 'f-number-input-steppers' }, [stepButton(1), stepButton(-1)])
+            : stepButton(1),
         ],
       );
     };
@@ -321,7 +336,11 @@ export const Breadcrumb = defineComponent({
                 : undefined;
             return h('li', { class: 'f-breadcrumb-item', key: index }, [
               index
-                ? h('span', { class: 'f-breadcrumb-separator', 'aria-hidden': 'true' }, props.separator === 'dot' ? '·' : props.separator === 'arrow' ? '›' : '/')
+                ? h(
+                    'span',
+                    { class: 'f-breadcrumb-separator', 'aria-hidden': 'true' },
+                    props.separator === 'dot' ? '·' : props.separator === 'arrow' ? '›' : '/',
+                  )
                 : null,
               href && !current
                 ? h('a', { href }, item.label)

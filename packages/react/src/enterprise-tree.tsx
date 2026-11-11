@@ -1,4 +1,12 @@
-import { useEffect, useId, useRef, useState, type HTMLAttributes, type KeyboardEvent } from 'react';
+import {
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type HTMLAttributes,
+  type KeyboardEvent,
+  type ReactNode,
+} from 'react';
 import {
   filterTree,
   flattenTree,
@@ -29,6 +37,11 @@ export interface TreeProps extends Omit<
   label?: string;
   disabled?: boolean;
   name?: string;
+  /** Relative to the Lab-configured tree row height. */
+  size?: 'mini' | 'small' | 'medium' | 'big';
+  showLine?: boolean;
+  /** Decorative content only; the node label supplies its accessible name. */
+  renderIcon?: (node: FlatTreeNode) => ReactNode;
 }
 export function Tree({
   nodes,
@@ -44,6 +57,9 @@ export function Tree({
   label = '树形选项',
   disabled,
   name,
+  size = 'medium',
+  showLine = false,
+  renderIcon,
   className,
   ...props
 }: TreeProps) {
@@ -61,6 +77,8 @@ export function Tree({
   const visible = shown.filter(
     (node) => query || node.path.slice(0, -1).every((key) => expanded.includes(key)),
   );
+  const shownByKey = new Map(shown.map((node) => [node.key, node]));
+  const lastSibling = new Map(shown.map((node) => [node.parentKey, node.key]));
   const selected = Array.isArray(current) ? current : current ? [current] : [];
   const active = visible.some((node) => node.key === focused && !node.disabled)
     ? focused
@@ -128,6 +146,8 @@ export function Tree({
         {...props}
         ref={root}
         className="f-tree"
+        data-size={size}
+        data-show-line={showLine || undefined}
         role="tree"
         aria-label={label}
         aria-multiselectable={multiple || undefined}
@@ -137,6 +157,7 @@ export function Tree({
           const checked = treeCheckState(nodes, selected, node.key, multiple && cascade);
           const siblings = shown.filter((item) => item.parentKey === node.parentKey);
           const blocked = disabled || node.disabled;
+          const icon = renderIcon?.(node);
           return (
             <div
               key={node.key}
@@ -160,6 +181,27 @@ export function Tree({
                 className="f-tree-row"
                 style={{ paddingInlineStart: `calc(${node.depth} * var(--f-tree-indent, 20px))` }}
               >
+                {showLine &&
+                  node.path.slice(1).map((key, index) => {
+                    const branch = shownByKey.get(key);
+                    if (!branch) return null;
+                    const last = lastSibling.get(branch.parentKey) === key;
+                    const current = key === node.key;
+                    return (
+                      (current || !last) && (
+                        <span
+                          key={key}
+                          className="f-tree-guide"
+                          aria-hidden="true"
+                          data-branch={current || undefined}
+                          data-last={(current && last) || undefined}
+                          style={{
+                            insetInlineStart: `calc(${index} * var(--f-tree-indent, 20px) + 12px)`,
+                          }}
+                        />
+                      )
+                    );
+                  })}
                 {!node.leaf ? (
                   <button
                     className="f-tree-toggle"
@@ -184,6 +226,11 @@ export function Tree({
                     aria-hidden="true"
                   >
                     {checked === 'mixed' ? '−' : checked ? '✓' : ''}
+                  </span>
+                )}
+                {icon != null && icon !== false && (
+                  <span className="f-tree-icon" aria-hidden="true">
+                    {icon}
                   </span>
                 )}
                 <span className="f-tree-label">

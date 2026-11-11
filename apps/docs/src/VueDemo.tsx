@@ -1,3 +1,6 @@
+import { treeVariantsVuePreview } from './TreeVariantsVuePreview';
+import { treeVariantsOptions } from './TreeVariantsExample';
+import { createOrganizationTransferVuePreview } from './OrganizationTransferVuePreview';
 import { progressVuePreview } from './ProgressVuePreview';
 import { progressPreviewOptions } from './ProgressExample';
 import { createEnterpriseVueDemo } from './EnterpriseVueDemo';
@@ -47,6 +50,10 @@ import { pageHeaderVueDemo } from './PageHeaderVueDemo';
 import { createAnchorVueDemo } from './AnchorVueDemo';
 import { badgeVueDemo } from './BadgeVueDemo';
 import { tabsPreviewItems } from './tabs-example-code';
+import { createNumberInputVueDemo } from './NumberInputVueDemo';
+import { numberInputPreviewOptions } from './number-input-example-code';
+import { searchSelectVuePreview } from './SearchSelectVuePreview';
+import { searchSelectPreviewOptions } from './SearchSelectExample';
 
 export interface VueDemoProps {
   kind: string;
@@ -59,27 +66,44 @@ export function VueDemo({ kind, onAction, options }: VueDemoProps) {
   const host = useRef<HTMLDivElement>(null);
   const action = useRef(onAction);
   action.current = onAction;
+  const latestOptions = useRef(options);
+  latestOptions.current = options;
+  const updateVueOptions = useRef<((next: DemoOptions | undefined) => void) | null>(null);
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
     let app: App | undefined;
+    let updateOptions: ((next: DemoOptions | undefined) => void) | undefined;
     setStatus('loading');
 
     void Promise.all([import('vue'), import('@btdesign/vue')])
       .then(([vue, ui]) => {
         if (cancelled || !host.current) return;
-        const { createApp, defineComponent, h, ref } = vue;
+        const { createApp, defineComponent, h, ref, shallowRef, computed } = vue;
+        const optionState = shallowRef<DemoOptions | undefined>(latestOptions.current);
+        updateOptions = (next) => {
+          optionState.value = next;
+        };
+        updateVueOptions.current = updateOptions;
         const emitAction = (message: string) => action.current?.(message);
         const CommentVueDemo = createCommentVueDemo(vue, ui);
         const BackTopVueDemo = createBackTopVueDemo(vue, ui);
         const ResizeBoxVueDemo = createResizeBoxVueDemo(vue, ui.ResizeBox);
         const TagVueDemo = createTagVueDemo(vue, ui);
         const AnchorVueDemo = createAnchorVueDemo(vue, ui.Anchor);
-        if (isEnterpriseId(kind)) {
+        const NumberInputVueDemo = createNumberInputVueDemo(vue, ui.NumberInput, ui.Field);
+        const OrganizationTransferVueDemo = createOrganizationTransferVuePreview(vue, ui);
+        if (isEnterpriseId(kind) && kind !== 'tree') {
           app = createApp(
-            createEnterpriseVueDemo(vue, ui, kind, options ?? defaultDemoOptions, emitAction),
+            createEnterpriseVueDemo(
+              vue,
+              ui,
+              kind,
+              computed(() => optionState.value ?? defaultDemoOptions),
+              emitAction,
+            ),
           );
           app.mount(host.current);
           setStatus('ready');
@@ -106,7 +130,6 @@ export function VueDemo({ kind, onAction, options }: VueDemoProps) {
               const projectName = ref('品牌工作台');
               const progress = ref(64);
               const saved = ref(false);
-              const quantity = ref<number | ''>(4);
               const sliderValue = ref(40);
               const timeValue = ref('09:30');
               const page = ref(1);
@@ -171,7 +194,14 @@ export function VueDemo({ kind, onAction, options }: VueDemoProps) {
                 ]);
 
               return () => {
-                const o = options ?? defaultDemoOptions;
+                const o = optionState.value ?? defaultDemoOptions;
+                if (kind === 'organization-transfer')
+                  return h(OrganizationTransferVueDemo, { disabled: o.state === 'disabled' });
+                if (kind === 'number-input')
+                  return h(NumberInputVueDemo, { options: numberInputPreviewOptions(o) });
+                if (kind === 'tree') return treeVariantsVuePreview(vue, ui, treeVariantsOptions(o));
+                if (kind === 'search-select')
+                  return searchSelectVuePreview(vue, ui, searchSelectPreviewOptions(o));
                 if (kind === 'tabs') {
                   const tabOptions = tabsPreviewOptions(o);
                   return h(ui.Tabs, {
@@ -224,7 +254,7 @@ export function VueDemo({ kind, onAction, options }: VueDemoProps) {
                 const withField = (label: string, child: VNodeChild, description?: string) =>
                   h(ui.Field, { label, description, error, class: 'demo-form' }, () => child);
                 if (
-                  options ||
+                  optionState.value ||
                   [
                     'field',
                     'input-group',
@@ -449,19 +479,6 @@ export function VueDemo({ kind, onAction, options }: VueDemoProps) {
                           { value: 'public', label: '公开访问', disabled: true },
                         ],
                       });
-                    case 'number-input':
-                      return withField(
-                        '成员席位',
-                        h(ui.NumberInput, {
-                          ...control,
-                          modelValue: quantity.value,
-                          'onUpdate:modelValue': (value: number | '') => (quantity.value = value),
-                          min: 1,
-                          max: 20,
-                          step: 1,
-                        }),
-                        '可以设置 1 至 20 个席位',
-                      );
                     case 'breadcrumb':
                       return h(ui.Breadcrumb, {
                         separator: o.breadcrumbSeparator ?? 'slash',
@@ -956,15 +973,21 @@ export function VueDemo({ kind, onAction, options }: VueDemoProps) {
         if (!cancelled) {
           app?.unmount();
           app = undefined;
+          if (updateVueOptions.current === updateOptions) updateVueOptions.current = null;
           setStatus('error');
         }
       });
 
     return () => {
       cancelled = true;
+      if (updateVueOptions.current === updateOptions) updateVueOptions.current = null;
       app?.unmount();
     };
-  }, [kind, attempt, options]);
+  }, [kind, attempt]);
+
+  useEffect(() => {
+    updateVueOptions.current?.(options);
+  }, [options]);
 
   return (
     <div className="vue-demo-root">

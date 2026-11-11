@@ -49,6 +49,7 @@ const disableable: ComponentId[] = [
   'tree-select',
   'cascader',
   'org-picker',
+  'organization-transfer',
   'transfer',
   'sidebar-nav',
   'top-nav',
@@ -62,6 +63,7 @@ const disableable: ComponentId[] = [
   'input-tag',
   'textarea',
   'select',
+  'search-select',
   'checkbox',
   'switch',
   'field',
@@ -153,7 +155,14 @@ export function ComponentWorkbench({
       <div className={`bt-workbench ${embedded ? 'bt-workbench-embedded' : ''}`}>
         <div className="bt-workbench-controls" aria-label="预览参数">
           {embedded && <FrameworkToggle value={framework} onChange={onFrameworkChange} />}
-          {['tree', 'tree-select', 'cascader', 'org-picker', 'toggle-group'].includes(kind) && (
+          {[
+            'tree',
+            'tree-select',
+            'cascader',
+            'org-picker',
+            'toggle-group',
+            'search-select',
+          ].includes(kind) && (
             <label>
               选择方式
               <select
@@ -165,6 +174,47 @@ export function ComponentWorkbench({
                 <option value="multiple">多选</option>
               </select>
             </label>
+          )}
+          {kind === 'tree' && (
+            <>
+              <label>
+                节点尺寸
+                <select
+                  aria-label="预览节点尺寸"
+                  value={options.treeSize ?? 'medium'}
+                  onChange={(event) =>
+                    update('treeSize', event.target.value as NonNullable<DemoOptions['treeSize']>)
+                  }
+                >
+                  <option value="mini">迷你</option>
+                  <option value="small">小</option>
+                  <option value="medium">中</option>
+                  <option value="big">大</option>
+                </select>
+              </label>
+              <label>
+                连接线
+                <select
+                  aria-label="预览连接线"
+                  value={options.treeShowLine ? 'show' : 'hide'}
+                  onChange={(event) => update('treeShowLine', event.target.value === 'show')}
+                >
+                  <option value="hide">隐藏</option>
+                  <option value="show">显示</option>
+                </select>
+              </label>
+              <label>
+                节点图标
+                <select
+                  aria-label="预览节点图标"
+                  value={options.treeShowIcon ? 'show' : 'hide'}
+                  onChange={(event) => update('treeShowIcon', event.target.value === 'show')}
+                >
+                  <option value="hide">隐藏</option>
+                  <option value="show">显示</option>
+                </select>
+              </label>
+            </>
           )}
           {['tree', 'tree-select', 'org-picker'].includes(kind) && options.multiple && (
             <label>
@@ -258,6 +308,37 @@ export function ComponentWorkbench({
                 </select>
               </label>
             </>
+          )}
+          {kind === 'search-select' && (
+            <label>
+              候选项
+              <select
+                aria-label="预览选择器候选项"
+                value={options.searchSelectEmpty ? 'empty' : 'example'}
+                onChange={(event) => update('searchSelectEmpty', event.target.value === 'empty')}
+              >
+                <option value="example">示例数据</option>
+                <option value="empty">空列表</option>
+              </select>
+            </label>
+          )}
+          {kind === 'number-input' && (
+            <label>
+              步进按钮
+              <select
+                aria-label="预览数字步进布局"
+                value={options.numberStepperLayout ?? 'sides'}
+                onChange={(event) =>
+                  update(
+                    'numberStepperLayout',
+                    event.target.value as NonNullable<DemoOptions['numberStepperLayout']>,
+                  )
+                }
+              >
+                <option value="sides">两侧加减</option>
+                <option value="stacked">右侧上下</option>
+              </select>
+            </label>
           )}
           {kind === 'auto-complete' && (
             <label>

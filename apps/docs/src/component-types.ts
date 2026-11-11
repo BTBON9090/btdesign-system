@@ -11,6 +11,7 @@ export type ComponentId =
   | 'time-picker'
   | 'textarea'
   | 'select'
+  | 'search-select'
   | 'checkbox'
   | 'switch'
   | 'badge'
@@ -61,6 +62,7 @@ export type ComponentId =
   | 'tree-select'
   | 'cascader'
   | 'org-picker'
+  | 'organization-transfer'
   | 'transfer'
   | 'sidebar-nav'
   | 'top-nav'
@@ -68,6 +70,9 @@ export type ComponentId =
   | 'data-table';
 
 export interface DemoOptions {
+  treeSize?: 'mini' | 'small' | 'medium' | 'big';
+  treeShowLine?: boolean;
+  treeShowIcon?: boolean;
   multiple?: boolean;
   cascade?: boolean;
   buttonGroupCount?: number;
@@ -125,6 +130,7 @@ export interface DemoOptions {
   inputKind?: 'text' | 'password' | 'search';
   inputAddon?: 'none' | 'start' | 'end' | 'both';
   inputTagDuplicates?: boolean;
+  searchSelectEmpty?: boolean;
   autoCompleteEmpty?: boolean;
   autoCompleteDetail?: boolean;
   autoCompleteSuffix?: 'none' | 'arrow' | 'dot';
@@ -159,6 +165,7 @@ export interface DemoOptions {
   dropdownSeparator?: boolean;
   dropdownSubmenu?: boolean;
   fieldLayout?: 'vertical' | 'horizontal';
+  numberStepperLayout?: 'sides' | 'stacked';
   cascaderSearchable?: boolean;
   cascaderChangeOnSelect?: boolean;
   progressType?: 'line' | 'circle' | 'mini';

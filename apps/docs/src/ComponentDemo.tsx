@@ -1,3 +1,10 @@
+import { OrganizationTransferPreview } from './OrganizationTransferPreview';
+import { TreeVariantsPreview } from './TreeVariantsPreview';
+import { treeVariantsOptions } from './TreeVariantsExample';
+import { SearchSelectPreview } from './SearchSelectPreview';
+import { searchSelectPreviewOptions } from './SearchSelectExample';
+import { NumberInputDemo } from './NumberInputDemo';
+import { numberInputPreviewOptions } from './number-input-example-code';
 import { ProgressPreview } from './ProgressPreview';
 import { progressPreviewOptions } from './ProgressExample';
 import { EnterpriseDemo } from './EnterpriseDemo';
@@ -127,6 +134,19 @@ export function ComponentDemo({
         component={PageHeader}
         options={pageHeaderPreviewOptions(options)}
         onAction={onAction}
+      />
+    );
+  if (kind === 'organization-transfer')
+    return <OrganizationTransferPreview disabled={options?.state === 'disabled'} />;
+  if (kind === 'tree') return <TreeVariantsPreview options={treeVariantsOptions(options)} />;
+  if (kind === 'search-select')
+    return <SearchSelectPreview options={searchSelectPreviewOptions(options)} />;
+  if (kind === 'number-input')
+    return (
+      <NumberInputDemo
+        component={NumberInput}
+        field={Field}
+        options={numberInputPreviewOptions(options)}
       />
     );
   if (kind === 'back-top') return <BackTopDemo options={backTopPreviewOptions(options)} />;

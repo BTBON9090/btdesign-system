@@ -271,6 +271,22 @@ test('NumberInput has native numeric form semantics and bounded stepper buttons'
   assert.match(invalid, /value=""/);
   assert.doesNotMatch(invalid, /NaN|Infinity/);
 });
+test('NumberInput stacked controls preserve names, ordering, empty state and limits', () => {
+  const props = { stepperLayout: 'stacked', min: 0, max: 2, step: 0.5, 'aria-label': '席位' };
+  const atMax = render(NumberInput, { ...props, value: 2 });
+  assert.match(atMax, /f-number-input--stacked/);
+  assert.match(atMax, /aria-label="席位"/);
+  assert.match(atMax, /step="0.5"/);
+  assert.match(atMax, /aria-label="增加数值" disabled=""/);
+  assert.ok(atMax.indexOf('aria-label="增加数值"') < atMax.indexOf('aria-label="减少数值"'));
+  const atMin = render(NumberInput, { ...props, value: 0 });
+  assert.match(atMin, /aria-label="减少数值" disabled=""/);
+  const empty = render(NumberInput, { ...props, value: '' });
+  assert.doesNotMatch(empty, /aria-label="(?:增加数值|减少数值)" disabled/);
+  const sides = render(NumberInput, { ...props, stepperLayout: 'sides', value: 1 });
+  assert.doesNotMatch(sides, /f-number-input--stacked/);
+  assert.ok(sides.indexOf('aria-label="减少数值"') < sides.indexOf('type="number"'));
+});
 
 test('number blur bounds preserve empty values and reject invalid bounds', () => {
   assert.equal(clampNumber('', 1, 5), '');

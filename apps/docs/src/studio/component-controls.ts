@@ -86,6 +86,16 @@ const navigation = () => part('items', '导航项', ['navigationHeight', 'naviga
 const list = () => part('items', '列表条目', ['listPadding', 'listGap']);
 /** Controls are attached to real CSS consumers, not guessed from a component's category. */
 const partsByComponent: Record<ComponentId, ControlPart[]> = {
+  'organization-transfer': [
+    input(),
+    part('items', '组织与成员', ['listPadding', 'choiceSize', 'choiceGap'], [1]),
+    part(
+      'container',
+      '容器与操作',
+      ['overlayPadding', 'overlayRadius', 'buttonHeight', 'buttonRadius'],
+      [2],
+    ),
+  ],
   button: [button(), part('label', '文字与状态', [], [1, 2])],
   'button-group': [button(), part('spacing', '按钮间距', ['choiceGap'])],
   input: [input(), field(), part('validation', '校验状态', [], [1])],
@@ -103,6 +113,11 @@ const partsByComponent: Record<ComponentId, ControlPart[]> = {
   'time-picker': [input(), field()],
   textarea: [part('input', '输入区域', ['inputRadius'], [0]), field()],
   select: [input(), part('options', '选项文字', [], [1])],
+  'search-select': [
+    input(),
+    part('options', '候选项', ['navigationHeight', 'choiceGap'], [1]),
+    overlay(),
+  ],
   checkbox: [part('selection', '勾选与标签', ['choiceSize', 'choiceGap'], [0, 1])],
   switch: [part('track', '开关与状态', [], [0, 1])],
   badge: [
@@ -230,7 +245,12 @@ const partsByComponent: Record<ComponentId, ControlPart[]> = {
     list(),
     part('actions', '文件操作', ['buttonHeight', 'buttonRadius', 'choiceGap'], [1]),
   ],
-  tree: [tree(), choice(), part('search', '搜索框', ['inputHeight', 'inputRadius'])],
+  tree: [
+    tree(),
+    part('guides', '层级连接线', ['treeIndent'], [0]),
+    choice(),
+    part('search', '搜索框', ['inputHeight', 'inputRadius']),
+  ],
   'tree-select': [input(), tree(), choice(), overlay()],
   cascader: [
     input(),

@@ -47,6 +47,8 @@ import { Progress } from './progress.js';
 export { Progress } from './progress.js';
 export type { ProgressStatus, ProgressType } from './progress.js';
 import { ResizeBox } from './resize-box.js';
+import { SearchSelect } from './search-select.js';
+import { OrganizationTransfer } from './organization-transfer.js';
 export * from './enterprise-choice.js';
 export * from './enterprise-form.js';
 export * from './enterprise-date.js';
@@ -77,6 +79,8 @@ export * from './mention.js';
 export * from './back-top.js';
 export * from './upload.js';
 export * from './resize-box.js';
+export * from './search-select.js';
+export * from './organization-transfer.js';
 export type {
   ChoiceOption,
   TreeNode,
@@ -792,6 +796,8 @@ const components = {
   BackTop,
   Upload,
   ResizeBox,
+  SearchSelect,
+  OrganizationTransfer,
   Separator,
   Table,
   Skeleton,

@@ -1,3 +1,7 @@
+import { treeVariantsExampleCode, treeVariantsOptions } from './TreeVariantsExample';
+import { organizationTransferExampleCode } from './OrganizationTransferExample';
+import { searchSelectExampleCode, searchSelectPreviewOptions } from './SearchSelectExample';
+import { numberInputExampleCode, numberInputPreviewOptions } from './number-input-example-code';
 import { progressExampleCode, progressPreviewOptions } from './ProgressExample';
 import { listExampleCode, listPreviewOptions } from './ListExample';
 import { breadcrumbExampleCode } from './breadcrumb-example-code';
@@ -210,6 +214,21 @@ export const catalog = [
       ['multiple', 'boolean', 'false'],
       ['controlSize / invalid', 'sm | md | lg / boolean', 'md / false'],
       ['children / default slot', 'option elements', '—'],
+    ],
+  },
+  {
+    id: 'search-select',
+    name: 'SearchSelect',
+    cn: '搜索选择器',
+    category: '选择与切换',
+    description: '从本地候选中搜索并单选或多选，支持移除已选标签。',
+    props: [
+      ['options', 'ChoiceOption[]（value 必须非空且唯一）', '必填'],
+      ['multiple', 'boolean', 'false'],
+      ['value / modelValue', 'string | string[]', '—'],
+      ['onValueChange / update:modelValue', 'callback', '—'],
+      ['label / name / disabled', 'string / string / boolean', '—'],
+      ['required', 'boolean（无原生必填校验）', 'false'],
     ],
   },
   {
@@ -646,6 +665,7 @@ export const catalog = [
       ['onValueChange / update:modelValue', 'callback', '—'],
       ['min / max', 'number', '—'],
       ['step', 'number', '1'],
+      ['stepperLayout', 'sides | stacked', 'sides'],
       ['controlSize', 'sm | md | lg', 'md'],
       ['invalid / disabled', 'boolean', 'false'],
     ],
@@ -707,6 +727,21 @@ export const catalog = [
       ['size', 'sm | md | lg', 'md'],
     ],
   },
+  {
+    id: 'organization-transfer',
+    name: 'OrganizationTransfer',
+    cn: '组织穿梭器',
+    category: '层级与组织',
+    description: '选择持续生效的部门规则，或保存包含下级部门的当前成员快照。',
+    props: [
+      ['directory', 'OrganizationDirectory（应用提供）', '必填'],
+      ['value / modelValue', 'OrganizationSelection', '必填'],
+      ['onValueChange / update:modelValue', 'callback', '必填'],
+      ['onConfirm / confirm', '(selection, result) => void', '必填'],
+      ['getDepartmentLabel / getPersonLabel', '(identity) => string', '标识 ID'],
+      ['disabled', 'boolean', 'false'],
+    ],
+  },
   ...enterpriseCatalog,
 ] as const;
 const reactExamples: Partial<Record<ComponentId, string>> = {
@@ -760,6 +795,12 @@ function reactCode(id: ComponentId) {
 }
 
 export function componentCode(id: ComponentId, framework: Framework, options?: DemoOptions) {
+  if (id === 'organization-transfer') return organizationTransferExampleCode(framework, options);
+  if (id === 'tree') return treeVariantsExampleCode(framework, treeVariantsOptions(options));
+  if (id === 'search-select')
+    return searchSelectExampleCode(framework, searchSelectPreviewOptions(options));
+  if (id === 'number-input')
+    return numberInputExampleCode(framework, numberInputPreviewOptions(options));
   if (id === 'progress') return progressExampleCode(framework, progressPreviewOptions(options));
   if (id === 'list') return listExampleCode(framework, listPreviewOptions(options));
   if (id === 'breadcrumb')
@@ -850,11 +891,9 @@ export function componentCode(id: ComponentId, framework: Framework, options?: D
       ? '\nconst checked = ref(true);'
       : id === 'dialog'
         ? '\nconst open = ref(false);'
-        : id === 'number-input'
-          ? "\nconst quantity = ref<number | ''>(4);"
-          : id === 'pagination'
-            ? '\nconst page = ref(1);'
-            : '';
+        : id === 'pagination'
+          ? '\nconst page = ref(1);'
+          : '';
   const extraImports: Partial<Record<ComponentId, string>> = {
     dialog: ', Button',
     field: ', Input',
@@ -935,6 +974,31 @@ const part = (
 /** The same names connect design decisions, public composition parts and theme controls. */
 export const componentAnatomy: Record<ComponentId, AnatomyPart[]> = {
   ...enterpriseAnatomy,
+  'organization-transfer': [
+    part(
+      '搜索区域',
+      'select + input',
+      '搜索应用提供的本地目录。',
+      '--f-input-height',
+      '--f-input-radius',
+    ),
+    part(
+      '组织与成员',
+      'department / member selection',
+      '区分持续规则和当前成员快照，标明权限与数据完整性。',
+      '--f-list-row-padding',
+      '--f-choice-size',
+      '--f-choice-gap',
+    ),
+    part(
+      '已选与确认',
+      'selected rules + confirmation',
+      '应用负责解析部门规则并校验最终权限。',
+      '--f-overlay-padding',
+      '--f-button-height',
+      '--f-button-radius',
+    ),
+  ],
   button: [
     part(
       '操作容器',
@@ -1117,6 +1181,23 @@ export const componentAnatomy: Record<ComponentId, AnatomyPart[]> = {
       '--f-field-gap',
       '--f-danger',
     ),
+  ],
+  'search-select': [
+    part(
+      '输入与标签',
+      'SearchSelect → combobox',
+      '搜索本地候选，保留清晰的名称与状态。',
+      '--f-input-height',
+      '--f-input-radius',
+    ),
+    part(
+      '候选项',
+      'listbox / option',
+      '键盘选择与禁用状态保持一致。',
+      '--f-nav-item-height',
+      '--f-choice-gap',
+    ),
+    part('选择浮层', 'popup', '展示候选和空状态。', '--f-overlay-radius', '--f-overlay-padding'),
   ],
   select: [
     part(

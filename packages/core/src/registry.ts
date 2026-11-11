@@ -1,7 +1,7 @@
 export const componentRegistry = {
   schemaVersion: 1,
   library: 'BTDESIGN',
-  version: '0.7.0',
+  version: '0.8.0',
   packages: {
     react: '@btdesign/react',
     vue: '@btdesign/vue',
@@ -130,6 +130,52 @@ export const componentRegistry = {
       vue: { filesChange: '(files:File[])=>void' },
       notes:
         'This is a file-selection control. Upload transport, progress, retries and persistence belong to the application.',
+    },
+    {
+      name: 'SearchSelect',
+      purpose: 'Select one or more local options with search and removable tags',
+      props: {
+        options: 'ChoiceOption[] with unique nonempty value',
+        multiple: 'boolean',
+        label: 'string',
+        name: 'string',
+        disabled: 'boolean',
+        required: 'boolean (ARIA only)',
+      },
+      react: {
+        value: 'string | string[]',
+        defaultValue: 'string | string[]',
+        onValueChange: '(value)=>void',
+      },
+      vue: {
+        modelValue: 'string | string[]',
+        defaultValue: 'string | string[]',
+        'update:modelValue': 'string | string[]',
+      },
+      notes:
+        'Local options only. Required is announced but hidden form values do not enforce native required validation; validate in the application or FormField. No remote loading or virtualization.',
+    },
+    {
+      name: 'OrganizationTransfer',
+      purpose: 'Select persistent department rules or snapshots of currently eligible members',
+      props: {
+        directory: 'OrganizationDirectory (provided by the application)',
+        getDepartmentLabel: '(identity:OrganizationIdentity)=>string',
+        getPersonLabel: '(identity:OrganizationIdentity)=>string',
+        disabled: 'boolean',
+      },
+      react: {
+        value: 'OrganizationSelection',
+        onValueChange: '(selection)=>void',
+        onConfirm: '(selection,result)=>void',
+      },
+      vue: {
+        modelValue: 'OrganizationSelection',
+        'update:modelValue': 'OrganizationSelection',
+        confirm: '(selection,result)',
+      },
+      notes:
+        'Department rules must be resolved and authorized by the application; snapshots include current known eligible descendants. Incomplete data and unknown permissions are not assumed to be valid. No remote directory connection.',
     },
     {
       name: 'AutoComplete',
@@ -623,6 +669,7 @@ export const componentRegistry = {
         min: 'number',
         max: 'number',
         step: 'positive number, default 1',
+        stepperLayout: 'sides | stacked',
         defaultValue: 'number | empty string',
         controlSize: ['sm', 'md', 'lg'],
         disabled: 'boolean',
@@ -937,6 +984,8 @@ export const componentRegistry = {
         expandedKeys: 'string[]',
         defaultExpandedKeys: 'string[]',
         searchable: 'boolean',
+        size: ['mini', 'small', 'medium', 'big'],
+        showLine: 'boolean',
         disabled: 'boolean',
         label: 'string',
         name: 'string',
@@ -945,11 +994,13 @@ export const componentRegistry = {
         value: 'string | string[]',
         onValueChange: '(value)=>void',
         onExpandedChange: '(keys)=>void',
+        renderIcon: '(node:FlatTreeNode)=>ReactNode (decorative)',
       },
       vue: {
         modelValue: 'string | string[]',
         'update:modelValue': 'string | string[]',
         'update:expandedKeys': 'string[]',
+        'icon slot': '{ node: FlatTreeNode } (decorative)',
       },
       notes:
         'Unique keys across the whole tree. Native tree keyboard navigation separates focus, expansion and selection. Cascade multi stores eligible leaf keys and derives mixed parent states; disabled ancestors disable descendants. No lazy network loading, drag-drop or virtualization.',

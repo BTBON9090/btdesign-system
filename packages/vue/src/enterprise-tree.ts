@@ -22,9 +22,11 @@ export const Tree = defineComponent({
     ...treeProps,
     expandedKeys: { type: Array as PropType<string[]>, default: undefined },
     defaultExpandedKeys: { type: Array as PropType<string[]>, default: () => [] },
+    size: { type: String as PropType<'mini' | 'small' | 'medium' | 'big'>, default: 'medium' },
+    showLine: Boolean,
   },
   emits: ['update:modelValue', 'update:expandedKeys'],
-  setup(props, { attrs, emit }) {
+  setup(props, { attrs, emit, slots }) {
     const root = ref<HTMLElement>();
     const state = useValue(
       () => props.modelValue,
@@ -76,6 +78,8 @@ export const Tree = defineComponent({
       const bound = field({ ...attrs, disabled: props.disabled });
       const disabled = isDisabled(bound.disabled);
       const nodes = visible.value;
+      const nodesByKey = new Map(nodes.map((node) => [node.key, node]));
+      const lastSibling = new Map(nodes.map((node) => [node.parentKey, node.key]));
       const focusable = nodes.filter((node) => !node.disabled);
       const active = focusable.some((node) => node.key === focused.value)
         ? focused.value
@@ -96,6 +100,8 @@ export const Tree = defineComponent({
           'div',
           mergeProps(attrs, bound, {
             class: 'f-tree',
+            'data-size': props.size,
+            'data-show-line': props.showLine || undefined,
             ref: root,
             role: 'tree',
             'aria-label': props.label,
@@ -182,6 +188,26 @@ export const Tree = defineComponent({
                         style: { paddingInlineStart: `calc(${node.depth} * var(--f-tree-indent))` },
                       },
                       [
+                        ...(props.showLine
+                          ? node.path.slice(1).map((key, index) => {
+                              const branch = nodesByKey.get(key);
+                              if (!branch) return null;
+                              const last = lastSibling.get(branch.parentKey) === key;
+                              const current = key === node.key;
+                              return current || !last
+                                ? h('span', {
+                                    key,
+                                    class: 'f-tree-guide',
+                                    'aria-hidden': 'true',
+                                    'data-branch': current || undefined,
+                                    'data-last': (current && last) || undefined,
+                                    style: {
+                                      insetInlineStart: `calc(${index} * var(--f-tree-indent, 20px) + 12px)`,
+                                    },
+                                  })
+                                : null;
+                            })
+                          : []),
                         node.leaf
                           ? h('span', { class: 'f-tree-toggle', 'aria-hidden': 'true' })
                           : h(
@@ -209,6 +235,13 @@ export const Tree = defineComponent({
                                 'aria-hidden': 'true',
                               },
                               checked === 'mixed' ? '−' : checked ? '✓' : '',
+                            )
+                          : null,
+                        slots.icon
+                          ? h(
+                              'span',
+                              { class: 'f-tree-icon', 'aria-hidden': 'true' },
+                              slots.icon({ node }),
                             )
                           : null,
                         h('span', { class: 'f-tree-label' }, [
