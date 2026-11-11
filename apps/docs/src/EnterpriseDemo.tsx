@@ -258,6 +258,8 @@ export function EnterpriseDemo({
             value={value}
             onValueChange={setValue}
             multiple={o.multiple}
+            searchable={o.cascaderSearchable ?? true}
+            changeOnSelect={o.cascaderChangeOnSelect ?? false}
             disabled={disabled}
           />
         </div>
@@ -312,6 +314,7 @@ export function EnterpriseDemo({
         <div className="enterprise-table-demo">
           <ui.DataTable
             caption="项目交付清单"
+            expandColumn={o.tableExpandColumn ?? 'inline'}
             columns={enterpriseColumns}
             data={rows}
             searchable

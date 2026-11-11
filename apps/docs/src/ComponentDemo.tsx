@@ -1,3 +1,5 @@
+import { ProgressPreview } from './ProgressPreview';
+import { progressPreviewOptions } from './ProgressExample';
 import { EnterpriseDemo } from './EnterpriseDemo';
 import { InputTagPreview } from './input-tag-preview';
 import { AutoCompletePreview } from './auto-complete-preview';
@@ -722,11 +724,7 @@ function ConfiguredDemo({
         </div>
       );
     case 'progress':
-      return (
-        <div className="demo-form">
-          <Progress value={o.progress} label="文件上传示例" />
-        </div>
-      );
+      return <ProgressPreview options={progressPreviewOptions(o)} />;
     case 'field':
       return (
         <Field

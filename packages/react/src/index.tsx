@@ -574,33 +574,5 @@ export function Skeleton({ className, style, width, height, ...props }: Skeleton
     />
   );
 }
-export interface ProgressProps extends HTMLAttributes<HTMLDivElement> {
-  value: number;
-  max?: number;
-  label?: string;
-}
-export function Progress({ value, max = 100, label, className, ...props }: ProgressProps) {
-  const limit = Number.isFinite(max) && max > 0 ? max : 100;
-  const safeValue = Number.isFinite(value) ? Math.max(0, Math.min(limit, value)) : 0;
-  const percent = Math.round((safeValue / limit) * 100);
-  return (
-    <div {...props} className={cx('f-progress-wrap', className)}>
-      {label && (
-        <div className="f-progress-label">
-          <span>{label}</span>
-          <span>{percent}%</span>
-        </div>
-      )}
-      <div
-        className="f-progress"
-        role="progressbar"
-        aria-label={label ?? props['aria-label'] ?? '进度'}
-        aria-valuenow={safeValue}
-        aria-valuemin={0}
-        aria-valuemax={limit}
-      >
-        <div className="f-progress-fill" style={{ width: `${percent}%` } as CSSProperties} />
-      </div>
-    </div>
-  );
-}
+export { Progress } from './progress.js';
+export type { ProgressProps, ProgressStatus, ProgressType } from './progress.js';

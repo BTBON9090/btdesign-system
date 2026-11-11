@@ -1,3 +1,5 @@
+import { progressVuePreview } from './ProgressVuePreview';
+import { progressPreviewOptions } from './ProgressExample';
 import { createEnterpriseVueDemo } from './EnterpriseVueDemo';
 import { inputTagVuePreview } from './input-tag-preview';
 import { autoCompleteVuePreview } from './auto-complete-preview';
@@ -404,11 +406,7 @@ export function VueDemo({ kind, onAction, options }: VueDemoProps) {
                         ],
                       );
                     case 'progress':
-                      return h(
-                        'div',
-                        { class: 'demo-form' },
-                        h(ui.Progress, { value: o.progress, label: '文件上传示例' }),
-                      );
+                      return progressVuePreview(vue, ui, progressPreviewOptions(o));
                     case 'field':
                       return h(
                         ui.Field,

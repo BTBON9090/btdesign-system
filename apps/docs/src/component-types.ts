@@ -156,6 +156,12 @@ export interface DemoOptions {
   dropdownGroup?: boolean;
   dropdownSeparator?: boolean;
   dropdownSubmenu?: boolean;
+  cascaderSearchable?: boolean;
+  cascaderChangeOnSelect?: boolean;
+  progressType?: 'line' | 'circle';
+  progressStatus?: 'normal' | 'success' | 'warning' | 'error';
+  progressShowValue?: boolean;
+  tableExpandColumn?: 'inline' | 'separate';
   checkboxIndeterminate?: boolean;
   breadcrumbSeparator?: 'slash' | 'dot' | 'arrow';
   tabsVariant?: 'default' | 'line' | 'text' | 'card' | 'card-gutter' | 'rounded';

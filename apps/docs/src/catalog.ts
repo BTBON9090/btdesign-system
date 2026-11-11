@@ -1,3 +1,4 @@
+import { progressExampleCode, progressPreviewOptions } from './ProgressExample';
 import { listExampleCode, listPreviewOptions } from './ListExample';
 import { breadcrumbExampleCode } from './breadcrumb-example-code';
 import {
@@ -589,6 +590,9 @@ export const catalog = [
       ['value', 'number', 'React 必填 / Vue 0'],
       ['max', 'number', '100'],
       ['label', 'string', '—'],
+      ['type', 'line | circle', 'line'],
+      ['status', 'normal | success | warning | error', 'normal（由应用传入）'],
+      ['showValue', 'boolean', '按形状与标签'],
     ],
   },
   {
@@ -754,6 +758,7 @@ function reactCode(id: ComponentId) {
 }
 
 export function componentCode(id: ComponentId, framework: Framework, options?: DemoOptions) {
+  if (id === 'progress') return progressExampleCode(framework, progressPreviewOptions(options));
   if (id === 'list') return listExampleCode(framework, listPreviewOptions(options));
   if (id === 'breadcrumb')
     return breadcrumbExampleCode(framework, options?.breadcrumbSeparator ?? 'slash');
@@ -1499,6 +1504,13 @@ export const componentAnatomy: Record<ComponentId, AnatomyPart[]> = {
   progress: [
     part('进度轨道', 'Progress → role=progressbar', '只在比例可确定时呈现数值。', '--f-subtle'),
     part('已完成区域', 'value / max', '将实际任务数值映射到长度与可访问属性。', '--f-primary'),
+    part(
+      '圆环轨道',
+      'type=circle',
+      '圆环尺寸与粗细遵循组件规则。',
+      '--f-progress-circle-size',
+      '--f-progress-circle-stroke',
+    ),
   ],
   field: [
     part(

@@ -48,6 +48,21 @@ try {
       variants.push(['multiple', { ...defaultDemoOptions, multiple: true }]);
     if (cascadeIds.has(component.id))
       variants.push(['cascade', { ...defaultDemoOptions, multiple: true, cascade: true }]);
+    if (component.id === 'cascader')
+      variants.push([
+        'parent-no-search',
+        { ...defaults, multiple: true, cascaderSearchable: false, cascaderChangeOnSelect: true },
+      ]);
+    if (component.id === 'progress')
+      variants.push([
+        'circle-warning',
+        {
+          ...defaults,
+          progressType: 'circle',
+          progressStatus: 'warning',
+          progressShowValue: false,
+        },
+      ]);
     if (component.id === 'data-table')
       variants.push(['loading', { ...defaultDemoOptions, state: 'loading' }]);
     if (component.id === 'slider') {
@@ -156,6 +171,8 @@ try {
         'circle-primary-top',
         { ...defaults, backTopShape: 'circle', backTopVariant: 'primary', backTopContent: 'top' },
       ]);
+    if (component.id === 'data-table')
+      variants.push(['separate-expand', { ...defaults, tableExpandColumn: 'separate' }]);
     if (component.id === 'breadcrumb')
       variants.push(['arrow', { ...defaults, breadcrumbSeparator: 'arrow' }]);
     if (component.id === 'checkbox')

@@ -250,6 +250,8 @@ export function createEnterpriseVueDemo(
                 modelValue: value.value,
                 'onUpdate:modelValue': onValue,
                 multiple: o.multiple,
+                searchable: o.cascaderSearchable ?? true,
+                changeOnSelect: o.cascaderChangeOnSelect ?? false,
                 disabled,
               }),
             );
@@ -294,6 +296,7 @@ export function createEnterpriseVueDemo(
             return h('div', { class: 'enterprise-table-demo' }, [
               h(ui.DataTable, {
                 caption: '项目交付清单',
+                expandColumn: o.tableExpandColumn ?? 'inline',
                 columns: enterpriseColumns,
                 data: rows.value,
                 searchable: true,

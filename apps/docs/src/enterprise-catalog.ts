@@ -185,10 +185,11 @@ export const enterpriseCatalog = [
     name: 'Cascader',
     cn: '级联选择器',
     category: '层级与组织',
-    description: '逐级理解选项路径，支持单选与多选，并可搜索叶节点。',
+    description: '逐级理解选项路径，支持单选、多选、可选父级和搜索。',
     props: [
       ['nodes', 'TreeNode[]', '必填'],
       ['multiple / changeOnSelect', 'boolean', 'false'],
+      ['searchable', 'boolean', 'true'],
       ['value / modelValue', '节点 key 或 key[]', '—'],
       ['label / name', 'string', '—'],
     ],
@@ -271,6 +272,7 @@ export const enterpriseCatalog = [
       ['rowKey / childrenKey', 'string', 'id / children'],
       ['selectable / searchable / pagination', 'boolean', '按用法配置'],
       ['selectedKeys / expandedKeys', 'string[]', '—'],
+      ['expandColumn', 'inline | separate', 'React: inline / Vue: separate'],
       ['onCellChange / cell-change', '{key,column,value}', '—'],
     ],
   },
@@ -683,7 +685,7 @@ export function enterpriseComponentCode(
       case 'cascader':
       case 'org-picker':
         setup = `const [value, setValue] = useState<string | string[]>(${multiple ? "['design']" : "'design'"});`;
-        body = `<${name} label="选择组织" nodes={${nodes}} value={value} onValueChange={setValue}${multiple ? ' multiple' : ''}${cascade && id !== 'cascader' ? ' cascade' : ''}${id === 'tree' ? " searchable defaultExpandedKeys={['company','experience']}" : ''}${reactDisabled}/>`;
+        body = `<${name} label="选择组织" nodes={${nodes}} value={value} onValueChange={setValue}${multiple ? ' multiple' : ''}${cascade && id !== 'cascader' ? ' cascade' : ''}${id === 'cascader' && o?.cascaderSearchable === false ? ' searchable={false}' : ''}${id === 'cascader' && o?.cascaderChangeOnSelect ? ' changeOnSelect' : ''}${id === 'tree' ? " searchable defaultExpandedKeys={['company','experience']}" : ''}${reactDisabled}/>`;
         break;
       case 'sidebar-nav':
       case 'top-nav':
@@ -695,7 +697,7 @@ export function enterpriseComponentCode(
         break;
       case 'data-table':
         setup = `const columns: DataColumn[] = ${json(enterpriseColumns)};\n  const [data, setData] = useState<Record<string,unknown>[]>(${json(enterpriseRows)});\n  ${updateRowsCode}`;
-        body = `<DataTable caption="项目交付清单" columns={columns} data={data} searchable selectable pageSize={3} onCellChange={({key,column,value}) => setData(rows => updateRows(rows, key, column, value))}${o?.state === 'loading' ? ' loading' : ''}${reactDisabled}/>`;
+        body = `<DataTable caption="项目交付清单" columns={columns} data={data} expandColumn="${o?.tableExpandColumn ?? 'inline'}" searchable selectable pageSize={3} onCellChange={({key,column,value}) => setData(rows => updateRows(rows, key, column, value))}${o?.state === 'loading' ? ' loading' : ''}${reactDisabled}/>`;
         break;
     }
     const engineTypes = id === 'file-list' ? 'FileItem' : id === 'data-table' ? 'DataColumn' : '';
@@ -749,7 +751,7 @@ export function enterpriseComponentCode(
     case 'cascader':
     case 'org-picker':
       setup = `const value = ref<string | string[]>(${multiple ? "['design']" : "'design'"});\nconst nodes = ${nodes};`;
-      body = `<${name} label="选择组织" :nodes="nodes" v-model="value"${multiple ? ' multiple' : ''}${cascade && id !== 'cascader' ? ' cascade' : ''}${id === 'tree' ? ` searchable :defaultExpandedKeys="['company','experience']"` : ''}${vueDisabled}/>`;
+      body = `<${name} label="选择组织" :nodes="nodes" v-model="value"${multiple ? ' multiple' : ''}${cascade && id !== 'cascader' ? ' cascade' : ''}${id === 'cascader' && o?.cascaderSearchable === false ? ' :searchable="false"' : ''}${id === 'cascader' && o?.cascaderChangeOnSelect ? ' change-on-select' : ''}${id === 'tree' ? ` searchable :defaultExpandedKeys="['company','experience']"` : ''}${vueDisabled}/>`;
       break;
     case 'sidebar-nav':
     case 'top-nav':
@@ -762,7 +764,7 @@ export function enterpriseComponentCode(
       break;
     case 'data-table':
       setup = `const columns: DataColumn[] = ${json(enterpriseColumns)};\nconst data = ref<Record<string,unknown>[]>(${json(enterpriseRows)});\n${updateRowsCode}\nfunction edit({key,column,value}: {key:string,column:string,value:unknown}) { data.value = updateRows(data.value, key, column, value); }`;
-      body = `<DataTable caption="项目交付清单" :columns="columns" :data="data" searchable selectable :pageSize="3" @cell-change="edit"${o?.state === 'loading' ? ' loading' : ''}${vueDisabled}/>`;
+      body = `<DataTable caption="项目交付清单" :columns="columns" :data="data" expand-column="${o?.tableExpandColumn ?? 'inline'}" searchable selectable :pageSize="3" @cell-change="edit"${o?.state === 'loading' ? ' loading' : ''}${vueDisabled}/>`;
       break;
   }
   const engineTypes = id === 'file-list' ? 'FileItem' : id === 'data-table' ? 'DataColumn' : '';

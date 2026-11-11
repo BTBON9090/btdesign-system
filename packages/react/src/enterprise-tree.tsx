@@ -367,6 +367,7 @@ export function Cascader({
   onValueChange,
   multiple = false,
   changeOnSelect = false,
+  searchable = true,
   disabled,
   label,
   name,
@@ -385,6 +386,7 @@ export function Cascader({
   );
   const [path, setPath] = useState<string[]>([]);
   const [query, setQuery] = useState('');
+  const pendingFocus = useRef<string | null>(null);
   const flat = flattenTree(nodes);
   const selected = Array.isArray(current) ? current : current ? [current] : [];
   const text = (key: string) => {
@@ -393,11 +395,12 @@ export function Cascader({
       node?.path.map((part) => flat.find((item) => item.key === part)?.label).join(' / ') ?? key
     );
   };
-  const columns: TreeNode[][] = [nodes];
-  path.forEach((key) => {
-    const children = flat.find((item) => item.key === key)?.children;
+  const columns: FlatTreeNode[][] = [flat.filter((node) => node.depth === 0)];
+  for (const key of path) {
+    if (!columns.at(-1)?.some((node) => node.key === key && !node.leaf)) break;
+    const children = flat.filter((item) => item.parentKey === key);
     if (children?.length) columns.push(children);
-  });
+  }
   const pick = (key: string) => {
     const node = flat.find((item) => item.key === key);
     if (
@@ -405,7 +408,7 @@ export function Cascader({
       !node ||
       node.disabled ||
       node.selectable === false ||
-      (!node.leaf && (!changeOnSelect || multiple))
+      (!node.leaf && !changeOnSelect)
     )
       return;
     const next = toggleTreeSelection(nodes, selected, key, multiple, false);
@@ -413,15 +416,29 @@ export function Cascader({
     if (!multiple) popup.close(true);
   };
   useEffect(() => {
-    if (popup.open)
-      popup.panel.current?.querySelector<HTMLInputElement>('input[type="search"]')?.focus();
-  }, [popup.open]);
+    if (popup.open) {
+      const target = searchable
+        ? popup.panel.current?.querySelector<HTMLElement>('input[type="search"]')
+        : popup.panel.current?.querySelector<HTMLElement>(
+            'button[data-cascader-key]:not(:disabled)',
+          );
+      target?.focus();
+    }
+  }, [popup.open, searchable]);
+  useEffect(() => {
+    if (!pendingFocus.current) return;
+    const target = Array.from(
+      popup.panel.current?.querySelectorAll<HTMLElement>('[data-cascader-key]') ?? [],
+    ).find((item) => item.dataset.cascaderKey === pendingFocus.current);
+    pendingFocus.current = null;
+    target?.focus();
+  }, [path]);
   return (
     <div
       ref={popup.root}
       className={cx('f-cascader', className)}
       onKeyDown={(event) => {
-        if (event.key === 'Escape') {
+        if (event.key === 'Escape' && popup.open) {
           event.preventDefault();
           popup.close(true);
         }
@@ -440,7 +457,13 @@ export function Cascader({
         aria-haspopup="dialog"
         aria-expanded={popup.open}
         aria-controls={popup.open ? `${generated}-popup` : undefined}
-        onClick={() => popup.setOpen(!popup.open)}
+        onClick={() => {
+          if (!popup.open) {
+            setQuery('');
+            setPath(flat.find((item) => item.key === selected[0])?.path.slice(0, -1) ?? []);
+          }
+          popup.setOpen(!popup.open);
+        }}
       >
         {selected.length
           ? multiple
@@ -469,6 +492,7 @@ export function Cascader({
             type="button"
             className="f-button f-button--ghost f-button--sm"
             disabled={field.disabled}
+            aria-label={`清空${accessibleLabel}`}
             onClick={() =>
               update(
                 multiple
@@ -489,19 +513,21 @@ export function Cascader({
           role="dialog"
           aria-label={accessibleLabel}
         >
-          <Input
-            type="search"
-            aria-label={`搜索${accessibleLabel}`}
-            placeholder="搜索完整路径…"
-            value={query}
-            onChange={(event) => setQuery(event.currentTarget.value)}
-          />
+          {searchable && (
+            <Input
+              type="search"
+              aria-label={`搜索${accessibleLabel}`}
+              placeholder="搜索完整路径…"
+              value={query}
+              onChange={(event) => setQuery(event.currentTarget.value)}
+            />
+          )}
           {query ? (
             <div className="f-cascader-results">
               {flat
                 .filter(
                   (node) =>
-                    (node.leaf || (changeOnSelect && !multiple)) &&
+                    (node.leaf || changeOnSelect) &&
                     text(node.key).toLocaleLowerCase().includes(query.toLocaleLowerCase()),
                 )
                 .map((node) => (
@@ -510,24 +536,38 @@ export function Cascader({
                     className="f-cascader-option"
                     type="button"
                     disabled={node.disabled || node.selectable === false}
-                    aria-pressed={selected.includes(node.key)}
+                    aria-pressed={multiple ? selected.includes(node.key) : undefined}
+                    aria-current={!multiple && selected.includes(node.key) ? 'true' : undefined}
+                    data-selected={selected.includes(node.key) || undefined}
                     onClick={() => pick(node.key)}
                   >
                     {text(node.key)}
                     {selected.includes(node.key) && ' ✓'}
                   </button>
                 ))}
+              {!flat.some(
+                (node) =>
+                  (node.leaf || changeOnSelect) &&
+                  text(node.key).toLocaleLowerCase().includes(query.toLocaleLowerCase()),
+              ) && (
+                <p className="f-tree-empty" role="status">
+                  没有匹配的选项
+                </p>
+              )}
             </div>
           ) : (
             <div className="f-cascader-columns">
+              {!flat.length && (
+                <p className="f-tree-empty" role="status">
+                  暂无可选项
+                </p>
+              )}
               {columns.map((column, depth) => (
                 <ul className="f-cascader-column" key={depth} aria-label={`第 ${depth + 1} 级`}>
-                  {column.map((raw) => {
-                    const node = flat.find((item) => item.key === raw.key)!;
-                    if (!node) return null;
+                  {column.map((node) => {
                     return (
                       <li className="f-cascader-item" key={node.key}>
-                        {multiple && node.leaf && (
+                        {multiple && (node.leaf || changeOnSelect) && (
                           <input
                             className="f-checkbox"
                             type="checkbox"
@@ -540,23 +580,53 @@ export function Cascader({
                         <button
                           type="button"
                           className="f-cascader-option"
-                          disabled={node.disabled}
+                          data-cascader-key={node.key}
+                          disabled={node.disabled || (node.leaf && node.selectable === false)}
                           aria-expanded={!node.leaf ? path[depth] === node.key : undefined}
-                          aria-pressed={
-                            node.leaf || changeOnSelect ? selected.includes(node.key) : undefined
+                          aria-current={
+                            !multiple && selected.includes(node.key) ? 'true' : undefined
                           }
+                          data-selected={selected.includes(node.key) || undefined}
                           onClick={() => {
                             if (!node.leaf) setPath([...path.slice(0, depth), node.key]);
-                            if (node.leaf || changeOnSelect) pick(node.key);
+                            if (node.leaf || (changeOnSelect && !multiple)) pick(node.key);
                           }}
                           onKeyDown={(event) => {
                             if (event.key === 'ArrowRight' && !node.leaf) {
                               event.preventDefault();
+                              pendingFocus.current =
+                                flat.find(
+                                  (item) =>
+                                    item.parentKey === node.key &&
+                                    !item.disabled &&
+                                    (!item.leaf || item.selectable !== false),
+                                )?.key ?? null;
                               setPath([...path.slice(0, depth), node.key]);
                             }
-                            if (event.key === 'ArrowLeft') {
+                            if (event.key === 'ArrowLeft' && depth > 0) {
                               event.preventDefault();
-                              setPath(path.slice(0, Math.max(0, depth - 1)));
+                              pendingFocus.current = path[depth - 1] ?? null;
+                              setPath(path.slice(0, depth - 1));
+                            }
+                            if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+                              event.preventDefault();
+                              const siblings = Array.from(
+                                event.currentTarget
+                                  .closest('.f-cascader-column')
+                                  ?.querySelectorAll<HTMLButtonElement>(
+                                    'button[data-cascader-key]:not(:disabled)',
+                                  ) ?? [],
+                              );
+                              const index = siblings.indexOf(event.currentTarget);
+                              siblings[
+                                Math.max(
+                                  0,
+                                  Math.min(
+                                    siblings.length - 1,
+                                    index + (event.key === 'ArrowDown' ? 1 : -1),
+                                  ),
+                                )
+                              ]?.focus();
                             }
                           }}
                         >
@@ -570,6 +640,13 @@ export function Cascader({
               ))}
             </div>
           )}
+          <button
+            type="button"
+            className="f-button f-button--ghost f-button--sm"
+            onClick={() => popup.close(true)}
+          >
+            完成
+          </button>
         </div>
       )}
       {name &&

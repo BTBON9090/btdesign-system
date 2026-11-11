@@ -122,7 +122,10 @@ export function ComponentWorkbench({
   const [options, setOptions] = useState<DemoOptions>({
     ...defaultDemoOptions,
     variant: variants[kind]?.[0] ?? 'primary',
-    orientation: kind === 'radio-group' || kind === 'checkbox-group' || kind === 'timeline' ? 'vertical' : 'horizontal',
+    orientation:
+      kind === 'radio-group' || kind === 'checkbox-group' || kind === 'timeline'
+        ? 'vertical'
+        : 'horizontal',
   });
   const [partIndex, setPartIndex] = useState(0);
   const [savedProject] = useState(() => loadStudio().project);
@@ -298,14 +301,22 @@ export function ComponentWorkbench({
           {kind === 'date-range-picker' && (
             <>
               <label>
-                <input type="checkbox" aria-label="预览双月日历" checked={options.dateRangeCalendar ?? false}
-                  onChange={(event) => update('dateRangeCalendar', event.target.checked)} />
+                <input
+                  type="checkbox"
+                  aria-label="预览双月日历"
+                  checked={options.dateRangeCalendar ?? false}
+                  onChange={(event) => update('dateRangeCalendar', event.target.checked)}
+                />
                 双月日历
               </label>
               {options.dateRangeCalendar && (
                 <label>
-                  <input type="checkbox" aria-label="预览快捷范围" checked={options.dateRangePresets ?? false}
-                    onChange={(event) => update('dateRangePresets', event.target.checked)} />
+                  <input
+                    type="checkbox"
+                    aria-label="预览快捷范围"
+                    checked={options.dateRangePresets ?? false}
+                    onChange={(event) => update('dateRangePresets', event.target.checked)}
+                  />
                   快捷范围
                 </label>
               )}
@@ -989,10 +1000,54 @@ export function ComponentWorkbench({
               </label>
             </>
           )}
+          {kind === 'cascader' && (
+            <>
+              <label>
+                <input
+                  type="checkbox"
+                  aria-label="预览级联搜索"
+                  checked={options.cascaderSearchable ?? true}
+                  onChange={(event) => update('cascaderSearchable', event.target.checked)}
+                />
+                允许搜索
+              </label>
+              <label>
+                <input
+                  type="checkbox"
+                  aria-label="预览父级可选"
+                  checked={options.cascaderChangeOnSelect ?? false}
+                  onChange={(event) => update('cascaderChangeOnSelect', event.target.checked)}
+                />
+                父级可选
+              </label>
+            </>
+          )}
+          {kind === 'data-table' && (
+            <label>
+              展开位置
+              <select
+                aria-label="预览表格展开位置"
+                value={options.tableExpandColumn ?? 'inline'}
+                onChange={(event) =>
+                  update(
+                    'tableExpandColumn',
+                    event.target.value as NonNullable<DemoOptions['tableExpandColumn']>,
+                  )
+                }
+              >
+                <option value="inline">首列内</option>
+                <option value="separate">独立列</option>
+              </select>
+            </label>
+          )}
           {kind === 'checkbox' && (
             <label>
-              <input type="checkbox" aria-label="预览半选状态" checked={options.checkboxIndeterminate ?? false}
-                onChange={(event) => update('checkboxIndeterminate', event.target.checked)} />
+              <input
+                type="checkbox"
+                aria-label="预览半选状态"
+                checked={options.checkboxIndeterminate ?? false}
+                onChange={(event) => update('checkboxIndeterminate', event.target.checked)}
+              />
               半选
             </label>
           )}
@@ -1412,9 +1467,15 @@ export function ComponentWorkbench({
               </select>
             </label>
           )}
-          {['separator', 'radio-group', 'checkbox-group', 'timeline', 'steps', 'tabs', 'resize-box'].includes(
-            kind,
-          ) && (
+          {[
+            'separator',
+            'radio-group',
+            'checkbox-group',
+            'timeline',
+            'steps',
+            'tabs',
+            'resize-box',
+          ].includes(kind) && (
             <label>
               方向
               <select
@@ -1430,17 +1491,62 @@ export function ComponentWorkbench({
             </label>
           )}
           {kind === 'progress' && (
-            <label>
-              示例进度 <output>{options.progress}%</output>
-              <input
-                aria-label="示例进度"
-                type="range"
-                min={0}
-                max={100}
-                value={options.progress}
-                onChange={(e) => update('progress', Number(e.target.value))}
-              />
-            </label>
+            <>
+              <label>
+                形状
+                <select
+                  aria-label="预览进度形状"
+                  value={options.progressType ?? 'line'}
+                  onChange={(event) =>
+                    update(
+                      'progressType',
+                      event.target.value as NonNullable<DemoOptions['progressType']>,
+                    )
+                  }
+                >
+                  <option value="line">线形</option>
+                  <option value="circle">圆环</option>
+                </select>
+              </label>
+              <label>
+                状态
+                <select
+                  aria-label="预览进度状态"
+                  value={options.progressStatus ?? 'normal'}
+                  onChange={(event) =>
+                    update(
+                      'progressStatus',
+                      event.target.value as NonNullable<DemoOptions['progressStatus']>,
+                    )
+                  }
+                >
+                  <option value="normal">进行中</option>
+                  <option value="success">成功</option>
+                  <option value="warning">警告</option>
+                  <option value="error">错误</option>
+                </select>
+              </label>
+              <label>
+                <input
+                  type="checkbox"
+                  aria-label="预览进度数值"
+                  checked={options.progressShowValue ?? true}
+                  onChange={(event) => update('progressShowValue', event.target.checked)}
+                />
+                显示数值
+              </label>
+              <label>
+                示例进度 <output>{options.progress}%</output>
+                <input
+                  aria-label="示例进度"
+                  type="range"
+                  min={0}
+                  max={100}
+                  value={options.progress}
+                  onChange={(e) => update('progress', Number(e.target.value))}
+                />
+              </label>
+            </>
           )}
         </div>
         {kind === 'button' && (

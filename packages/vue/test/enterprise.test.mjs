@@ -506,6 +506,69 @@ test('DataTable creates multilevel table headers and an actual expandable hierar
   assert.match(html, /aria-label="编辑 金额，行 1-1"/);
   assert.match(html, /aria-label="选择当前页"/);
 });
+test('DataTable keeps Vue separate expansion by default and supports inline tree controls', async () => {
+  const defaults = await render(ui.DataTable, {
+    columns,
+    data,
+    selectable: true,
+    expandedKeys: ['1'],
+  });
+  assert.match(defaults, /aria-label="展开行" class="f-data-table-expansion"/);
+  const inline = await render(ui.DataTable, {
+    columns,
+    data,
+    selectable: true,
+    expandedKeys: ['1'],
+    expandColumn: 'inline',
+  });
+  assert.doesNotMatch(inline, /aria-label="展开行" class="f-data-table-expansion"/);
+  assert.match(inline, /class="f-data-table-tree-cell"[^>]*>.*aria-label="收起行 1"/);
+  assert.match(inline, /data-row-key="1-1"/);
+  const view = mount(ui.DataTable, { columns, data, selectable: true, expandColumn: 'inline' });
+  const toggle = view.all('button').find((node) => node.props['aria-label'] === '展开行 1');
+  toggle.props.onClick();
+  await nextTick();
+  assert.ok(view.where((node) => node.props['data-row-key'] === '1-1').length);
+  view.app.unmount();
+});
+test('DataTable fixes uniform grouped headers at their leaf boundaries and leaves mixed groups scrolling', async () => {
+  const grouped = [
+    {
+      key: 'left',
+      title: '左组',
+      children: [
+        { key: 'a', title: 'A', fixed: 'left', width: 80 },
+        { key: 'b', title: 'B', fixed: 'left', width: 100 },
+      ],
+    },
+    {
+      key: 'mixed',
+      title: '混合组',
+      children: [
+        { key: 'c', title: 'C', fixed: 'left', width: 100 },
+        { key: 'd', title: 'D', width: 100 },
+      ],
+    },
+    {
+      key: 'right',
+      title: '右组',
+      children: [
+        { key: 'e', title: 'E', fixed: 'right', width: 80 },
+        { key: 'f', title: 'F', fixed: 'right', width: 96 },
+      ],
+    },
+    { key: 'tail', title: '末列', fixed: 'right', width: 48 },
+  ];
+  const props = { columns: grouped, data, selectable: true };
+  const group = (html, label) =>
+    html.match(new RegExp(`<th[^>]*scope="colgroup"[^>]*>${label}(?:<!---->)?</th>`))?.[0];
+  const html = await render(ui.DataTable, props);
+  assert.match(group(html, '左组'), /position:sticky;left:76px;z-index:4/);
+  assert.match(group(html, '右组'), /position:sticky;right:48px;z-index:4/);
+  assert.doesNotMatch(group(html, '混合组'), /position:sticky|data-fixed=/);
+  const hidden = await render(ui.DataTable, { ...props, hiddenKeys: ['d'] });
+  assert.match(group(hidden, '混合组'), /position:sticky;left:256px;z-index:4/);
+});
 test('DataTable keeps utility columns narrow and recomputes fixed offsets when columns are hidden', async () => {
   const layoutColumns = [
     { key: 'name', title: '名称', fixed: 'left', width: 120 },
@@ -744,4 +807,77 @@ test('DatePicker keeps native draft validity current before blur and respects re
   locked.all('input')[0].props.onInput(event({ value: '2024-02-02' }));
   assert.equal(changes.length, 0);
   locked.app.unmount();
+});
+
+test('Cascader restores a selected path and independently selects parents when enabled', async () => {
+  const nodes = [
+    {
+      key: 'a',
+      label: '亚洲',
+      children: [{ key: 'cn', label: '中国', children: [{ key: 'bj', label: '北京' }] }],
+    },
+    {
+      key: 'disabled',
+      label: '受限',
+      disabled: true,
+      children: [{ key: 'hidden', label: '隐藏' }],
+    },
+  ];
+  const updates = [];
+  const view = mount(ui.Cascader, {
+    nodes,
+    defaultValue: ['bj'],
+    multiple: true,
+    changeOnSelect: true,
+    searchable: false,
+    label: '地区',
+    'onUpdate:modelValue': (value) => updates.push(value),
+  });
+  view
+    .all('button')
+    .find((node) => node.props['aria-label'] === '地区')
+    .props.onClick();
+  await nextTick();
+  assert.equal(
+    view.all('input').some((node) => node.props.type === 'search'),
+    false,
+  );
+  assert.equal(view.where((node) => node.props.class === 'f-cascader-column').length, 3);
+  const parent = view.all('input').find((node) => node.props['aria-label'] === '亚洲');
+  parent.props.onChange();
+  await nextTick();
+  assert.deepEqual(updates.at(-1), ['bj', 'a']);
+  assert.equal(
+    view.all('input').find((node) => node.props['aria-label'] === '亚洲 / 中国 / 北京').props
+      .checked,
+    true,
+  );
+  assert.equal(
+    view.all('input').find((node) => node.props['aria-label'] === '受限').props.disabled,
+    true,
+  );
+  view.app.unmount();
+});
+
+test('Cascader search shows an accessible empty state and keeps disabled results unavailable', async () => {
+  const view = mount(ui.Cascader, {
+    nodes: [{ key: 'a', label: '亚洲', children: [{ key: 'bj', label: '北京', disabled: true }] }],
+    label: '地区',
+  });
+  view
+    .all('button')
+    .find((node) => node.props['aria-label'] === '地区')
+    .props.onClick();
+  await nextTick();
+  const search = view.all('input').find((node) => node.props.type === 'search');
+  search.props.onInput(event({ value: '不存在' }));
+  await nextTick();
+  assert.equal(view.where((node) => node.props.role === 'status')[0].text, '没有匹配的选项');
+  search.props.onInput(event({ value: '北京' }));
+  await nextTick();
+  assert.equal(
+    view.all('button').find((node) => node.text.includes('亚洲 / 北京')).props.disabled,
+    true,
+  );
+  view.app.unmount();
 });

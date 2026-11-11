@@ -54,6 +54,9 @@ export const controlDefinitions = {
   overlayRadius: geometry('overlay', 'radius', '浮层圆角'),
   overlayPadding: geometry('overlay', 'padding', '浮层内边距'),
   resizeHandleSize: geometry('resize', 'handleSize', '分隔条宽度'),
+  progressLineHeight: geometry('progress', 'lineHeight', '线条粗细'),
+  progressCircleSize: geometry('progress', 'circleSize', '圆环尺寸'),
+  progressCircleStroke: geometry('progress', 'circleStroke', '圆环粗细'),
 } as const;
 export type ControlId = keyof typeof controlDefinitions;
 export type ControlPart = { id: string; label: string; controls: ControlId[]; anatomy?: number[] };
@@ -168,7 +171,10 @@ const partsByComponent: Record<ComponentId, ControlPart[]> = {
     part('caption', '说明与汇总', [], [0, 3]),
   ],
   skeleton: [part('placeholder', '占位区域', [], [0, 1])],
-  progress: [part('track', '轨道与进度', [], [0, 1])],
+  progress: [
+    part('line', '线形轨道', ['progressLineHeight'], [0, 1]),
+    part('circle', '圆环轨道', ['progressCircleSize', 'progressCircleStroke'], [2]),
+  ],
   field: [
     part('label', '标签', ['fieldLabelSize'], [0]),
     part('spacing', '标签与内容间距', ['fieldGap'], [1]),

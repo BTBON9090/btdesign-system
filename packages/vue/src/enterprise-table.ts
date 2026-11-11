@@ -40,6 +40,8 @@ export const DataTable = defineComponent({
     selectable: Boolean,
     selectedKeys: { type: Array as PropType<string[]>, default: undefined },
     expandedKeys: { type: Array as PropType<string[]>, default: undefined },
+    /** Separate keeps the historical Vue layout; inline uses the first data column. */
+    expandColumn: { type: String as PropType<'inline' | 'separate'>, default: 'separate' },
     emptyText: { type: String, default: '暂无数据' },
   },
   emits: [
@@ -105,14 +107,16 @@ export const DataTable = defineComponent({
         childrenKey: props.childrenKey,
       }),
     );
-    const expandColumn = computed(
-      () => view.value.allRows.some((row) => row.hasChildren) || Boolean(slots.expanded),
+    const separateExpansion = computed(
+      () =>
+        props.expandColumn === 'separate' &&
+        (view.value.allRows.some((row) => row.hasChildren) || Boolean(slots.expanded)),
     );
     const columnWidth = (column: DataTableColumn) =>
       Number.isFinite(column.width) ? Math.max(48, Math.min(2000, column.width!)) : 140;
     const stretchKey = computed(() => leaves.value.filter((column) => !column.fixed).at(-1)?.key);
     const leadingWidth = computed(
-      () => (props.selectable ? 44 : 0) + (expandColumn.value ? 32 : 0),
+      () => (props.selectable ? 44 : 0) + (separateExpansion.value ? 32 : 0),
     );
     const minimumWidth = computed(() =>
       leaves.value.reduce((sum, column) => sum + columnWidth(column), leadingWidth.value),
@@ -143,6 +147,22 @@ export const DataTable = defineComponent({
       }
       return result;
     };
+    const headerFixed = (column: DataTableColumn) => {
+      const children = leafColumns([column]);
+      const side = children[0]?.fixed;
+      return side && children.every((child) => child.fixed === side) ? side : undefined;
+    };
+    const headerStyle = (column: DataTableColumn, leaf: boolean): CSSProperties | undefined => {
+      if (leaf) {
+        const result = style(column);
+        return column.fixed ? { ...result, zIndex: 4 } : result;
+      }
+      const side = headerFixed(column);
+      if (!side) return undefined;
+      const children = leafColumns([column]);
+      const boundary = side === 'left' ? children[0] : children[children.length - 1];
+      return { position: 'sticky', [side]: style(boundary)[side], zIndex: 4 };
+    };
     const select = (key: string, checked: boolean) => {
       if (blocked()) return;
       selection.set(
@@ -172,7 +192,7 @@ export const DataTable = defineComponent({
     return () => {
       const result = view.value;
       const columns = leaves.value;
-      const hasExpansion = expandColumn.value;
+      const hasExpansion = separateExpansion.value;
       const leadingFixed = columns.some((column) => column.fixed === 'left') ? 'left' : undefined;
       const allKeys = result.rows
         .filter((row) => !props.rowDisabled?.(row.record))
@@ -191,6 +211,22 @@ export const DataTable = defineComponent({
             Object.values(filters.value).some((v) => (Array.isArray(v) ? v.length : v)),
           );
         const cells: VNodeChild[] = [];
+        const expansionControl = () =>
+          row.hasChildren || slots.expanded
+            ? h(
+                'button',
+                {
+                  type: 'button',
+                  class: 'f-tree-toggle',
+                  disabled: blocked() || (forcedOpen && !slots.expanded),
+                  title: forcedOpen ? '筛选结果保持展开' : undefined,
+                  'aria-label': `${isExpanded ? '收起' : '展开'}行 ${row.key}`,
+                  'aria-expanded': isExpanded,
+                  onClick: () => expand(row.key),
+                },
+                isExpanded ? '⌄' : '›',
+              )
+            : null;
         if (props.selectable)
           cells.push(
             h(
@@ -219,23 +255,7 @@ export const DataTable = defineComponent({
                 style: leadingStyle(32, props.selectable ? 44 : 0),
                 'data-fixed': leadingFixed,
               },
-              [
-                row.hasChildren || slots.expanded
-                  ? h(
-                      'button',
-                      {
-                        type: 'button',
-                        class: 'f-tree-toggle',
-                        disabled: blocked() || (forcedOpen && !slots.expanded),
-                        title: forcedOpen ? '筛选结果保持展开' : undefined,
-                        'aria-label': `${isExpanded ? '收起' : '展开'}行 ${row.key}`,
-                        'aria-expanded': isExpanded,
-                        onClick: () => expand(row.key),
-                      },
-                      isExpanded ? '⌄' : '›',
-                    )
-                  : null,
-              ],
+              [expansionControl()],
             ),
           );
         columns.forEach((column, index) => {
@@ -292,14 +312,15 @@ export const DataTable = defineComponent({
                 class: column.fixed ? 'f-data-table-fixed' : undefined,
               },
               [
-                index === 0 && row.depth > 0
+                index === 0 &&
+                (row.depth > 0 || (!hasExpansion && (row.hasChildren || slots.expanded)))
                   ? h(
                       'div',
                       {
                         class: 'f-data-table-tree-cell',
                         style: { paddingInlineStart: `calc(${row.depth} * var(--f-tree-indent))` },
                       },
-                      [content],
+                      [!hasExpansion ? expansionControl() : null, content],
                     )
                   : content,
               ],
@@ -469,8 +490,8 @@ export const DataTable = defineComponent({
                             scope: cell.leaf ? 'col' : 'colgroup',
                             colspan: cell.colSpan,
                             rowspan: cell.rowSpan,
-                            style: cell.leaf ? style(cell.column) : undefined,
-                            'data-fixed': cell.column.fixed,
+                            style: headerStyle(cell.column, cell.leaf),
+                            'data-fixed': headerFixed(cell.column),
                             'aria-sort':
                               cell.leaf && sort.value?.key === cell.key
                                 ? sort.value.direction === 'asc'

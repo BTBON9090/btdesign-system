@@ -43,6 +43,9 @@ import { Popover } from './popover.js';
 import { Mention } from './mention.js';
 import { BackTop } from './back-top.js';
 import { Upload } from './upload.js';
+import { Progress } from './progress.js';
+export { Progress } from './progress.js';
+export type { ProgressStatus, ProgressType } from './progress.js';
 import { ResizeBox } from './resize-box.js';
 export * from './enterprise-choice.js';
 export * from './enterprise-form.js';
@@ -740,42 +743,6 @@ export const Skeleton = defineComponent({
           { class: 'f-skeleton', 'aria-hidden': 'true' },
         ),
       );
-  },
-});
-
-export const Progress = defineComponent({
-  name: 'BTDESIGNProgress',
-  inheritAttrs: false,
-  props: {
-    value: { type: Number, default: 0 },
-    max: { type: Number, default: 100 },
-    label: String,
-  },
-  setup(props, { attrs }) {
-    return () => {
-      const max = Number.isFinite(props.max) && props.max > 0 ? props.max : 100;
-      const value = Number.isFinite(props.value) ? Math.min(max, Math.max(0, props.value)) : 0;
-      return h('div', { class: 'f-progress-wrap' }, [
-        props.label
-          ? h('div', { class: 'f-progress-label' }, [
-              h('span', {}, props.label),
-              h('span', {}, `${Math.round((value / max) * 100)}%`),
-            ])
-          : null,
-        h(
-          'div',
-          mergeProps(attrs, {
-            class: 'f-progress',
-            role: 'progressbar',
-            'aria-valuenow': value,
-            'aria-valuemin': 0,
-            'aria-valuemax': max,
-            'aria-label': attrs['aria-label'] ?? props.label ?? '进度',
-          }),
-          h('div', { class: 'f-progress-fill', style: { width: `${(value / max) * 100}%` } }),
-        ),
-      ]);
-    };
   },
 });
 

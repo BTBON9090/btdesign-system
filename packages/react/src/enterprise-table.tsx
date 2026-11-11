@@ -56,6 +56,8 @@ export interface DataTableProps<
   rowDisabled?: (row: R) => boolean;
   onCellChange?: (change: CellChange) => void;
   renderExpanded?: (row: R) => ReactNode;
+  /** Inline keeps the historical React layout; separate adds a utility column. */
+  expandColumn?: 'inline' | 'separate';
   summary?: ReactNode;
   emptyText?: string;
   stickyHeader?: boolean;
@@ -92,6 +94,7 @@ export function DataTable<R extends Record<string, unknown>>({
   rowDisabled,
   onCellChange,
   renderExpanded,
+  expandColumn = 'inline',
   summary,
   emptyText = '暂无数据',
   stickyHeader = true,
@@ -145,14 +148,14 @@ export function DataTable<R extends Record<string, unknown>>({
   const selectedCount = enabledRows.filter((row) => selected.includes(row.key)).length;
   const allChecked = enabledRows.length > 0 && selectedCount === enabledRows.length;
   const selectionState = allChecked ? true : selectedCount ? 'mixed' : false;
-  const totalColumns = leaves.length + (selectable ? 1 : 0);
+  const hasExpansion = result.allRows.some((row) => row.hasChildren) || Boolean(renderExpanded);
+  const separateExpansion = hasExpansion && expandColumn === 'separate';
+  const leadingWidth = (selectable ? 44 : 0) + (separateExpansion ? 32 : 0);
+  const totalColumns = leaves.length + (selectable ? 1 : 0) + (separateExpansion ? 1 : 0);
   const columnWidth = (column: DataTableColumn<R>) =>
     Number.isFinite(column.width) ? Math.max(48, Math.min(2000, column.width!)) : 140;
   const stretchKey = leaves.filter((column) => !column.fixed).at(-1)?.key;
-  const minimumWidth = leaves.reduce(
-    (sum, column) => sum + columnWidth(column),
-    selectable ? 44 : 0,
-  );
+  const minimumWidth = leaves.reduce((sum, column) => sum + columnWidth(column), leadingWidth);
   const selectionStyle: CSSProperties = leaves.some((column) => column.fixed === 'left')
     ? { position: 'sticky', left: 0, zIndex: 2, width: 44, minWidth: 44 }
     : { width: 44, minWidth: 44 };
@@ -171,7 +174,7 @@ export function DataTable<R extends Record<string, unknown>>({
         ? leaves
             .slice(0, index)
             .filter((item) => item.fixed === 'left')
-            .reduce((sum, item) => sum + columnWidth(item), 0) + (selectable ? 44 : 0)
+            .reduce((sum, item) => sum + columnWidth(item), 0) + leadingWidth
         : fixed === 'right'
           ? leaves
               .slice(index + 1)
@@ -185,6 +188,25 @@ export function DataTable<R extends Record<string, unknown>>({
       ...(fixed ? { position: 'sticky', [fixed]: offset, zIndex: 1 } : {}),
     };
   };
+  const headerFixed = (column: DataTableColumn<R>) => {
+    const children = leafColumns([column]);
+    const side = children[0]?.fixed;
+    return side && children.every((child) => child.fixed === side) ? side : undefined;
+  };
+  const headerStyle = (column: DataTableColumn<R>, leaf: boolean): CSSProperties | undefined => {
+    if (leaf) {
+      const style = fixedStyle(column);
+      return column.fixed ? { ...style, zIndex: 4 } : style;
+    }
+    const side = headerFixed(column);
+    if (!side) return undefined;
+    const children = leafColumns([column]);
+    const boundary = side === 'left' ? children[0] : children[children.length - 1];
+    return { position: 'sticky', [side]: fixedStyle(boundary)[side], zIndex: 4 };
+  };
+  const expansionStyle: CSSProperties = selectionStyle.position
+    ? { position: 'sticky', left: selectable ? 44 : 0, zIndex: 2, width: 32, minWidth: 32 }
+    : { width: 32, minWidth: 32 };
   return (
     <div {...props} className={cx('f-data-table', className)} aria-busy={loading || undefined}>
       <div className="f-data-table-toolbar">
@@ -259,6 +281,7 @@ export function DataTable<R extends Record<string, unknown>>({
           <caption id={`${id}-caption`}>{caption}</caption>
           <colgroup>
             {selectable && <col style={{ width: 44 }} />}
+            {separateExpansion && <col style={{ width: 32 }} />}
             {leaves.map((column) => (
               <col
                 key={column.key}
@@ -297,14 +320,24 @@ export function DataTable<R extends Record<string, unknown>>({
                     />
                   </th>
                 )}
+                {index === 0 && separateExpansion && (
+                  <th
+                    scope="col"
+                    rowSpan={headers.length}
+                    aria-label="展开行"
+                    className="f-data-table-expansion"
+                    style={expansionStyle}
+                    data-fixed={expansionStyle.position ? 'left' : undefined}
+                  />
+                )}
                 {row.map((header) => (
                   <th
                     key={header.key}
                     scope={header.leaf ? 'col' : 'colgroup'}
                     colSpan={header.colSpan}
                     rowSpan={header.rowSpan}
-                    style={header.leaf ? fixedStyle(header.column) : undefined}
-                    data-fixed={header.column.fixed}
+                    style={headerStyle(header.column, header.leaf)}
+                    data-fixed={headerFixed(header.column)}
                     aria-sort={
                       header.leaf && header.column.sortable
                         ? order?.key === header.key
@@ -406,6 +439,33 @@ export function DataTable<R extends Record<string, unknown>>({
                       />
                     </td>
                   )}
+                  {separateExpansion && (
+                    <td
+                      className="f-data-table-expansion"
+                      style={expansionStyle}
+                      data-fixed={expansionStyle.position ? 'left' : undefined}
+                    >
+                      {(row.hasChildren || renderExpanded) && (
+                        <button
+                          type="button"
+                          className="f-data-table-expand"
+                          disabled={blocked || (hasFilter && effectiveExpanded.has(row.key))}
+                          aria-expanded={
+                            expanded.includes(row.key) || effectiveExpanded.has(row.key)
+                          }
+                          aria-label={`${expanded.includes(row.key) || effectiveExpanded.has(row.key) ? '收起' : '展开'}行 ${row.key}`}
+                          title={
+                            hasFilter && effectiveExpanded.has(row.key)
+                              ? '筛选时展开匹配路径'
+                              : undefined
+                          }
+                          onClick={() => toggleExpand(row.key)}
+                        >
+                          {expanded.includes(row.key) || effectiveExpanded.has(row.key) ? '⌄' : '›'}
+                        </button>
+                      )}
+                    </td>
+                  )}
                   {leaves.map((column, index) => {
                     const raw = cellValue(row.record, column);
                     return (
@@ -427,27 +487,29 @@ export function DataTable<R extends Record<string, unknown>>({
                               style={{ width: `calc(${row.depth} * var(--f-tree-indent, 20px))` }}
                             />
                           )}
-                          {index === 0 && (row.hasChildren || renderExpanded) && (
-                            <button
-                              type="button"
-                              className="f-data-table-expand"
-                              disabled={blocked || (hasFilter && effectiveExpanded.has(row.key))}
-                              aria-expanded={
-                                expanded.includes(row.key) || effectiveExpanded.has(row.key)
-                              }
-                              aria-label={`${expanded.includes(row.key) || effectiveExpanded.has(row.key) ? '收起' : '展开'}行 ${row.key}`}
-                              title={
-                                hasFilter && effectiveExpanded.has(row.key)
-                                  ? '筛选时展开匹配路径'
-                                  : undefined
-                              }
-                              onClick={() => toggleExpand(row.key)}
-                            >
-                              {expanded.includes(row.key) || effectiveExpanded.has(row.key)
-                                ? '⌄'
-                                : '›'}
-                            </button>
-                          )}
+                          {index === 0 &&
+                            !separateExpansion &&
+                            (row.hasChildren || renderExpanded) && (
+                              <button
+                                type="button"
+                                className="f-data-table-expand"
+                                disabled={blocked || (hasFilter && effectiveExpanded.has(row.key))}
+                                aria-expanded={
+                                  expanded.includes(row.key) || effectiveExpanded.has(row.key)
+                                }
+                                aria-label={`${expanded.includes(row.key) || effectiveExpanded.has(row.key) ? '收起' : '展开'}行 ${row.key}`}
+                                title={
+                                  hasFilter && effectiveExpanded.has(row.key)
+                                    ? '筛选时展开匹配路径'
+                                    : undefined
+                                }
+                                onClick={() => toggleExpand(row.key)}
+                              >
+                                {expanded.includes(row.key) || effectiveExpanded.has(row.key)
+                                  ? '⌄'
+                                  : '›'}
+                              </button>
+                            )}
                           {column.render ? (
                             column.render(raw, row.record)
                           ) : column.editable && onCellChange ? (

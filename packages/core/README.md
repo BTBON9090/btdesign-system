@@ -22,7 +22,7 @@ const files = getProjectFiles(edited);
 - `getContextText(project)` 返回可复制给编程助手的设计约定，明确原生语义、主题锁、可访问性与后端边界。
 - `selectionKnowledge` 提供 page/button/input/card/table 的设计意图、实现机制、token 与学习提示。
 
-导出包依赖本地 `btdesign-tokens-0.5.0.tgz`、`btdesign-engine-0.5.0.tgz` 及对应框架安装包；未声称公开发布到 npm。导出的 App 与 Studio 同源，完整脚手架可在补齐本地组件包后运行 npm install、npm run dev；不包含真实认证、邮件发送或持久化。品牌锁约束编辑行为，不代替服务端授权。
+导出包依赖本地 `btdesign-tokens-0.6.0.tgz`、`btdesign-engine-0.6.0.tgz` 及对应框架安装包；未声称公开发布到 npm。导出的 App 与 Studio 同源，完整脚手架可在补齐本地组件包后运行 npm install、npm run dev；不包含真实认证、邮件发送或持久化。品牌锁约束编辑行为，不代替服务端授权。
 
 构建脚本从 `apps/docs/src/studio/ScenePreview.tsx` 和同名 CSS 抽取实际 React/Vue 渲染定义，生成静态字符串。浏览器导出不读取文件、不运行字符串，也不会产生第二套手写模板。修改预览后重新构建 core 即可同步交付源代码；导出保留页面主体，并补充独立的模式切换与操作反馈，移除 Studio 检查器。React 的 `lucide-react` 依赖及选中的 Inter 字体会在脚手架中声明。
 

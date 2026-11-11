@@ -1,7 +1,7 @@
 export const componentRegistry = {
   schemaVersion: 1,
   library: 'BTDESIGN',
-  version: '0.5.0',
+  version: '0.6.0',
   packages: {
     react: '@btdesign/react',
     vue: '@btdesign/vue',
@@ -52,6 +52,9 @@ export const componentRegistry = {
       '--f-overlay-radius',
       '--f-overlay-padding',
       '--f-resize-handle-size',
+      '--f-progress-line-height',
+      '--f-progress-circle-size',
+      '--f-progress-circle-stroke',
     ],
   },
   composition: {
@@ -445,7 +448,11 @@ export const componentRegistry = {
     {
       name: 'Checkbox',
       purpose: 'Independent selection',
-      props: { label: 'string', disabled: 'boolean', indeterminate: 'boolean (controlled by application)' },
+      props: {
+        label: 'string',
+        disabled: 'boolean',
+        indeterminate: 'boolean (controlled by application)',
+      },
       react: {
         checked: 'boolean',
         defaultChecked: 'boolean',
@@ -555,9 +562,16 @@ export const componentRegistry = {
     {
       name: 'Progress',
       purpose: 'Known task completion',
-      props: { value: 'number', max: 'number, default 100', label: 'string' },
+      props: {
+        value: 'number',
+        max: 'number, default 100',
+        label: 'string',
+        type: 'line | circle',
+        status: 'normal | success | warning | error',
+        showValue: 'boolean',
+      },
       notes:
-        'React requires value; Vue defaults to zero. Values are clamped. Do not fabricate progress.',
+        'React requires value; Vue defaults to zero. Values are clamped; status and progress come from the application, not inferred.',
     },
     {
       name: 'Field',
@@ -964,6 +978,7 @@ export const componentRegistry = {
         nodes: 'TreeNode[]',
         multiple: 'boolean',
         changeOnSelect: 'boolean, default false',
+        searchable: 'boolean, default true',
         label: 'string',
         name: 'string',
         disabled: 'boolean',
@@ -977,7 +992,7 @@ export const componentRegistry = {
         'update:modelValue': 'node key | node key[]',
       },
       notes:
-        'Values are unique node keys, not arrays of path segments. Default selects leaves; changeOnSelect allows intermediate nodes. Multiple selection retains leaf keys. Paths are displayed for context. No async child loading.',
+        'Values are unique node keys, not arrays of path segments. Default selects leaves; changeOnSelect allows intermediate nodes independently, including in multiple selection. Paths are displayed for context. No async child loading.',
     },
     {
       name: 'OrgPicker',
@@ -1080,6 +1095,7 @@ export const componentRegistry = {
       purpose: 'Client-side advanced table with grouped columns and hierarchical rows',
       props: {
         columns: 'DataColumn[]; framework render(value,row) allowed',
+        expandColumn: 'inline | separate (React defaults inline; Vue defaults separate)',
         data: 'Record<string,unknown>[]',
         rowKey: 'string, default id',
         childrenKey: 'string, default children',

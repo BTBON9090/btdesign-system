@@ -1,7 +1,7 @@
 import { computed, defineComponent, h, mergeProps, nextTick, ref, watch } from 'vue';
 import type { PropType } from 'vue';
 import { filterTree, flattenTree, toggleTreeSelection, treeCheckState } from '@btdesign/engine';
-import type { ChoiceOption, TreeNode } from '@btdesign/engine';
+import type { ChoiceOption, FlatTreeNode, TreeNode } from '@btdesign/engine';
 import { useControlId, useFieldControl } from './field.js';
 import { asArray, isDisabled, useDismiss, useValue } from './enterprise-shared.js';
 const treeProps = {
@@ -457,12 +457,18 @@ export const Cascader = defineComponent({
       if (restore) nextTick(() => trigger.value?.focus());
     };
     useDismiss(root, open, () => close());
+    watch(
+      () => field({ ...attrs, disabled: props.disabled }).disabled,
+      (disabled) => {
+        if (isDisabled(disabled)) close();
+      },
+    );
     watch(open, (value) => {
       if (value)
         nextTick(() =>
           root.value
             ?.querySelector<HTMLElement>(
-              '.f-tree-search, .f-cascader-search, [role=treeitem], .f-cascader-item',
+              '.f-cascader-search, button[data-cascader-key]:not(:disabled)',
             )
             ?.focus(),
         );
@@ -479,6 +485,11 @@ export const Cascader = defineComponent({
           ?.path.map((k) => byKey.get(k)?.label)
           .filter(Boolean)
           .join(' / ') ?? key;
+      const matches = flat.filter(
+        (node) =>
+          (props.changeOnSelect || node.leaf) &&
+          label(node.key).toLocaleLowerCase().includes(query.value.toLocaleLowerCase()),
+      );
       const select = (key: string) => {
         const node = byKey.get(key);
         if (disabled || !node || node.disabled || node.selectable === false) return;
@@ -491,20 +502,28 @@ export const Cascader = defineComponent({
         state.set(next);
         if (!props.multiple) close(true);
       };
-      const columns: TreeNode[][] = [props.nodes];
+      const columns: FlatTreeNode[][] = [flat.filter((node) => node.depth === 0)];
       for (const key of path.value) {
-        const children = byKey.get(key)?.children;
+        if (!columns.at(-1)?.some((node) => node.key === key && !node.leaf)) break;
+        const children = flat.filter((node) => node.parentKey === key);
         if (children?.length) columns.push(children);
         else break;
       }
-      const item = (node: TreeNode, level: number) => {
-        const entry = byKey.get(node.key);
-        const unavailable = disabled || entry?.disabled;
-        const branch = Boolean(node.children?.length);
+      const focusKey = (key: string | undefined) => {
+        if (!key) return;
+        void nextTick(() =>
+          Array.from(root.value?.querySelectorAll<HTMLElement>('[data-cascader-key]') ?? [])
+            .find((element) => element.dataset.cascaderKey === key)
+            ?.focus(),
+        );
+      };
+      const item = (node: FlatTreeNode, level: number) => {
+        const unavailable = disabled || node.disabled;
+        const branch = !node.leaf;
         return h(
-          'div',
+          'li',
           {
-            class: ['f-cascader-option', selected.includes(node.key) && 'is-selected'],
+            class: 'f-cascader-item',
             key: node.key,
           },
           [
@@ -522,16 +541,55 @@ export const Cascader = defineComponent({
               'button',
               {
                 type: 'button',
-                disabled: unavailable,
-                class: 'f-cascader-item',
+                disabled: unavailable || (!branch && node.selectable === false),
+                class: 'f-cascader-option',
+                'data-cascader-key': node.key,
                 'aria-expanded': branch ? path.value[level] === node.key : undefined,
+                'aria-current': !props.multiple && selected.includes(node.key) ? 'true' : undefined,
+                'data-selected': selected.includes(node.key) || undefined,
                 onClick: () => {
                   if (unavailable) return;
                   if (branch) path.value = [...path.value.slice(0, level), node.key];
-                  if (!props.multiple) select(node.key);
+                  if (node.leaf || (props.changeOnSelect && !props.multiple)) select(node.key);
+                },
+                onKeydown: (event: KeyboardEvent) => {
+                  if (event.key === 'ArrowRight' && branch) {
+                    event.preventDefault();
+                    path.value = [...path.value.slice(0, level), node.key];
+                    focusKey(
+                      flat.find(
+                        (entry) =>
+                          entry.parentKey === node.key &&
+                          !entry.disabled &&
+                          (!entry.leaf || entry.selectable !== false),
+                      )?.key,
+                    );
+                  } else if (event.key === 'ArrowLeft' && level > 0) {
+                    event.preventDefault();
+                    const parent = path.value[level - 1];
+                    path.value = path.value.slice(0, level - 1);
+                    focusKey(parent);
+                  } else if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+                    event.preventDefault();
+                    const current = event.currentTarget as HTMLElement;
+                    const siblings = Array.from(
+                      current
+                        .closest('.f-cascader-column')
+                        ?.querySelectorAll<HTMLButtonElement>(
+                          'button[data-cascader-key]:not(:disabled)',
+                        ) ?? [],
+                    );
+                    const index = siblings.indexOf(current as HTMLButtonElement);
+                    siblings[
+                      Math.max(
+                        0,
+                        Math.min(siblings.length - 1, index + (event.key === 'ArrowDown' ? 1 : -1)),
+                      )
+                    ]?.focus();
+                  }
                 },
               },
-              [node.label, branch ? h('span', { 'aria-hidden': 'true' }, '›') : null],
+              [h('span', node.label), branch ? h('span', { 'aria-hidden': 'true' }, '›') : null],
             ),
           ],
         );
@@ -543,7 +601,7 @@ export const Cascader = defineComponent({
           class: ['f-cascader', attrs.class],
           style: attrs.style,
           onKeydown: (event: KeyboardEvent) => {
-            if (event.key === 'Escape') {
+            if (event.key === 'Escape' && open.value) {
               event.preventDefault();
               close(true);
             }
@@ -562,28 +620,57 @@ export const Cascader = defineComponent({
               'aria-expanded': open.value,
               'aria-controls': open.value ? `${id}-popup` : undefined,
               onClick: () => {
-                if (!disabled) open.value = !open.value;
+                if (!disabled) {
+                  if (!open.value) {
+                    query.value = '';
+                    path.value = byKey.get(selected[0])?.path.slice(0, -1) ?? [];
+                  }
+                  open.value = !open.value;
+                }
               },
             }),
-            selected.length ? selected.map(label).join('、') : props.placeholder,
+            selected.length
+              ? props.multiple
+                ? `已选择 ${selected.length} 项`
+                : label(selected[0])
+              : props.placeholder,
           ),
           selected.length
-            ? h(
-                'button',
-                {
-                  type: 'button',
-                  class: 'f-tree-select-clear f-button f-button--ghost f-button--sm',
-                  disabled,
-                  'aria-label': `清空${props.label}`,
-                  onClick: () => {
-                    if (!disabled)
-                      state.set(
-                        props.multiple ? selected.filter((key) => byKey.get(key)?.disabled) : '',
-                      );
+            ? h('div', { class: 'f-tree-select-tags' }, [
+                ...(props.multiple
+                  ? selected.map((key) =>
+                      h('span', { class: 'f-tree-select-tag', key }, [
+                        label(key),
+                        h(
+                          'button',
+                          {
+                            type: 'button',
+                            disabled: disabled || byKey.get(key)?.disabled,
+                            'aria-label': `移除${label(key)}`,
+                            onClick: () => state.set(selected.filter((item) => item !== key)),
+                          },
+                          '×',
+                        ),
+                      ]),
+                    )
+                  : []),
+                h(
+                  'button',
+                  {
+                    type: 'button',
+                    class: 'f-tree-select-clear f-button f-button--ghost f-button--sm',
+                    disabled,
+                    'aria-label': `清空${props.label}`,
+                    onClick: () => {
+                      if (!disabled)
+                        state.set(
+                          props.multiple ? selected.filter((key) => byKey.get(key)?.disabled) : '',
+                        );
+                    },
                   },
-                },
-                '清空',
-              )
+                  '清空',
+                ),
+              ])
             : null,
           open.value
             ? h(
@@ -610,52 +697,45 @@ export const Cascader = defineComponent({
                     ? h(
                         'div',
                         { class: 'f-cascader-results' },
-                        flat
-                          .filter(
-                            (node) =>
-                              (props.changeOnSelect || node.leaf) &&
-                              label(node.key)
-                                .toLocaleLowerCase()
-                                .includes(query.value.toLocaleLowerCase()),
-                          )
-                          .map((node) =>
-                            h('label', { class: 'f-choice-option' }, [
-                              props.multiple
-                                ? h('input', {
-                                    type: 'checkbox',
-                                    class: 'f-checkbox',
-                                    checked: selected.includes(node.key),
-                                    disabled: disabled || node.disabled,
-                                    onChange: () => select(node.key),
-                                  })
-                                : null,
+                        matches.length
+                          ? matches.map((node) =>
                               h(
                                 'button',
                                 {
+                                  key: node.key,
                                   type: 'button',
-                                  class: 'f-cascader-item',
-                                  disabled: disabled || node.disabled,
+                                  class: 'f-cascader-option',
+                                  disabled: disabled || node.disabled || node.selectable === false,
+                                  'aria-pressed': props.multiple
+                                    ? selected.includes(node.key)
+                                    : undefined,
+                                  'aria-current':
+                                    !props.multiple && selected.includes(node.key)
+                                      ? 'true'
+                                      : undefined,
+                                  'data-selected': selected.includes(node.key) || undefined,
                                   onClick: () => select(node.key),
                                 },
-                                label(node.key),
+                                `${label(node.key)}${selected.includes(node.key) ? ' ✓' : ''}`,
                               ),
-                            ]),
-                          ),
+                            )
+                          : h('p', { class: 'f-tree-empty', role: 'status' }, '没有匹配的选项'),
                       )
                     : h(
                         'div',
                         { class: 'f-cascader-columns' },
-                        columns.map((nodes, index) =>
-                          h(
-                            'div',
-                            {
-                              class: 'f-cascader-column',
-                              role: 'group',
-                              'aria-label': `第 ${index + 1} 级`,
-                            },
-                            nodes.map((node) => item(node, index)),
-                          ),
-                        ),
+                        flat.length
+                          ? columns.map((nodes, index) =>
+                              h(
+                                'ul',
+                                {
+                                  class: 'f-cascader-column',
+                                  'aria-label': `第 ${index + 1} 级`,
+                                },
+                                nodes.map((node) => item(node, index)),
+                              ),
+                            )
+                          : h('p', { class: 'f-tree-empty', role: 'status' }, '暂无可选项'),
                       ),
                   h(
                     'button',

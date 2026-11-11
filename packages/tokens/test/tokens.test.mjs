@@ -290,3 +290,25 @@ test('ResizeBox handle follows bounded, lockable Lab geometry in both themes', (
     /flex:\s*0 0 var\(--f-resize-handle-size/,
   );
 });
+
+test('Progress line and ring geometry follows bounded, lockable Lab rules', () => {
+  const theme = normalizeTheme({
+    ...defaultTheme,
+    components: { progress: { lineHeight: 20, circleSize: 100, circleStroke: 2 } },
+  });
+  assert.equal(theme.components.progress.lineHeight, 16);
+  for (const mode of ['light', 'dark']) {
+    const vars = createTheme(theme, mode);
+    assert.equal(vars['--f-progress-line-height'], '16px');
+    assert.equal(vars['--f-progress-circle-size'], '100px');
+    assert.equal(vars['--f-progress-circle-stroke'], '2px');
+  }
+  assert.deepEqual(
+    applyThemePatch(
+      theme,
+      { components: { progress: { circleSize: 48 } } },
+      { locked: ['components'] },
+    ),
+    theme,
+  );
+});

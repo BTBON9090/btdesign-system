@@ -30,6 +30,7 @@ export interface ComponentOverrides {
   list?: { rowPadding?: number; gap?: number };
   overlay?: { radius?: number; padding?: number };
   resize?: { handleSize?: number };
+  progress?: { lineHeight?: number; circleSize?: number; circleStroke?: number };
 }
 /** One geometry contract drives normalization, Lab controls and import/export. */
 export const componentGeometry = {
@@ -63,6 +64,23 @@ export const componentGeometry = {
   },
   resize: {
     handleSize: { min: 4, max: 24, comfortable: 8, compact: 6, token: '--f-resize-handle-size' },
+  },
+  progress: {
+    lineHeight: { min: 2, max: 16, comfortable: 6, compact: 4, token: '--f-progress-line-height' },
+    circleSize: {
+      min: 48,
+      max: 160,
+      comfortable: 88,
+      compact: 74,
+      token: '--f-progress-circle-size',
+    },
+    circleStroke: {
+      min: 1,
+      max: 8,
+      comfortable: 4,
+      compact: 4,
+      token: '--f-progress-circle-stroke',
+    },
   },
 } as const;
 export type ThemeLock = 'primary' | 'radius' | 'density' | 'font' | 'semantic' | 'components';

@@ -334,6 +334,55 @@ test('table composes grouped column headers, expanded tree rows and mixed row se
   assert.match(html, /aria-label="编辑评分 行 1a"/);
   assert.match(html, /position:sticky;left:44px/);
 });
+test('DataTable preserves inline expansion by default and supports a separately fixed utility column', () => {
+  const base = { columns, data, selectable: true, expandedKeys: ['1'] };
+  const inline = render(h(ui.DataTable, base));
+  assert.doesNotMatch(inline, /aria-label="展开行"/);
+  assert.match(inline, /class="f-data-table-cell"[^>]*>.*aria-label="收起行 1"/);
+  const separate = render(h(ui.DataTable, { ...base, expandColumn: 'separate' }));
+  assert.match(separate, /aria-label="展开行" class="f-data-table-expansion"/);
+  assert.match(separate, /class="f-data-table-expansion"[^>]*>.*aria-label="收起行 1"/);
+  assert.match(separate, /position:sticky;left:76px/);
+  assert.match(separate, /data-depth="1"/);
+});
+test('DataTable fixes uniform grouped headers at their leaf boundaries and leaves mixed groups scrolling', () => {
+  const columns = [
+    {
+      key: 'left',
+      title: '左组',
+      children: [
+        { key: 'a', title: 'A', fixed: 'left', width: 80 },
+        { key: 'b', title: 'B', fixed: 'left', width: 100 },
+      ],
+    },
+    {
+      key: 'mixed',
+      title: '混合组',
+      children: [
+        { key: 'c', title: 'C', fixed: 'left', width: 100 },
+        { key: 'd', title: 'D', width: 100 },
+      ],
+    },
+    {
+      key: 'right',
+      title: '右组',
+      children: [
+        { key: 'e', title: 'E', fixed: 'right', width: 80 },
+        { key: 'f', title: 'F', fixed: 'right', width: 96 },
+      ],
+    },
+    { key: 'tail', title: '末列', fixed: 'right', width: 48 },
+  ];
+  const props = { columns, data, selectable: true, expandColumn: 'separate' };
+  const group = (html, label) =>
+    html.match(new RegExp(`<th[^>]*scope="colgroup"[^>]*>${label}</th>`))?.[0];
+  const html = render(h(ui.DataTable, props));
+  assert.match(group(html, '左组'), /position:sticky;left:76px;z-index:4/);
+  assert.match(group(html, '右组'), /position:sticky;right:48px;z-index:4/);
+  assert.doesNotMatch(group(html, '混合组'), /position:sticky|data-fixed=/);
+  const hidden = render(h(ui.DataTable, { ...props, hiddenKeys: ['d'] }));
+  assert.match(group(hidden, '混合组'), /position:sticky;left:256px;z-index:4/);
+});
 test('table applies controlled sort/filter and column visibility while preserving ancestors', () => {
   const sorted = render(
     h(ui.DataTable, {
