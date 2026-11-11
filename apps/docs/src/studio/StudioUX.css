@@ -101,6 +101,14 @@
   }
 }
 @media (max-width: 1199px) {
+  .bt-studio .bt-overlay-shade {
+    position: absolute;
+    inset: 52px 0 0;
+    z-index: 14;
+    border: 0;
+    background: #131c1828;
+    cursor: default;
+  }
   .bt-studio .bt-inspector,
   .bt-studio .bt-overlay-shade {
     top: 52px;
