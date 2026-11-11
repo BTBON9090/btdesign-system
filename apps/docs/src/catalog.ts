@@ -4,13 +4,26 @@ import {
   enterpriseComponentCode,
   isEnterpriseId,
 } from './enterprise-catalog';
-export type Framework = 'react' | 'vue';
+import type { ComponentId, Framework, DemoOptions, AnatomyPart } from './component-types';
+export type { ComponentId, Framework, DemoOptions, AnatomyPart } from './component-types';
+
+export const componentCategories = [
+  '操作',
+  '文本与字段',
+  '选择与切换',
+  '日期',
+  '层级与组织',
+  '表格与列表',
+  '导航',
+  '反馈',
+  '布局与容器',
+] as const;
 export const catalog = [
   {
     id: 'button',
     name: 'Button',
     cn: '按钮',
-    category: '通用',
+    category: '操作',
     description: '清晰表达操作意图，在每个决策点给予恰当的视觉权重。',
     props: [
       ['variant', 'primary | secondary | ghost | danger', 'primary'],
@@ -23,7 +36,7 @@ export const catalog = [
     id: 'input',
     name: 'Input',
     cn: '输入框',
-    category: '数据输入',
+    category: '文本与字段',
     description: '用于输入单行文本，搭配明确的标签、提示和校验信息。',
     props: [
       ['type', 'HTML input type', 'text'],
@@ -37,7 +50,7 @@ export const catalog = [
     id: 'textarea',
     name: 'Textarea',
     cn: '文本域',
-    category: '数据输入',
+    category: '文本与字段',
     description: '为详细说明、反馈和多行文本留出合适的表达空间。',
     props: [
       ['rows', 'number', '2（原生）'],
@@ -50,7 +63,7 @@ export const catalog = [
     id: 'select',
     name: 'Select',
     cn: '选择器',
-    category: '数据输入',
+    category: '选择与切换',
     description: '从一组已知选项中选择，保留浏览器原生的键盘和移动端体验。',
     props: [
       ['disabled', 'boolean', 'false'],
@@ -64,7 +77,7 @@ export const catalog = [
     id: 'checkbox',
     name: 'Checkbox',
     cn: '复选框',
-    category: '数据输入',
+    category: '选择与切换',
     description: '表达独立的选中状态，适用于多项选择和条款确认。',
     props: [
       ['label', 'string', '—'],
@@ -76,7 +89,7 @@ export const catalog = [
     id: 'switch',
     name: 'Switch',
     cn: '开关',
-    category: '数据输入',
+    category: '选择与切换',
     description: '即时切换二元设置，标签描述开启后的功能。',
     props: [
       ['label', 'string', '—'],
@@ -88,7 +101,7 @@ export const catalog = [
     id: 'badge',
     name: 'Badge',
     cn: '徽标',
-    category: '数据展示',
+    category: '反馈',
     description: '以简洁的文字与颜色标识状态，确保含义不只依赖颜色。',
     props: [['variant', 'default | success | warning | danger | info', 'default']],
   },
@@ -96,7 +109,7 @@ export const catalog = [
     id: 'card',
     name: 'Card',
     cn: '卡片',
-    category: '数据展示',
+    category: '布局与容器',
     description: '组织同一对象的相关信息，让内容与操作保持紧密关联。',
     props: [
       ['children / default slot', 'CardHeader / CardContent / CardFooter', '—'],
@@ -146,7 +159,7 @@ export const catalog = [
     id: 'avatar',
     name: 'Avatar',
     cn: '头像',
-    category: '数据展示',
+    category: '布局与容器',
     description: '以图片或姓名缩写识别用户，在图片不可用时提供文字回退。',
     props: [
       ['src', 'string', '—'],
@@ -159,7 +172,7 @@ export const catalog = [
     id: 'separator',
     name: 'Separator',
     cn: '分隔线',
-    category: '布局',
+    category: '布局与容器',
     description: '在相邻内容组之间建立适度的视觉边界。',
     props: [['orientation', 'horizontal | vertical', 'horizontal']],
   },
@@ -167,7 +180,7 @@ export const catalog = [
     id: 'table',
     name: 'Table',
     cn: '表格',
-    category: '数据展示',
+    category: '表格与列表',
     description: '用原生表格呈现可对照的信息，窄屏下支持局部横向滚动。',
     props: [
       ['children / default slot', 'TableCaption / TableHeader / TableBody / TableFooter', '—'],
@@ -202,7 +215,7 @@ export const catalog = [
     id: 'field',
     name: 'Field',
     cn: '表单字段',
-    category: '数据输入',
+    category: '文本与字段',
     description: '把标签、说明、输入和错误组合为一个完整字段，自动建立可访问关联。',
     props: [
       ['label', 'ReactNode / string', '必填'],
@@ -215,7 +228,7 @@ export const catalog = [
     id: 'input-group',
     name: 'InputGroup',
     cn: '输入组合',
-    category: '数据输入',
+    category: '文本与字段',
     description: '组合输入框、前后缀与附加操作，清晰交代输入单位和格式。',
     props: [
       ['children / default slot', 'InputAddon + Input + action', '—'],
@@ -226,7 +239,7 @@ export const catalog = [
     id: 'radio-group',
     name: 'RadioGroup',
     cn: '单选组',
-    category: '数据输入',
+    category: '选择与切换',
     description: '并列展示互斥选项，使用原生单选行为完成键盘选择与表单提交。',
     props: [
       ['options', '{value, label, description?, disabled?}[]', '必填'],
@@ -240,7 +253,7 @@ export const catalog = [
     id: 'number-input',
     name: 'NumberInput',
     cn: '数字输入',
-    category: '数据输入',
+    category: '文本与字段',
     description: '同时支持精确输入和步进调整，保留边界、精度与空值的语义。',
     props: [
       ['value / modelValue', "number | ''", '—'],
@@ -303,7 +316,6 @@ export const catalog = [
   },
   ...enterpriseCatalog,
 ] as const;
-export type ComponentId = (typeof catalog)[number]['id'];
 const reactExamples: Partial<Record<ComponentId, string>> = {
   button: `import { Button } from '@btdesign/react';\n\n<Button variant="primary">创建项目</Button>\n<Button variant="secondary">取消</Button>\n<Button loading>正在保存</Button>`,
   input: `import { Input } from '@btdesign/react';\n\n<label htmlFor="email">邮箱</label>\n<Input id="email" type="email" placeholder="you@company.com" />`,
@@ -432,15 +444,6 @@ export function componentCode(id: ComponentId, framework: Framework, options?: D
   return `<script setup lang="ts">\n${state ? "import { ref } from 'vue';\n" : ''}import { ${catalog.find((c) => c.id === id)!.name}${extraImports[id] ?? ''} } from '@btdesign/vue';\nimport '@btdesign/tokens/styles.css';${state}\n</script>\n\n<template>\n${templates[id]}\n</template>`;
 }
 
-export interface DemoOptions {
-  multiple?: boolean;
-  cascade?: boolean;
-  size: 'sm' | 'md' | 'lg';
-  state: 'default' | 'disabled' | 'invalid' | 'loading';
-  variant: string;
-  orientation: 'horizontal' | 'vertical';
-  progress: number;
-}
 export const defaultDemoOptions: DemoOptions = {
   size: 'md',
   state: 'default',
@@ -448,7 +451,6 @@ export const defaultDemoOptions: DemoOptions = {
   orientation: 'horizontal',
   progress: 64,
 };
-export type AnatomyPart = { name: string; structure: string; purpose: string; tokens: string[] };
 const part = (
   name: string,
   structure: string,

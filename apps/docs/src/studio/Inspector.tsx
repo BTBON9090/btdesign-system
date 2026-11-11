@@ -3,479 +3,390 @@ import {
   ArrowUpRight,
   Braces,
   Check,
-  ChevronRight,
-  Code2,
-  CornerDownRight,
-  Info,
   LockKeyhole,
-  Palette,
   SlidersHorizontal,
   Unlock,
   X,
 } from 'lucide-react';
+import { createTheme, presets, type ThemeLock, type ThemeMode } from '@btdesign/tokens';
+import type { ProjectSpec } from '@btdesign/core';
+import { componentAnatomy } from '../catalog';
+import { ComponentRules, GeometryControl } from './ComponentRules';
 import {
-  createTheme,
-  defaultTheme,
-  presets,
-  type ThemeLock,
-  type ThemeMode,
-} from '@btdesign/tokens';
-import { selectionKnowledge, type ProjectSpec } from '@btdesign/core';
-import { CodeBlock } from '../shared';
-import type { SceneSelection } from './ScenePreview';
-import { ComponentRules } from './ComponentRules';
-export const knowledge = selectionKnowledge;
-const elementLabels = {
-  page: '页面',
-  button: '按钮',
-  input: '输入框',
-  card: '容器',
-  table: '表格',
-};
+  componentControls,
+  controlDefinitions,
+  getSelectedPart,
+  selectionLabel,
+  type EditorSelection,
+} from './component-controls';
+import './Inspector.css';
+
 export function Inspector({
   project,
-  selected,
+  selection,
   mode,
   onPatch,
   onSelect,
-  onInspect,
-  inspect,
   onClose,
+  onBeginChange,
+  onEndChange,
 }: {
   project: ProjectSpec;
-  selected: SceneSelection | null;
+  selection: EditorSelection;
   mode: ThemeMode;
   onPatch: (patch: unknown) => void;
-  onSelect: (s: SceneSelection) => void;
-  onInspect: () => void;
-  inspect: boolean;
+  onSelect: (selection: EditorSelection) => void;
   onClose: () => void;
+  onBeginChange: () => void;
+  onEndChange: () => void;
 }) {
   const [tab, setTab] = useState<'design' | 'structure'>('design');
-  const kind = selected || 'page';
-  const info = knowledge[kind];
+  const [colorError, setColorError] = useState('');
   const vars = createTheme(project.theme, mode);
   const locks = project.policy.locked;
-  const component = kind === 'button' || kind === 'input' || kind === 'card' ? kind : null;
-  const local = component ? project.theme.components?.[component] : undefined;
-  const localRadius = local?.radius ?? project.theme.radius;
-  const locked = locks.includes(component ? 'components' : 'radius');
-  function patchTheme(v: unknown) {
-    onPatch({ theme: v });
-  }
-  function lock(key: ThemeLock) {
+  const definition = selection.component === 'page' ? null : componentControls[selection.component];
+  const part = getSelectedPart(selection);
+  const patchTheme = (theme: unknown) => onPatch({ theme });
+  const lock = (key: ThemeLock) =>
     onPatch({
-      policy: { locked: locks.includes(key) ? locks.filter((k) => k !== key) : [...locks, key] },
+      policy: {
+        locked: locks.includes(key) ? locks.filter((item) => item !== key) : [...locks, key],
+      },
     });
-  }
-  const code =
-    project.framework === 'react'
-      ? kind === 'button'
-        ? `<Button variant="primary">\n  {${JSON.stringify(project.content.actionLabel)}}\n</Button>`
-        : kind === 'input'
-          ? `<Field label="名称" description="团队成员可见">\n  <Input value={name}\n    onChange={e => setName(e.target.value)} />\n</Field>`
-          : kind === 'card'
-            ? `<Card>\n  <CardHeader>\n    <CardTitle>内容标题</CardTitle>\n  </CardHeader>\n  <CardContent>相关信息</CardContent>\n  <CardFooter><Button>查看详情</Button></CardFooter>\n</Card>`
-            : kind === 'table'
-              ? `<Table>\n  <TableHeader><TableRow>\n    <TableHead>名称</TableHead>\n  </TableRow></TableHeader>\n  <TableBody>{/* TableRow / TableCell */}</TableBody>\n</Table>`
-              : `<main style={createTheme(theme, mode)}>\n  <PageHeader />\n  <WorkspaceContent />\n</main>`
-      : kind === 'button'
-        ? `<Button variant="primary">\n  {{ actionLabel }}\n</Button>`
-        : kind === 'input'
-          ? `<Field label="名称" description="团队成员可见">\n  <Input v-model="name" />\n</Field>`
-          : kind === 'card'
-            ? `<Card>\n  <CardHeader>\n    <CardTitle>内容标题</CardTitle>\n  </CardHeader>\n  <CardContent>相关信息</CardContent>\n  <CardFooter><Button>查看详情</Button></CardFooter>\n</Card>`
-            : kind === 'table'
-              ? `<Table>\n  <TableHeader><TableRow>\n    <TableHead>名称</TableHead>\n  </TableRow></TableHeader>\n  <TableBody><!-- TableRow / TableCell --></TableBody>\n</Table>`
-              : `<main :style="createTheme(theme, mode)">\n  <PageHeader />\n  <WorkspaceContent />\n</main>`;
+  const colorGesture = {
+    onPointerDown: onBeginChange,
+    onFocus: onBeginChange,
+    onBlur: onEndChange,
+    onKeyDown: (event: React.KeyboardEvent<HTMLInputElement>) => {
+      if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Enter', ' '].includes(event.key))
+        onBeginChange();
+    },
+  };
+  const controlTokens = (part?.controls ?? []).map((id) => controlDefinitions[id].token);
+  const anatomy = selection.component === 'page' ? [] : componentAnatomy[selection.component];
+  const matched = part?.anatomy
+    ? part.anatomy.flatMap((index) => (anatomy[index] ? [anatomy[index]] : []))
+    : anatomy.filter((item) => item.tokens.some((token) => controlTokens.includes(token)));
+  const shownAnatomy = matched.length ? matched : anatomy;
+  const tokens =
+    selection.component === 'page'
+      ? [
+          '--f-primary',
+          '--f-bg',
+          '--f-surface',
+          '--f-text',
+          '--f-border',
+          '--f-radius',
+          '--f-control-height',
+          '--f-font',
+        ]
+      : [...new Set([...controlTokens, ...shownAnatomy.flatMap((item) => item.tokens)])];
+  const lockButton = (key: ThemeLock, label: string) => (
+    <button
+      type="button"
+      className="bt-rule-lock"
+      aria-label={`${locks.includes(key) ? '解锁' : '锁定'}${label}`}
+      title={`${locks.includes(key) ? '解锁' : '锁定'}${label}`}
+      onClick={() => lock(key)}
+    >
+      {locks.includes(key) ? <LockKeyhole size={14} /> : <Unlock size={14} />}
+    </button>
+  );
   return (
-    <aside className="bt-inspector" aria-label="设计与前端说明">
+    <aside className="bt-inspector bt-focused-inspector" aria-label="样式设置">
       <div className="bt-panel-tabs">
         <button
+          type="button"
           aria-pressed={tab === 'design'}
           className={tab === 'design' ? 'active' : ''}
           onClick={() => setTab('design')}
         >
-          <SlidersHorizontal size={13} />
+          <SlidersHorizontal size={14} />
           设计
         </button>
         <button
+          type="button"
           aria-pressed={tab === 'structure'}
           className={tab === 'structure' ? 'active' : ''}
           onClick={() => setTab('structure')}
         >
-          <Braces size={13} />
-          前端结构
+          <Braces size={14} />
+          结构
         </button>
-        <button className="bt-close-inspector bt-icon" aria-label="关闭属性面板" onClick={onClose}>
-          <X size={14} />
+        <button
+          type="button"
+          className="bt-close-inspector bt-icon"
+          aria-label="关闭属性面板"
+          onClick={onClose}
+        >
+          <X size={15} />
         </button>
       </div>
       <div className="bt-inspector-content">
-        <div className="bt-selection-heading">
-          <div>
-            <span>当前选择</span>
-            <h2>
-              {elementLabels[kind]}
-              <code>{info.component}</code>
-            </h2>
-          </div>
-          <span className="bt-selection-dot" />
+        <div className="bt-focused-heading">
+          <h2>{selectionLabel(selection)}</h2>
+          {definition && (
+            <button
+              type="button"
+              className="bt-global-link"
+              onClick={() => onSelect({ component: 'page' })}
+            >
+              整体样式
+            </button>
+          )}
         </div>
-        <div className="bt-breadcrumb">
-          <span>界面</span>
-          <ChevronRight size={10} />
-          <span>{component ? '组件规则' : '整体规则'}</span>
-        </div>
-        <div className="bt-meaning">
-          <span>
-            <Info size={12} />
-            设计意图
-          </span>
-          <p>{info.designIntent}</p>
-        </div>
+        {definition &&
+          part &&
+          (definition.parts.length > 1 ? (
+            <label className="bt-part-picker">
+              <span>部件</span>
+              <select
+                aria-label="编辑部件"
+                value={part.id}
+                onChange={(event) =>
+                  onSelect({ component: definition.id, part: event.currentTarget.value })
+                }
+              >
+                {definition.parts.map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {item.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ) : (
+            <p className="bt-single-part">{part.label}</p>
+          ))}
         {tab === 'design' ? (
-          <>
-            {kind === 'page' && (
-              <>
+          definition ? (
+            <ComponentRules
+              theme={project.theme}
+              mode={mode}
+              selection={selection}
+              locked={locks.includes('components')}
+              onLock={() => lock('components')}
+              onPatch={patchTheme}
+              onSelectGlobal={() => onSelect({ component: 'page' })}
+              onBeginChange={onBeginChange}
+              onEndChange={onEndChange}
+            />
+          ) : (
+            <>
+              <section className="bt-global-section">
+                <div className="bt-setting-title">
+                  <h3>品牌色</h3>
+                  {lockButton('primary', '品牌色')}
+                </div>
+                <div className="bt-color-editor">
+                  <input
+                    type="color"
+                    aria-label="品牌色"
+                    value={project.theme.primary}
+                    disabled={locks.includes('primary')}
+                    {...colorGesture}
+                    onChange={(event) => patchTheme({ primary: event.currentTarget.value })}
+                  />
+                  <input
+                    key={project.theme.primary}
+                    aria-label="品牌色色值"
+                    aria-invalid={Boolean(colorError) || undefined}
+                    aria-describedby={colorError ? 'bt-color-error' : undefined}
+                    defaultValue={project.theme.primary}
+                    maxLength={7}
+                    disabled={locks.includes('primary')}
+                    onChange={() => setColorError('')}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter') event.currentTarget.blur();
+                    }}
+                    onBlur={(event) => {
+                      if (/^#[a-f0-9]{6}$/i.test(event.currentTarget.value)) {
+                        setColorError('');
+                        patchTheme({ primary: event.currentTarget.value });
+                      } else {
+                        setColorError('使用 #RRGGBB 格式，例如 #2563EB。');
+                        event.currentTarget.value = project.theme.primary;
+                      }
+                    }}
+                  />
+                </div>
+                {colorError && (
+                  <p id="bt-color-error" className="bt-setting-error" role="alert">
+                    {colorError}
+                  </p>
+                )}
+                <div className="bt-color-options">
+                  {presets.map((preset) => (
+                    <button
+                      type="button"
+                      key={preset.name}
+                      aria-label={`使用 ${preset.name} 品牌色`}
+                      title={preset.name}
+                      disabled={locks.includes('primary')}
+                      onClick={() => patchTheme({ primary: preset.primary })}
+                      style={{ background: preset.primary }}
+                    >
+                      {project.theme.primary === preset.primary && (
+                        <Check size={11} color={createTheme(preset)['--f-on-primary']} />
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </section>
+              <section className="bt-global-section">
+                <div className="bt-setting-title">
+                  <h3>形状</h3>
+                  {lockButton('radius', '全局圆角')}
+                </div>
+                <GeometryControl
+                  label="全局圆角"
+                  min={0}
+                  max={20}
+                  value={project.theme.radius}
+                  disabled={locks.includes('radius')}
+                  onChange={(radius) => patchTheme({ radius })}
+                  onBeginChange={onBeginChange}
+                  onEndChange={onEndChange}
+                />
+                <p className="bt-rule-scope">组件有单独设置时，优先使用组件规则。</p>
+              </section>
+              <section className="bt-global-section bt-global-selects">
+                <div className="bt-setting-title">
+                  <label htmlFor="bt-density">密度</label>
+                  {lockButton('density', '信息密度')}
+                </div>
+                <select
+                  id="bt-density"
+                  aria-label="信息密度"
+                  value={project.theme.density}
+                  disabled={locks.includes('density')}
+                  onChange={(event) => patchTheme({ density: event.currentTarget.value })}
+                >
+                  <option value="comfortable">舒适</option>
+                  <option value="compact">紧凑</option>
+                </select>
+                <div className="bt-setting-title">
+                  <label htmlFor="bt-font">字体</label>
+                  {lockButton('font', '字体')}
+                </div>
+                <select
+                  id="bt-font"
+                  value={project.theme.font}
+                  disabled={locks.includes('font')}
+                  onChange={(event) => patchTheme({ font: event.currentTarget.value })}
+                >
+                  <option value="system">系统字体</option>
+                  <option value="inter">Inter</option>
+                  <option value="mono">等宽字体</option>
+                </select>
+              </section>
+              <details className="bt-settings-details">
+                <summary>{mode === 'light' ? '浅色' : '深色'}界面颜色</summary>
+                <div className="bt-setting-title">
+                  <span>颜色规则</span>
+                  {lockButton('semantic', '界面颜色')}
+                </div>
+                {(
+                  [
+                    ['background', '画布', '--f-bg'],
+                    ['surface', '容器', '--f-surface'],
+                    ['text', '正文', '--f-text'],
+                    ['muted', '次要文字', '--f-muted'],
+                    ['border', '边界', '--f-border'],
+                  ] as const
+                ).map(([key, label, token]) => (
+                  <label key={key} className="bt-semantic-field">
+                    <span>{label}</span>
+                    <code>{vars[token]}</code>
+                    <input
+                      type="color"
+                      aria-label={`${label}颜色`}
+                      value={vars[token]}
+                      disabled={locks.includes('semantic')}
+                      {...colorGesture}
+                      onChange={(event) =>
+                        patchTheme({ semantic: { [mode]: { [key]: event.currentTarget.value } } })
+                      }
+                    />
+                  </label>
+                ))}
+              </details>
+              <details className="bt-settings-details">
+                <summary>页面文案</summary>
                 <label className="bt-field">
                   主标题
                   <input
                     key={`title-${project.content.title}`}
                     defaultValue={project.content.title}
                     maxLength={120}
-                    onBlur={(e) => onPatch({ content: { title: e.target.value } })}
+                    onBlur={(event) => onPatch({ content: { title: event.currentTarget.value } })}
                   />
                 </label>
                 <label className="bt-field">
                   说明
                   <textarea
-                    key={`desc-${project.content.description}`}
+                    key={`description-${project.content.description}`}
                     defaultValue={project.content.description}
-                    rows={2}
+                    rows={3}
                     maxLength={300}
-                    onBlur={(e) => onPatch({ content: { description: e.target.value } })}
-                  />
-                </label>
-              </>
-            )}
-            {kind === 'button' && (
-              <label className="bt-field">
-                主操作文案
-                <input
-                  key={project.content.actionLabel}
-                  defaultValue={project.content.actionLabel}
-                  maxLength={40}
-                  onBlur={(e) => onPatch({ content: { actionLabel: e.target.value } })}
-                />
-                <small>修改当前页面的主要操作按钮。</small>
-              </label>
-            )}
-            <div className="bt-inspector-section">
-              <div className="bt-section-label">
-                <span>品牌色</span>
-                <button
-                  title={locks.includes('primary') ? '解锁品牌色' : '锁定品牌色'}
-                  aria-label={locks.includes('primary') ? '解锁品牌色' : '锁定品牌色'}
-                  onClick={() => lock('primary')}
-                >
-                  {locks.includes('primary') ? <LockKeyhole size={12} /> : <Unlock size={12} />}
-                </button>
-              </div>
-              <div className="bt-color-editor">
-                <input
-                  type="color"
-                  aria-label="品牌色"
-                  value={project.theme.primary}
-                  disabled={locks.includes('primary')}
-                  onChange={(e) => patchTheme({ primary: e.target.value })}
-                />
-                <input
-                  key={project.theme.primary}
-                  aria-label="品牌色色值"
-                  defaultValue={project.theme.primary}
-                  maxLength={7}
-                  disabled={locks.includes('primary')}
-                  onBlur={(e) => {
-                    if (/^#[a-f0-9]{6}$/i.test(e.target.value))
-                      patchTheme({ primary: e.target.value });
-                    else e.target.value = project.theme.primary;
-                  }}
-                />
-                <code>HEX</code>
-              </div>
-              <div className="bt-color-options">
-                {presets.map((p) => (
-                  <button
-                    key={p.name}
-                    aria-label={`使用 ${p.name} 品牌色`}
-                    disabled={locks.includes('primary')}
-                    onClick={() => patchTheme({ primary: p.primary })}
-                    style={{ background: p.primary }}
-                  >
-                    {project.theme.primary === p.primary && (
-                      <Check size={11} color={createTheme(p)['--f-on-primary']} />
-                    )}
-                  </button>
-                ))}
-              </div>
-              <small className="bt-impact">
-                <CornerDownRight size={11} />
-                同步所有主操作与品牌强调
-              </small>
-            </div>
-            <div className="bt-inspector-section">
-              <div className="bt-section-label">
-                <span>{component ? `${elementLabels[kind]}圆角` : '全局圆角'}</span>
-                <code>{localRadius} px</code>
-              </div>
-              <input
-                type="range"
-                aria-label={component ? `${elementLabels[kind]}圆角` : '全局圆角'}
-                min={0}
-                max={20}
-                value={localRadius}
-                disabled={locked}
-                onChange={(e) =>
-                  patchTheme(
-                    component
-                      ? { components: { [component]: { radius: Number(e.target.value) } } }
-                      : { radius: Number(e.target.value) },
-                  )
-                }
-              />
-              <div className="bt-range-ends">
-                <span>利落</span>
-                <span>柔和</span>
-              </div>
-              {component && (
-                <button
-                  className="bt-inherit"
-                  disabled={locked || local?.radius === undefined}
-                  onClick={() => patchTheme({ components: { [component]: { radius: null } } })}
-                >
-                  <CornerDownRight size={11} />
-                  {local?.radius === undefined ? '继承全局圆角' : '恢复继承全局'}
-                </button>
-              )}
-            </div>
-            {component && (
-              <div className="bt-inspector-section">
-                <div className="bt-section-label">
-                  <span>{component === 'card' ? '容器内边距' : '控件基准高度'}</span>
-                  <code>
-                    {component === 'card'
-                      ? vars['--f-card-padding']
-                      : vars[`--f-${component}-height`]}
-                  </code>
-                </div>
-                <input
-                  type="range"
-                  aria-label={component === 'card' ? '容器内边距' : '控件基准高度'}
-                  min={component === 'card' ? 8 : 28}
-                  max={component === 'card' ? 40 : 56}
-                  disabled={locks.includes('components')}
-                  value={parseInt(
-                    vars[component === 'card' ? '--f-card-padding' : `--f-${component}-height`],
-                  )}
-                  onChange={(e) =>
-                    patchTheme({
-                      components: {
-                        [component]: {
-                          [component === 'card' ? 'padding' : 'height']: Number(e.target.value),
-                        },
-                      },
-                    })
-                  }
-                />
-                <small className="bt-impact">
-                  <CornerDownRight size={11} />
-                  应用到这套系统的全部{elementLabels[kind]}
-                </small>
-              </div>
-            )}
-            {(kind === 'input' || kind === 'table') && (
-              <div className="bt-inspector-section">
-                <div className="bt-section-label">
-                  <span>{kind === 'input' ? '字段结构' : '表格密度'}</span>
-                  <button
-                    aria-label={locks.includes('components') ? '解锁组件规则' : '锁定组件规则'}
-                    onClick={() => lock('components')}
-                  >
-                    {locks.includes('components') ? (
-                      <LockKeyhole size={12} />
-                    ) : (
-                      <Unlock size={12} />
-                    )}
-                  </button>
-                </div>
-                {(kind === 'input'
-                  ? ([
-                      ['field', 'gap', '标签与控件间距', '--f-field-gap', 4, 20],
-                      ['field', 'labelSize', '标签字号', '--f-field-label-size', 11, 16],
-                    ] as const)
-                  : ([
-                      ['table', 'cellPadding', '单元格内边距', '--f-table-cell-padding', 6, 24],
-                      ['table', 'rowHeight', '最小行高', '--f-table-row-height', 28, 72],
-                    ] as const)
-                ).map(([section, property, label, token, min, max]) => (
-                  <label className="bt-field" key={token}>
-                    <span>
-                      {label} · {vars[token]}
-                    </span>
-                    <input
-                      type="range"
-                      aria-label={label}
-                      min={min}
-                      max={max}
-                      value={parseInt(vars[token])}
-                      disabled={locks.includes('components')}
-                      onChange={(event) =>
-                        patchTheme({
-                          components: { [section]: { [property]: Number(event.target.value) } },
-                        })
-                      }
-                    />
-                  </label>
-                ))}
-                <button
-                  className="bt-inherit"
-                  disabled={
-                    locks.includes('components') ||
-                    !project.theme.components?.[kind === 'input' ? 'field' : 'table']
-                  }
-                  onClick={() =>
-                    patchTheme({ components: { [kind === 'input' ? 'field' : 'table']: null } })
-                  }
-                >
-                  <CornerDownRight size={11} />
-                  恢复继承系统规则
-                </button>
-                <small className="bt-impact">
-                  同步 React、Vue 与导出项目；锁定后，后续方案保留这些规则。
-                </small>
-              </div>
-            )}
-            <ComponentRules
-              theme={project.theme}
-              mode={mode}
-              locked={locks.includes('components')}
-              onLock={() => lock('components')}
-              onPatch={patchTheme}
-            />
-            <div className="bt-inspector-section">
-              <label className="bt-field">
-                信息密度
-                <select
-                  value={project.theme.density}
-                  disabled={locks.includes('density')}
-                  onChange={(e) => patchTheme({ density: e.target.value })}
-                >
-                  <option value="comfortable">舒适 · 更从容的阅读空间</option>
-                  <option value="compact">紧凑 · 更多信息同屏</option>
-                </select>
-              </label>
-              <label className="bt-field">
-                字体
-                <select
-                  value={project.theme.font}
-                  disabled={locks.includes('font')}
-                  onChange={(e) => patchTheme({ font: e.target.value })}
-                >
-                  <option value="system">系统字体</option>
-                  <option value="inter">Inter</option>
-                  <option value="mono">等宽字体</option>
-                </select>
-              </label>
-            </div>
-            <div className="bt-inspector-section">
-              <div className="bt-section-label">
-                <span>{mode === 'light' ? '浅色' : '深色'}语义颜色</span>
-                {locks.includes('semantic') && <LockKeyhole size={12} />}
-              </div>
-              {(
-                [
-                  ['background', '画布', '--f-bg'],
-                  ['surface', '容器', '--f-surface'],
-                  ['text', '正文', '--f-text'],
-                  ['border', '边界', '--f-border'],
-                ] as const
-              ).map(([key, label, css]) => (
-                <label className="bt-semantic-field" key={key}>
-                  <span>{label}</span>
-                  <code>{vars[css]}</code>
-                  <input
-                    type="color"
-                    aria-label={`${label}颜色`}
-                    value={vars[css]}
-                    disabled={locks.includes('semantic')}
-                    onChange={(e) =>
-                      patchTheme({ semantic: { [mode]: { [key]: e.target.value } } })
+                    onBlur={(event) =>
+                      onPatch({ content: { description: event.currentTarget.value } })
                     }
                   />
                 </label>
-              ))}
-            </div>
-          </>
+                <label className="bt-field">
+                  主按钮文字
+                  <input
+                    key={`action-${project.content.actionLabel}`}
+                    defaultValue={project.content.actionLabel}
+                    maxLength={40}
+                    onBlur={(event) =>
+                      onPatch({ content: { actionLabel: event.currentTarget.value } })
+                    }
+                  />
+                </label>
+              </details>
+            </>
+          )
         ) : (
-          <>
-            <div className="bt-structure-tree">
-              <strong>界面是怎样组成的</strong>
-              {(['page', 'button', 'input', 'card', 'table'] as SceneSelection[])
-                .filter(
-                  (k) =>
-                    (project.scene === 'workspace' || k !== 'table') &&
-                    (project.scene !== 'projects' || k !== 'input'),
-                )
-                .map((k) => (
-                  <button
-                    key={k}
-                    className={kind === k ? 'active' : ''}
-                    onClick={() => {
-                      onSelect(k);
-                      if (!inspect) onInspect();
-                    }}
-                  >
-                    <span>{k === 'page' ? <LayersIcon /> : <CornerDownRight size={12} />}</span>
-                    <b>{elementLabels[k]}</b>
-                    <code>{knowledge[k].component}</code>
-                  </button>
+          <section className="bt-part-structure">
+            {definition ? (
+              <>
+                <code className="bt-component-code-name">{definition.name}</code>
+                {shownAnatomy.map((item) => (
+                  <div key={item.name} className="bt-structure-item">
+                    <h3>{item.name}</h3>
+                    <p>{item.purpose}</p>
+                    <code>{item.structure}</code>
+                  </div>
+                ))}
+              </>
+            ) : (
+              <p>整体规则由 React、Vue 和导出项目共同使用。</p>
+            )}
+            <div className="bt-token-bindings">
+              <h3>当前规则值</h3>
+              {tokens
+                .filter((token) => vars[token] !== undefined)
+                .map((token) => (
+                  <div key={token}>
+                    <code>{token}</code>
+                    <span title={vars[token]}>
+                      {vars[token].startsWith('#') && <i style={{ background: vars[token] }} />}
+                      {token === '--f-font' ? project.theme.font : vars[token]}
+                    </span>
+                  </div>
                 ))}
             </div>
-            <div className="bt-implementation">
-              <span>前端实现</span>
-              <p>{info.implementation}</p>
-            </div>
-            <CodeBlock
-              label={`${project.framework === 'react' ? 'React' : 'Vue 3'} · 结构示意`}
-              code={code}
-            />
-            <div className="bt-token-bindings">
-              <strong>由哪些规则控制</strong>
-              {info.tokenKeys.map((key) => (
-                <div key={key}>
-                  <code>{key}</code>
-                  <span title={vars[key]}>
-                    {vars[key].startsWith('#') ? <i style={{ background: vars[key] }} /> : null}
-                    {key === '--f-font' ? project.theme.font : vars[key]}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </>
+          </section>
         )}
-        <a className="bt-component-link" href={`#${info.docPath}`}>
-          完整原理与组件用法
+        <a
+          className="bt-component-link"
+          href={definition ? `#/components/${definition.id}` : '#/guides/design'}
+        >
+          {definition ? '组件用法' : '设计指南'}
           <ArrowUpRight size={12} />
         </a>
       </div>
-      <div className="bt-inspector-foot">
-        <span className="bt-live-dot" />
-        一处调整，React 与 Vue 同步
-      </div>
     </aside>
   );
-}
-function LayersIcon() {
-  return <Code2 size={12} />;
 }

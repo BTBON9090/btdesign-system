@@ -65,6 +65,16 @@ const invalidable: ComponentId[] = [
   'input-group',
   'number-input',
 ];
+const variantLabels: Record<string, string> = {
+  primary: '主要',
+  secondary: '次要',
+  ghost: '轻量',
+  danger: '危险',
+  default: '默认',
+  success: '成功',
+  warning: '警告',
+  info: '信息',
+};
 const variants: Partial<Record<ComponentId, string[]>> = {
   button: ['primary', 'secondary', 'ghost', 'danger'],
   badge: ['default', 'success', 'warning', 'danger', 'info'],
@@ -77,6 +87,7 @@ export function ComponentWorkbench({
   onFrameworkChange,
   onAction,
   liveProject,
+  embedded = false,
 }: {
   kind: ComponentId;
   framework: Framework;
@@ -84,6 +95,7 @@ export function ComponentWorkbench({
   onFrameworkChange: (value: Framework) => void;
   onAction: (message: string) => void;
   liveProject?: { name: string; theme: ThemeConfig };
+  embedded?: boolean;
 }) {
   const [options, setOptions] = useState<DemoOptions>({
     ...defaultDemoOptions,
@@ -94,7 +106,7 @@ export function ComponentWorkbench({
   const [savedProject] = useState(() => loadStudio().project);
   const project = liveProject ?? savedProject;
   const [themeSource, setThemeSource] = useState<'workspace' | 'default'>('workspace');
-  const previewTheme = themeSource === 'workspace' ? project.theme : defaultTheme;
+  const previewTheme = liveProject || themeSource === 'workspace' ? project.theme : defaultTheme;
   const previewStyle = {
     ...createTheme(previewTheme, mode),
     fontFamily: 'var(--f-font)',
@@ -107,12 +119,15 @@ export function ComponentWorkbench({
     setOptions((current) => ({ ...current, [key]: value }));
   return (
     <>
-      <div className="example-heading">
-        <h2 id="preview">组件实验台</h2>
-        <FrameworkToggle value={framework} onChange={onFrameworkChange} />
-      </div>
-      <div className="bt-workbench">
+      {!embedded && (
+        <div className="example-heading">
+          <h2 id="preview">预览</h2>
+          <FrameworkToggle value={framework} onChange={onFrameworkChange} />
+        </div>
+      )}
+      <div className={`bt-workbench ${embedded ? 'bt-workbench-embedded' : ''}`}>
         <div className="bt-workbench-controls" aria-label="预览参数">
+          {embedded && <FrameworkToggle value={framework} onChange={onFrameworkChange} />}
           {['tree', 'tree-select', 'cascader', 'org-picker', 'toggle-group'].includes(kind) && (
             <label>
               选择方式
@@ -139,17 +154,19 @@ export function ComponentWorkbench({
               </select>
             </label>
           )}
-          <label>
-            预览主题
-            <select
-              aria-label="预览主题"
-              value={themeSource}
-              onChange={(event) => setThemeSource(event.target.value as 'workspace' | 'default')}
-            >
-              <option value="workspace">{project.name}</option>
-              <option value="default">BTDESIGN 默认</option>
-            </select>
-          </label>
+          {!liveProject && (
+            <label>
+              预览主题
+              <select
+                aria-label="预览主题"
+                value={themeSource}
+                onChange={(event) => setThemeSource(event.target.value as 'workspace' | 'default')}
+              >
+                <option value="workspace">{project.name}</option>
+                <option value="default">BTDESIGN 默认</option>
+              </select>
+            </label>
+          )}
           {sizeable.includes(kind) && (
             <label>
               尺寸
@@ -158,22 +175,24 @@ export function ComponentWorkbench({
                 value={options.size}
                 onChange={(e) => update('size', e.target.value as DemoOptions['size'])}
               >
-                <option value="sm">小 · sm</option>
-                <option value="md">中 · md</option>
-                <option value="lg">大 · lg</option>
+                <option value="sm">小</option>
+                <option value="md">中</option>
+                <option value="lg">大</option>
               </select>
             </label>
           )}
           {variants[kind] && (
             <label>
-              变体
+              样式
               <select
                 aria-label="预览变体"
                 value={options.variant}
                 onChange={(e) => update('variant', e.target.value)}
               >
                 {variants[kind]!.map((variant) => (
-                  <option key={variant}>{variant}</option>
+                  <option key={variant} value={variant}>
+                    {variantLabels[variant] ?? variant}
+                  </option>
                 ))}
               </select>
             </label>
@@ -223,7 +242,6 @@ export function ComponentWorkbench({
               />
             </label>
           )}
-          <span className="bt-workbench-sync">预览与代码同步</span>
         </div>
         <div className={`component-example example-${kind}`} data-theme={mode} style={previewStyle}>
           {framework === 'react' ? (
@@ -232,57 +250,68 @@ export function ComponentWorkbench({
             <VueDemo kind={kind} options={options} onAction={onAction} />
           )}
         </div>
-        <p className="bt-workbench-theme-note">示例展示组件用法，企业主题随 Studio 导出。</p>
-        <CodeBlock
-          code={componentCode(kind, framework, options)}
-          label={framework === 'react' ? 'React · TSX' : 'Vue · SFC'}
-        />
+        {embedded ? (
+          <details className="bt-workbench-code">
+            <summary>查看代码</summary>
+            <CodeBlock
+              code={componentCode(kind, framework, options)}
+              label={framework === 'react' ? 'React · TSX' : 'Vue · SFC'}
+            />
+          </details>
+        ) : (
+          <CodeBlock
+            code={componentCode(kind, framework, options)}
+            label={framework === 'react' ? 'React · TSX' : 'Vue · SFC'}
+          />
+        )}
       </div>
-      <section className="bt-component-anatomy" aria-labelledby="anatomy">
-        <div className="bt-anatomy-heading">
-          <h2 id="anatomy">理解每一层</h2>
-          <span>{parts.length} 个结构层</span>
-        </div>
-        <div className="bt-anatomy-layout">
-          <div
-            className="bt-anatomy-parts"
-            aria-label={`${catalog.find((c) => c.id === kind)?.name} 结构层`}
-          >
-            {parts.map((item, index) => (
-              <button
-                type="button"
-                key={item.name}
-                aria-pressed={index === partIndex}
-                onClick={() => setPartIndex(index)}
-              >
-                <span>{String(index + 1).padStart(2, '0')}</span>
-                {item.name}
-              </button>
-            ))}
+      {!embedded && (
+        <section className="bt-component-anatomy" aria-labelledby="anatomy">
+          <div className="bt-anatomy-heading">
+            <h2 id="anatomy">理解每一层</h2>
+            <span>{parts.length} 个结构层</span>
           </div>
-          <div className="bt-anatomy-detail">
-            <strong>{part.name}</strong>
-            <p>{part.purpose}</p>
-            <dl>
-              <div>
-                <dt>前端结构</dt>
-                <dd>
-                  <code>{part.structure}</code>
-                </dd>
-              </div>
-              <div>
-                <dt>继承规则</dt>
-                <dd className="bt-anatomy-tokens">
-                  {part.tokens.map((token) => (
-                    <code key={token}>{token}</code>
-                  ))}
-                </dd>
-              </div>
-            </dl>
-            <a href="#/lab">在创作空间统一调整品牌、密度和组件规则 →</a>
+          <div className="bt-anatomy-layout">
+            <div
+              className="bt-anatomy-parts"
+              aria-label={`${catalog.find((c) => c.id === kind)?.name} 结构层`}
+            >
+              {parts.map((item, index) => (
+                <button
+                  type="button"
+                  key={item.name}
+                  aria-pressed={index === partIndex}
+                  onClick={() => setPartIndex(index)}
+                >
+                  <span>{String(index + 1).padStart(2, '0')}</span>
+                  {item.name}
+                </button>
+              ))}
+            </div>
+            <div className="bt-anatomy-detail">
+              <strong>{part.name}</strong>
+              <p>{part.purpose}</p>
+              <dl>
+                <div>
+                  <dt>前端结构</dt>
+                  <dd>
+                    <code>{part.structure}</code>
+                  </dd>
+                </div>
+                <div>
+                  <dt>继承规则</dt>
+                  <dd className="bt-anatomy-tokens">
+                    {part.tokens.map((token) => (
+                      <code key={token}>{token}</code>
+                    ))}
+                  </dd>
+                </div>
+              </dl>
+              <a href="#/lab">在 Lab 调整样式 →</a>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
     </>
   );
 }

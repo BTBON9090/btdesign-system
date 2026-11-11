@@ -725,24 +725,19 @@
 .sp-inspecting [data-bt-kind]:has([data-bt-kind]:hover) {
   outline: none;
 }
-.sp-inspecting[data-selected-kind='button'] [data-bt-kind='button'],
-.sp-inspecting[data-selected-kind='input'] [data-bt-kind='input'],
-.sp-inspecting[data-selected-kind='card'] [data-bt-kind='card'],
-.sp-inspecting[data-selected-kind='table'] [data-bt-kind='table'],
-.sp-inspecting[data-selected-kind='page'] .sp-product,
-.sp-inspecting[data-selected-kind='page'] .sp-login-layout {
-  outline: 2px solid #7c68ea;
+.sp-inspecting [data-bt-selected='true'] {
+  outline: 2px solid #6d59cc;
   outline-offset: 3px;
 }
 .sp-inspecting [data-bt-kind]:hover:after {
-  content: attr(data-bt-kind);
+  content: attr(data-bt-label);
   position: absolute;
   top: -22px;
   left: -1px;
   padding: 2px 6px;
   background: #7c68ea;
   color: white;
-  font: 11px/1.5 monospace;
+  font: 11px/1.5 var(--f-font);
   border-radius: 3px 3px 0 0;
   pointer-events: none;
   z-index: 10;

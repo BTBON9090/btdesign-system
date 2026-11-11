@@ -1,0 +1,82 @@
+.bt-center .bt-component-canvas {
+  padding: 22px 26px;
+  min-width: 0;
+  overflow-y: auto;
+}
+.bt-center .bt-component-canvas-select {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 0 0 18px;
+}
+.bt-center .bt-component-canvas-select label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  color: var(--bt-muted);
+  min-width: 0;
+}
+.bt-center .bt-component-canvas-select select {
+  width: 240px;
+  max-width: 100%;
+  min-height: 36px;
+  border: 1px solid var(--bt-line);
+  border-radius: 6px;
+  background: var(--bt-raised);
+  color: var(--bt-text);
+  font: inherit;
+  padding: 5px 28px 5px 10px;
+}
+.bt-component-canvas-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 12px;
+}
+.bt-component-canvas-actions > a {
+  color: var(--bt-muted);
+  text-decoration: none;
+}
+.bt-component-canvas-actions > a:hover {
+  color: var(--bt-text);
+}
+.bt-center .bt-component-canvas .component-example {
+  min-height: 360px;
+  padding: 28px;
+}
+.bt-center .bt-component-canvas .example-data-table {
+  padding: 18px;
+}
+.bt-component-canvas-select select:focus-visible,
+.bt-component-canvas-actions a:focus-visible {
+  outline: 2px solid var(--bt-focus);
+  outline-offset: 3px;
+}
+@media (max-width: 760px) {
+  .bt-center .bt-component-canvas {
+    padding: 16px 12px;
+  }
+  .bt-center .bt-component-canvas-select {
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .bt-center .bt-component-canvas-select label {
+    width: 100%;
+  }
+  .bt-center .bt-component-canvas-select select {
+    flex: 1;
+    width: 0;
+    max-width: none;
+  }
+  .bt-component-canvas-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .bt-center .bt-component-canvas .component-example {
+    padding: 20px 12px;
+    min-height: 300px;
+  }
+}

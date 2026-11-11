@@ -54,26 +54,26 @@ import {
   getProjectFiles,
   normalizeProject,
   updateProject,
-  selectionKnowledge,
   type ProjectSpec,
   type ProjectScene,
 } from '@btdesign/core';
 import { zipSync, strToU8 } from 'fflate';
-import { ScenePreview, type SceneSelection } from './ScenePreview';
+import { ScenePreview, sceneComponents } from './ScenePreview';
+import { type EditorSelection, selectionLabel } from './component-controls';
+import { catalog } from '../catalog';
+import { useProjectHistory } from './useProjectHistory';
 import { Inspector } from './Inspector';
 import { ComponentCanvas } from './ComponentCanvas';
 import { MigrationPanel } from './MigrationPanel';
 import {
   loadStudio,
   projectDifferences,
-  recordChange,
-  redoChange,
+  resetProjectStyle,
   STORE_KEY,
-  undoChange,
   type Revision,
-  type Timeline,
 } from './model';
 import './Studio.css';
+import './StudioUX.css';
 const apiBase = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/$/, '');
 const sceneLabels: Record<ProjectScene, string> = {
   workspace: '团队工作台',
@@ -84,13 +84,6 @@ const sceneBriefs: Record<ProjectScene, string> = {
   workspace: '为团队搭建一个清晰、克制的管理工作台，便于管理成员和设置。',
   projects: '为设计团队搭建项目协作系统，便于查看项目、筛选状态和追踪任务。',
   login: '为企业产品搭建一个舒适、可信赖的账户登录页面。',
-};
-const selectionLabels: Record<SceneSelection, string> = {
-  page: '页面',
-  button: '按钮',
-  input: '输入框',
-  card: '容器',
-  table: '表格',
 };
 function downloadFile(blob: Blob, name: string) {
   const url = URL.createObjectURL(blob);
@@ -119,11 +112,8 @@ export function Studio({
   notify: (s: string) => void;
 }) {
   const [initial] = useState(loadStudio);
-  const [timeline, setTimeline] = useState<Timeline>({
-    past: [],
-    present: initial.project,
-    future: [],
-  });
+  const history = useProjectHistory(initial);
+  const { timeline, beginChange, endChange } = history;
   const project = timeline.present;
   const [revisions, setRevisions] = useState(initial.revisions);
   const prompt = project.brief;
@@ -131,16 +121,16 @@ export function Studio({
     setProposal(null);
     setCompareBase(null);
     setComparing(false);
-    setTimeline((s) => ({ ...s, present: updateProject(s.present, { brief }), future: [] }));
+    history.patch({ brief });
   }
   const currentProject = useRef(project);
   currentProject.current = project;
   const [stage, setStage] = useState<'canvas' | 'components' | 'rules' | 'handoff'>('canvas');
-  const [selection, setSelection] = useState<SceneSelection | null>('page');
+  const [selection, setSelection] = useState<EditorSelection>({ component: 'page' });
   const [inspect, setInspect] = useState(false);
   const [viewport, setViewport] = useState<'auto' | 'mobile'>('auto');
   const [previewMode, setPreviewMode] = useState<ThemeMode>('light');
-  const [leftOpen, setLeftOpen] = useState(() => window.innerWidth >= 1100);
+  const [leftOpen, setLeftOpen] = useState(false);
   const [rightOpen, setRightOpen] = useState(() => window.innerWidth >= 1200);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [newOpen, setNewOpen] = useState(false);
@@ -172,6 +162,10 @@ export function Studio({
     setBusy(false);
   }, [project]);
   const shown = proposal?.project || project;
+  useEffect(() => {
+    if (stage === 'canvas' && !sceneComponents[shown.scene].includes(selection.component))
+      setSelection({ component: 'page' });
+  }, [stage, shown.scene, selection.component]);
   const files = useMemo(() => getProjectFiles(shown), [shown]);
   const activeFile = files[fileName] !== undefined ? fileName : Object.keys(files)[0];
   const previous = compareBase || timeline.past.at(-1) || project;
@@ -179,12 +173,15 @@ export function Studio({
   const tokens = createTheme(shown.theme, previewMode);
   useEffect(() => {
     try {
-      localStorage.setItem(STORE_KEY, JSON.stringify({ project, revisions }));
+      localStorage.setItem(
+        STORE_KEY,
+        JSON.stringify({ project, revisions, past: timeline.past, future: timeline.future }),
+      );
       setSaveState('saved');
     } catch {
       setSaveState('error');
     }
-  }, [project, revisions]);
+  }, [timeline, revisions]);
   useEffect(() => {
     const ac = new AbortController();
     fetch(`${apiBase}/health`, { signal: ac.signal })
@@ -200,42 +197,75 @@ export function Studio({
       controller.current?.abort();
     };
   }, []);
+  function travel(direction: 'undo' | 'redo') {
+    if (proposal) return;
+    setCompareBase(null);
+    setComparing(false);
+    setError('');
+    direction === 'undo' ? history.undo() : history.redo();
+  }
   useEffect(() => {
     const key = (event: KeyboardEvent) => {
-      const el = event.target as HTMLElement;
-      if (el.closest('input,textarea,select,[contenteditable=true],dialog')) return;
+      const el = event.target instanceof HTMLElement ? event.target : null;
+      if (event.key === 'Escape') setInspect(false);
+      const textInput =
+        el instanceof HTMLInputElement &&
+        !['range', 'color', 'checkbox', 'radio', 'button', 'submit'].includes(el.type);
+      if (textInput || el?.closest('textarea,[contenteditable=true],dialog')) return;
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'z') {
         event.preventDefault();
-        setProposal(null);
-        setCompareBase(null);
-        setComparing(false);
-        setTimeline((s) => (event.shiftKey ? redoChange(s) : undoChange(s)));
-      }
-      if (event.key === 'Escape') {
-        setInspect(false);
+        travel(event.shiftKey ? 'redo' : 'undo');
+      } else if (event.ctrlKey && event.key.toLowerCase() === 'y') {
+        event.preventDefault();
+        travel('redo');
       }
     };
     window.addEventListener('keydown', key);
     return () => window.removeEventListener('keydown', key);
-  }, []);
+  }, [proposal, history.undo, history.redo]);
+  function selectTarget(value: EditorSelection) {
+    endChange();
+    setSelection(value);
+    if (value.component === 'page' && stage === 'components') setStage('rules');
+    setRightOpen(true);
+  }
+  function changeStage(value: typeof stage) {
+    endChange();
+    setStage(value);
+    if (value === 'rules') {
+      setSelection({ component: 'page' });
+      setRightOpen(true);
+    }
+    if (value === 'components' && selection.component === 'page')
+      setSelection({ component: 'button' });
+    if (value === 'canvas' && !sceneComponents[shown.scene].includes(selection.component))
+      setSelection({ component: 'page' });
+  }
+  function restoreStyle() {
+    commit(resetProjectStyle(project));
+    notify(
+      project.policy.locked.length ? '已恢复未锁定的样式，可撤销。' : '已恢复默认样式，可撤销。',
+    );
+  }
   function commit(next: ProjectSpec) {
     controller.current?.abort();
     setCompareBase(null);
     setComparing(false);
     setProposal(null);
-    setTimeline((s) => recordChange(s, next));
+    history.commit(next);
   }
   function patch(value: unknown) {
     if (proposal) {
       setProposal((p) => (p ? { ...p, project: updateProject(p.project, value) } : p));
-    } else setTimeline((s) => recordChange(s, updateProject(s.present, value)));
+    } else history.patch(value);
   }
   function selectScene(scene: ProjectScene) {
     setError('');
     patch({ scene });
     setStage('canvas');
-    setSelection('page');
+    setSelection({ component: 'page' });
     setInspect(false);
+    if (window.innerWidth < 1100) setLeftOpen(false);
   }
   function saveVersion() {
     const label = revisionName.trim() || `版本 ${revisions.length + 1}`;
@@ -412,7 +442,7 @@ export function Studio({
             className="active"
             title="创作空间"
             aria-label="创作空间"
-            onClick={() => setStage('canvas')}
+            onClick={() => changeStage('canvas')}
           >
             <Layers3 size={19} />
             <span>创作</span>
@@ -533,17 +563,7 @@ export function Studio({
               </div>
               <div className="bt-brief-body">
                 <div className="bt-intro">
-                  <span className="bt-overline">从一个想法开始</span>
-                  <h1>
-                    你想做一个
-                    <br />
-                    <span>怎样的系统？</span>
-                  </h1>
-                  <p>
-                    说说使用者、要解决的问题，
-                    <br />
-                    以及你希望它带给人的感受。
-                  </p>
+                  <h1>创建你的系统</h1>
                 </div>
                 <form
                   className="bt-composer"
@@ -558,6 +578,8 @@ export function Studio({
                   <textarea
                     id="studio-brief"
                     value={prompt}
+                    onFocus={beginChange}
+                    onBlur={endChange}
                     onChange={(e) => setPrompt(e.target.value)}
                     placeholder="例如：给一家创意工作室搭建项目协作系统。清爽、有秩序，保留一点活力。"
                     minLength={4}
@@ -594,7 +616,7 @@ export function Studio({
                 )}
                 {!busy && connectionChecked && !health?.configured && (
                   <div className="bt-connection-help">
-                    AI 尚未连接。你可以先从下方场景开始。
+                    AI 未连接，仍可手动编辑。
                     <button onClick={() => setSettingsOpen(true)}>
                       配置连接
                       <ArrowUpRight size={10} />
@@ -607,7 +629,7 @@ export function Studio({
                   </div>
                 )}
                 <div className="bt-starter-heading">
-                  <span>或者，从一个熟悉的场景开始</span>
+                  <span>示例场景</span>
                 </div>
                 <div className="bt-scene-list">
                   {(['workspace', 'projects', 'login'] as ProjectScene[]).map((scene) => (
@@ -639,14 +661,6 @@ export function Studio({
                   </span>
                   <ArrowUpRight size={13} />
                 </button>
-                <div className="bt-brief-note">
-                  <span className="bt-tiny-rule" />
-                  AI 生成的每个方案，都遵守你锁定的品牌规则。
-                </div>
-              </div>
-              <div className="bt-brief-footer">
-                <ShieldCheck size={13} />
-                <span>设计规则与组件代码一起交付</span>
               </div>
             </aside>
           )}
@@ -655,26 +669,27 @@ export function Studio({
               <div className="bt-stage-tabs" aria-label="工作阶段">
                 {!leftOpen && (
                   <button
-                    className="bt-icon"
-                    aria-label="展开创作简报"
+                    className="bt-scene-toggle"
+                    aria-label="展开场景与 AI"
                     onClick={() => setLeftOpen(true)}
                   >
                     <PanelLeftClose size={15} />
+                    <span>场景</span>
                   </button>
                 )}
                 {(
                   [
-                    ['canvas', '画布'],
-                    ['components', '组件画布'],
-                    ['rules', '设计规则'],
-                    ['handoff', '开发交付'],
+                    ['canvas', '界面'],
+                    ['components', '组件'],
+                    ['rules', '规则'],
+                    ['handoff', '交付'],
                   ] as const
                 ).map(([id, label]) => (
                   <button
                     key={id}
                     aria-pressed={stage === id}
                     className={stage === id ? 'active' : ''}
-                    onClick={() => setStage(id)}
+                    onClick={() => changeStage(id)}
                   >
                     {id === 'canvas' ? (
                       <Layers3 size={13} />
@@ -689,24 +704,37 @@ export function Studio({
               </div>
               <div className="bt-history-controls">
                 <button
-                  className="bt-icon"
+                  className="bt-history-button"
                   title="撤销 ⌘Z"
                   aria-label="撤销"
                   disabled={!timeline.past.length || !!proposal}
-                  onClick={() => setTimeline(undoChange)}
+                  onClick={() => travel('undo')}
                 >
                   <Undo2 size={14} />
+                  <span>撤销</span>
                 </button>
                 <button
-                  className="bt-icon"
+                  className="bt-history-button"
                   title="重做 ⌘⇧Z"
                   aria-label="重做"
                   disabled={!timeline.future.length || !!proposal}
-                  onClick={() => setTimeline(redoChange)}
+                  onClick={() => travel('redo')}
                 >
                   <Redo2 size={14} />
+                  <span>重做</span>
                 </button>
-                <span />
+                <button
+                  className="bt-history-button"
+                  aria-label="恢复默认样式"
+                  title="恢复未锁定的样式，保留内容；可撤销"
+                  disabled={
+                    !!proposal || !projectDifferences(project, resetProjectStyle(project)).length
+                  }
+                  onClick={restoreStyle}
+                >
+                  <RotateCcw size={14} />
+                  <span>恢复样式</span>
+                </button>
                 <button
                   className={`bt-icon ${comparing ? 'pressed' : ''}`}
                   aria-label="比较调整前后"
@@ -783,15 +811,6 @@ export function Studio({
                 <div
                   className={`bt-canvas ${viewport === 'mobile' ? 'mobile-canvas' : ''} ${comparing ? 'compare-canvas' : ''}`}
                 >
-                  <div className="bt-canvas-topline">
-                    <span>{comparing ? '设计对照' : '真实组件 · 可以直接操作'}</span>
-                    <span>
-                      {viewport === 'mobile' ? '390 px' : '自适应宽度'}
-                      <span className="bt-keycap">
-                        {shown.framework === 'react' ? 'React' : 'Vue 3'}
-                      </span>
-                    </span>
-                  </div>
                   {comparing ? (
                     <div className="bt-compare-layout">
                       <div>
@@ -828,10 +847,7 @@ export function Studio({
                         mode={previewMode}
                         inspect={inspect}
                         selected={selection}
-                        onSelect={(s) => {
-                          setSelection(s);
-                          setRightOpen(true);
-                        }}
+                        onSelect={selectTarget}
                         notify={notify}
                       />
                     </div>
@@ -852,13 +868,6 @@ export function Studio({
                       )}
                     </div>
                   )}
-                  <div className="bt-canvas-caption">
-                    <span>
-                      <span className="bt-live-dot" />
-                      主题与组件实时同步
-                    </span>
-                    <span>示例数据 · 本地交互</span>
-                  </div>
                 </div>
                 <div className="bt-selection-bar">
                   <button
@@ -867,32 +876,39 @@ export function Studio({
                     onClick={() => setInspect(!inspect)}
                   >
                     <MousePointer2 size={15} />
-                    {inspect ? '正在检查元素' : '选择并理解界面'}
+                    {inspect ? '退出选择' : '选择元素'}
                   </button>
-                  <span className="bt-selection-divider" />
-                  {(['page', 'button', 'input', 'card', 'table'] as SceneSelection[])
-                    .filter(
-                      (s) =>
-                        (shown.scene === 'workspace' || s !== 'table') &&
-                        (shown.scene !== 'projects' || s !== 'input'),
-                    )
-                    .map((s) => (
-                      <button
-                        key={s}
-                        className={selection === s ? 'selected' : ''}
-                        onClick={() => {
-                          setSelection(s);
-                          setInspect(true);
-                          setRightOpen(true);
-                        }}
-                      >
-                        {selectionLabels[s]}
-                      </button>
-                    ))}
+                  <button
+                    className={selection.component === 'page' ? 'selected' : ''}
+                    aria-pressed={selection.component === 'page'}
+                    onClick={() => selectTarget({ component: 'page' })}
+                  >
+                    整体样式
+                  </button>
+                  <label className="bt-target-select">
+                    <span className="sr-only">画布组件</span>
+                    <select
+                      aria-label="画布组件"
+                      value={selection.component}
+                      onChange={(event) => {
+                        selectTarget({
+                          component: event.target.value as EditorSelection['component'],
+                        });
+                        setInspect(true);
+                      }}
+                    >
+                      <option value="page">选择组件</option>
+                      {catalog
+                        .filter((item) => sceneComponents[shown.scene].includes(item.id))
+                        .map((item) => (
+                          <option key={item.id} value={item.id}>
+                            {item.cn}
+                          </option>
+                        ))}
+                    </select>
+                  </label>
                   <span className="bt-selection-hint">
-                    {inspect
-                      ? '点击画布元素，看懂它的设计与代码'
-                      : '切换「选择」后，点击元素查看规则'}
+                    {inspect ? `已选：${selectionLabel(selection)}` : '示例数据 · 仅本地交互'}
                   </span>
                 </div>
               </>
@@ -900,6 +916,8 @@ export function Studio({
               <ComponentCanvas
                 project={shown}
                 mode={previewMode}
+                selection={selection}
+                onSelect={selectTarget}
                 onModeChange={() => setPreviewMode(previewMode === 'light' ? 'dark' : 'light')}
                 onPatch={patch}
                 notify={notify}
@@ -909,12 +927,8 @@ export function Studio({
             ) : (
               <section className="bt-handoff">
                 <header>
-                  <span className="bt-overline">把设计意图完整带进项目</span>
-                  <h1>规则，跟着代码一起走。</h1>
-                  <p>
-                    设计师的决策、组件的约定和当前主题，都在这份交付包里。新成员与 AI
-                    可以从同一个起点继续。
-                  </p>
+                  <h1>开发交付</h1>
+                  <p>导出当前设计规则、组件和前端项目。</p>
                 </header>
                 <div className="bt-handoff-actions">
                   <button
@@ -951,8 +965,8 @@ export function Studio({
                 )}
                 {!includePackages && (
                   <p className="bt-handoff-note">
-                    未包含安装包时，请先从本仓库获取 tokens 与所选框架的 tarball，放入 packages
-                    目录后再安装依赖。
+                    未包含安装包时，请先从本仓库获取 tokens、engine 与所选框架的 tarball，放入
+                    packages 目录后再安装依赖。
                   </p>
                 )}
                 <div className="bt-code-workspace">
@@ -1041,32 +1055,17 @@ export function Studio({
                 </button>
               </div>
             )}
-            <div className="bt-workflow-status">
-              <span>
-                <ShieldCheck size={12} />
-                {shown.policy.locked.length
-                  ? `${shown.policy.locked.length} 项品牌规则已锁定`
-                  : '当前可自由探索'}
-                <button onClick={() => setStage('rules')}>
-                  管理规则
-                  <ChevronRight size={10} />
-                </button>
-              </span>
-              <span>
-                设计意图 <ArrowRight size={10} /> 组件契约 <ArrowRight size={10} /> 项目代码
-              </span>
-            </div>
           </section>
-          {rightOpen && (
+          {rightOpen && stage !== 'handoff' && (
             <Inspector
               project={shown}
               mode={previewMode}
-              selected={selection}
+              selection={selection}
               onPatch={patch}
-              onSelect={setSelection}
+              onSelect={selectTarget}
               onClose={() => setRightOpen(false)}
-              inspect={inspect}
-              onInspect={() => setInspect(!inspect)}
+              onBeginChange={beginChange}
+              onEndChange={endChange}
             />
           )}
         </div>
@@ -1075,14 +1074,14 @@ export function Studio({
         open={historyOpen}
         onOpenChange={setHistoryOpen}
         title="版本历史"
-        description="保存在当前浏览器。保存重要决定，让后续成员理解变化，并随时恢复。"
+        description="已保存的版本保存在当前浏览器，可预览或恢复。"
       >
         <div className="bt-revision-list">
           {revisions.length === 0 ? (
             <div className="bt-dialog-empty">
               <History size={26} />
-              <h3>留下第一个设计决定</h3>
-              <p>可以在顶部「保存版本」，为当前规则与界面记录一个名字。</p>
+              <h3>还没有保存的版本</h3>
+              <p>点击「保存版本」，保留当前设计。</p>
             </div>
           ) : (
             revisions.map((r) => (
@@ -1326,31 +1325,11 @@ function RulesView({
   return (
     <section className="bt-rules-view">
       <header>
-        <span className="bt-overline">让团队始终使用同一种语言</span>
-        <h1>把经验，留在规则里。</h1>
-        <p>这里既解释设计决定，也展示代码如何遵守。锁定的内容会在预设、导入和 AI 调整中保留。</p>
+        <h1>设计规则</h1>
+        <p>锁定的规则会在预设、导入、AI 调整和恢复样式时保留。</p>
       </header>
-      <div className="bt-rule-inheritance">
-        <div>
-          <span>01</span>
-          <strong>品牌基础</strong>
-          <p>气质、颜色、字体、密度</p>
-        </div>
-        <ArrowRight size={17} />
-        <div>
-          <span>02</span>
-          <strong>语义规则</strong>
-          <p>文字、容器、边界、状态</p>
-        </div>
-        <ArrowRight size={17} />
-        <div>
-          <span>03</span>
-          <strong>组件实现</strong>
-          <p>React / Vue 共享约定</p>
-        </div>
-      </div>
       <div className="bt-rules-heading">
-        <h2>哪些决定需要保持一致？</h2>
+        <h2>锁定规则</h2>
         <span>锁定后仍可由你主动解锁</span>
       </div>
       <div className="bt-rule-list">
@@ -1384,7 +1363,7 @@ function RulesView({
             [
               'components',
               '组件定制',
-              '基础控件 / 表单 / 日期 / 树 / 导航 / 列表 / 表格',
+              '组件共享规则',
               '局部调整有明确范围，其他组件继续遵循整体规则。',
             ],
           ] as [ThemeLock, string, string, string][]
@@ -1392,7 +1371,6 @@ function RulesView({
           <div key={key}>
             <div>
               <strong>{label}</strong>
-              <p>{why}</p>
             </div>
             <span>
               {key === 'primary' && <i style={{ background: value }} />}
@@ -1411,7 +1389,7 @@ function RulesView({
         ))}
       </div>
       <div className="bt-rules-heading">
-        <h2>从设计语言，到前端变量</h2>
+        <h2>规则与变量</h2>
         <span>当前 {mode === 'light' ? '浅色' : '深色'}模式</span>
       </div>
       <div className="bt-rule-mappings">
@@ -1439,7 +1417,7 @@ function RulesView({
           <strong>
             当前文字与背景对比度 {contrastRatio(tokens['--f-text'], tokens['--f-bg']).toFixed(2)}:1
           </strong>
-          <p>改变语义颜色后，也要检查焦点、状态和实际内容。规则文件会随交付包一起导出。</p>
+          <p>同时检查焦点、状态色和实际内容的可读性。</p>
         </div>
       </div>
     </section>

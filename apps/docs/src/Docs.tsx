@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { ArrowRight, ArrowUpRight, Check, ChevronRight, Search, Sparkles } from 'lucide-react';
 import { Alert, Badge } from '@btdesign/react';
 import type { ThemeMode } from '@btdesign/tokens';
-import { catalog, componentAnatomy, type ComponentId, type Framework } from './catalog';
+import { catalog, componentCategories, type ComponentId, type Framework } from './catalog';
 import { ComponentWorkbench } from './ComponentWorkbench';
 import { CodeBlock, FrameworkToggle, Notice, PageLead } from './shared';
 const links = [
@@ -50,7 +50,7 @@ export function Docs({
             组件总览<span>{catalog.length}</span>
           </a>
         </div>
-        {['通用', '数据输入', '数据展示', '导航', '反馈', '布局'].map((group) => (
+        {componentCategories.map((group) => (
           <div className="sidebar-group" key={group}>
             <span className="sidebar-label">{group}</span>
             {catalog
@@ -59,11 +59,11 @@ export function Docs({
                 <a
                   key={c.id}
                   href={`#/components/${c.id}`}
-                  className={selected?.id === c.id ? 'active' : ''}
+                  className={`bt-component-nav-link ${selected?.id === c.id ? 'active' : ''}`}
                   aria-current={selected?.id === c.id ? 'page' : undefined}
                 >
-                  {c.name}
-                  <span>{c.cn}</span>
+                  <b>{c.cn}</b>
+                  <span>{c.name}</span>
                 </a>
               ))}
           </div>
@@ -115,22 +115,6 @@ export function Docs({
               onFrameworkChange={setFramework}
               onAction={notify}
             />
-            <h2 className="doc-section-title" id="usage">
-              使用建议
-            </h2>
-            <div className="usage-columns">
-              <div>
-                <h3>保持意图清晰</h3>
-                <p>{componentAnatomy[selected.id][0].purpose}</p>
-              </div>
-              <div>
-                <h3>跟随整体主题</h3>
-                <p>
-                  在创作空间选择一个元素，查看它继承的设计规则。调整品牌、语义或组件变量，让各页面与
-                  React / Vue 实现共同遵循一份主题。
-                </p>
-              </div>
-            </div>
             <h2 className="doc-section-title" id="api">
               API
             </h2>
@@ -178,11 +162,10 @@ export function Docs({
           </>
         ) : path === '/components' ? (
           <>
-            <PageLead
-              eyebrow="COMPONENTS"
-              title="细节到位，组合自在。"
-              description={`${catalog.length} 个组件族，配合可独立组合的字段、卡片与表格部件。两套框架共享主题、状态与设计规则。`}
-            />
+            <header className="page-lead">
+              <h1>组件</h1>
+              <p>{catalog.length} 个组件族，支持 React 与 Vue。选择组件查看用法和可组合部件。</p>
+            </header>
             <label className="catalog-search">
               <Search size={16} />
               <input
@@ -191,7 +174,14 @@ export function Docs({
                 placeholder="查找组件…"
                 aria-label="查找组件"
               />
-              <span>{catalog.length} components</span>
+              <span>
+                {
+                  catalog.filter((c) =>
+                    (c.name + c.cn + c.category).toLowerCase().includes(filter.toLowerCase()),
+                  ).length
+                }{' '}
+                个组件
+              </span>
             </label>
             <div className="component-catalog">
               {catalog
@@ -204,8 +194,8 @@ export function Docs({
                       <Miniature kind={c.id} />
                     </div>
                     <div className="catalog-card-title">
-                      <strong>{c.name}</strong>
-                      <span>{c.cn}</span>
+                      <strong>{c.cn}</strong>
+                      <span>{c.name}</span>
                       <ArrowUpRight size={14} />
                     </div>
                   </a>
@@ -229,7 +219,7 @@ export function Docs({
               document.getElementById('preview')?.scrollIntoView({ behavior: 'smooth' });
             }}
           >
-            组件实验台
+            预览
           </a>
           <a
             href="#anatomy"
@@ -239,15 +229,6 @@ export function Docs({
             }}
           >
             理解每一层
-          </a>
-          <a
-            href="#usage"
-            onClick={(e) => {
-              e.preventDefault();
-              document.getElementById('usage')?.scrollIntoView({ behavior: 'smooth' });
-            }}
-          >
-            使用建议
           </a>
           <a
             href="#api"
@@ -260,8 +241,7 @@ export function Docs({
           </a>
           <div>
             <Sparkles size={18} />
-            <p>让它成为你的风格。</p>
-            <a href="#/lab">进入创作空间 →</a>
+            <a href="#/lab">在 Lab 调整样式 →</a>
           </div>
         </aside>
       )}

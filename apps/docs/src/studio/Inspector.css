@@ -1,0 +1,298 @@
+/* Focused property editor: one selected component and part at a time. */
+.bt-focused-inspector .bt-inspector-content {
+  padding: 22px 20px;
+}
+.bt-focused-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 22px;
+}
+.bt-focused-heading h2 {
+  margin: 0;
+  color: var(--bt-text);
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.45;
+}
+.bt-global-link {
+  flex-shrink: 0;
+  border: 0;
+  padding: 4px 0;
+  color: var(--bt-muted);
+  background: none;
+  font-size: 11px;
+  cursor: pointer;
+}
+.bt-global-link:hover {
+  color: var(--bt-text);
+}
+.bt-part-picker {
+  display: grid;
+  gap: 8px;
+  color: var(--bt-muted);
+  font-size: 11px;
+  margin-bottom: 18px;
+}
+.bt-part-picker select,
+.bt-global-selects > select {
+  width: 100%;
+  min-height: 36px;
+  padding: 7px 28px 7px 10px;
+  border: 1px solid var(--bt-line);
+  border-radius: 6px;
+  background: var(--bt-raised);
+  color: var(--bt-text);
+  font: inherit;
+  font-size: 12px;
+}
+.bt-single-part {
+  margin: -10px 0 18px;
+  color: var(--bt-muted);
+  font-size: 12px;
+}
+.bt-rule-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+.bt-rule-scope {
+  margin: 0;
+  color: var(--bt-muted);
+  font-size: 11px;
+  line-height: 1.7;
+}
+.bt-rule-actions .bt-rule-scope {
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.bt-rule-lock {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 5px;
+  color: var(--bt-muted);
+  background: none;
+  cursor: pointer;
+}
+.bt-rule-lock:hover {
+  background: var(--bt-subtle);
+  color: var(--bt-text);
+}
+.bt-rule-control {
+  display: grid;
+  gap: 11px;
+  margin: 0 0 24px;
+}
+.bt-rule-control-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.bt-rule-control-heading > label {
+  color: var(--bt-text);
+  font-size: 12px;
+  line-height: 1.5;
+}
+.bt-rule-number {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  color: var(--bt-muted);
+  font-size: 11px;
+}
+.bt-rule-number input {
+  box-sizing: border-box;
+  width: 44px;
+  height: 27px;
+  padding: 3px 4px;
+  border: 1px solid var(--bt-line);
+  border-radius: 4px;
+  background: var(--bt-raised);
+  color: var(--bt-text);
+  text-align: right;
+  font: inherit;
+  appearance: textfield;
+}
+.bt-rule-number input::-webkit-inner-spin-button,
+.bt-rule-number input::-webkit-outer-spin-button {
+  appearance: none;
+  margin: 0;
+}
+.bt-rule-control input[type='range'] {
+  display: block;
+  width: 100%;
+  height: 18px;
+  margin: 0;
+  accent-color: var(--bt-focus);
+  cursor: pointer;
+}
+.bt-rule-control input:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+.bt-rule-reset {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 32px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--bt-muted);
+  font-size: 12px;
+  cursor: pointer;
+}
+.bt-rule-reset:hover:not(:disabled) {
+  color: var(--bt-text);
+}
+.bt-rule-reset:disabled {
+  cursor: default;
+  opacity: 0.4;
+}
+.bt-inherited-part {
+  padding: 8px 0 12px;
+}
+.bt-inherited-part p {
+  color: var(--bt-muted);
+  font-size: 12px;
+  line-height: 1.7;
+}
+.bt-inherited-part button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--bt-text);
+  font-size: 12px;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  cursor: pointer;
+}
+.bt-global-section {
+  margin-bottom: 24px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--bt-line);
+}
+.bt-setting-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 0 0 12px;
+  color: var(--bt-text);
+  font-size: 12px;
+}
+.bt-setting-title h3 {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 500;
+}
+.bt-global-section .bt-rule-control {
+  margin-bottom: 12px;
+}
+.bt-focused-inspector .bt-color-options {
+  margin-bottom: 0;
+}
+.bt-global-selects .bt-setting-title:not(:first-child) {
+  margin-top: 20px;
+}
+.bt-settings-details {
+  border-bottom: 1px solid var(--bt-line);
+  padding: 0 0 18px;
+  margin-bottom: 20px;
+}
+.bt-settings-details > summary {
+  color: var(--bt-text);
+  font-size: 12px;
+  cursor: pointer;
+  padding: 4px 0;
+}
+.bt-settings-details[open] > summary {
+  margin-bottom: 18px;
+}
+.bt-settings-details .bt-field {
+  margin-top: 14px;
+}
+.bt-setting-error {
+  color: var(--f-danger);
+  font-size: 11px;
+  line-height: 1.6;
+  margin: 8px 0 0;
+}
+.bt-component-code-name {
+  display: inline-block;
+  font-size: 12px;
+  color: var(--bt-muted);
+  margin-bottom: 18px;
+}
+.bt-structure-item {
+  margin-bottom: 22px;
+}
+.bt-structure-item h3,
+.bt-part-structure .bt-token-bindings h3 {
+  margin: 0 0 8px;
+  color: var(--bt-text);
+  font-size: 12px;
+  font-weight: 550;
+}
+.bt-structure-item p,
+.bt-part-structure > p {
+  color: var(--bt-muted);
+  font-size: 12px;
+  line-height: 1.7;
+  margin: 0 0 8px;
+}
+.bt-structure-item > code {
+  display: block;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  color: var(--bt-text);
+  font-size: 11px;
+  line-height: 1.7;
+}
+.bt-focused-inspector .bt-token-bindings > div {
+  align-items: flex-start;
+}
+.bt-focused-inspector .bt-token-bindings code {
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+.bt-focused-inspector .bt-token-bindings span {
+  flex-shrink: 0;
+}
+.bt-focused-inspector .bt-component-link {
+  margin-top: 26px;
+}
+.bt-focused-inspector :is(button, input, select, summary):focus-visible {
+  outline: 2px solid var(--bt-focus);
+  outline-offset: 3px;
+}
+
+.bt-shared-scope {
+  min-width: 0;
+  color: var(--bt-muted);
+  font-size: 11px;
+  line-height: 1.7;
+}
+.bt-shared-scope summary {
+  padding: 4px 0;
+  cursor: pointer;
+}
+.bt-shared-scope p {
+  margin: 7px 0 0;
+  color: var(--bt-text);
+  overflow-wrap: anywhere;
+}
+.bt-rule-actions:has(.bt-shared-scope[open]) {
+  align-items: flex-start;
+}

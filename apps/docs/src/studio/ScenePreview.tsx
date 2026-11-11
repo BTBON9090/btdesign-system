@@ -31,17 +31,57 @@ import {
   Users,
 } from 'lucide-react';
 import './ScenePreview.css';
+import { selectionLabel, type EditorSelection } from './component-controls';
 
-export type SceneSelection = 'page' | 'button' | 'input' | 'card' | 'table';
+export type SceneSelection =
+  | 'page'
+  | 'button'
+  | 'input'
+  | 'select'
+  | 'switch'
+  | 'checkbox'
+  | 'field'
+  | 'card'
+  | 'table'
+  | 'avatar'
+  | 'badge';
+export const sceneComponents: Record<ProjectSpec['scene'], EditorSelection['component'][]> = {
+  workspace: [
+    'page',
+    'button',
+    'input',
+    'select',
+    'switch',
+    'field',
+    'card',
+    'table',
+    'avatar',
+    'badge',
+  ],
+  projects: ['page', 'button', 'card', 'avatar', 'badge'],
+  login: ['page', 'button', 'input', 'checkbox', 'field'],
+};
 export interface ScenePreviewProps {
   project: ProjectSpec;
   mode: ThemeMode;
   inspect: boolean;
-  selected: SceneSelection | null;
-  onSelect: (kind: SceneSelection) => void;
+  selected: EditorSelection | null;
+  onSelect: (selection: EditorSelection) => void;
   notify: (message: string) => void;
 }
-const inspectKinds: SceneSelection[] = ['page', 'button', 'input', 'card', 'table'];
+const inspectKinds: SceneSelection[] = [
+  'page',
+  'button',
+  'input',
+  'select',
+  'switch',
+  'checkbox',
+  'field',
+  'card',
+  'table',
+  'avatar',
+  'badge',
+];
 const seedMembers = [
   { name: '林晓', email: 'lin@example.com', role: '设计师', status: '已加入', color: 'rose' },
   {
@@ -1304,18 +1344,63 @@ export function ScenePreview({
   notify,
 }: ScenePreviewProps) {
   const root = useRef<HTMLDivElement>(null);
+  const activeTarget = useRef<HTMLElement | null>(null);
   useEffect(() => {
-    const elements = root.current?.querySelectorAll<HTMLElement>('[data-bt-kind]');
-    elements?.forEach((element) => {
-      element.dataset.btSelected = String(element.dataset.btKind === selected);
-    });
-  }, [selected, project, inspect]);
+    const host = root.current;
+    if (!host) return;
+    const decorate = () => {
+      // Inspect the actual rendered primitive, including Vue's asynchronously mounted tree.
+      const targets: [string, SceneSelection, string?][] = [
+        ['.f-field', 'field', 'spacing'],
+        ['.f-field-label', 'field', 'label'],
+        ['.f-field-description,.f-field-error', 'field', 'validation'],
+        ['.f-input', 'input'],
+        ['.f-select', 'select'],
+        ['.f-checkbox', 'checkbox'],
+        ['.f-switch', 'switch'],
+        ['.f-button', 'button'],
+        ['.f-card', 'card'],
+        ['.f-avatar', 'avatar'],
+        ['.f-badge', 'badge'],
+        ['.f-table', 'table'],
+        ['.f-table-row', 'table', 'rows'],
+        ['.f-table-head,.f-table-cell', 'table', 'cells'],
+      ];
+      targets.forEach(([selector, kind, part]) =>
+        host.querySelectorAll<HTMLElement>(selector).forEach((element) => {
+          element.dataset.btKind = kind;
+          if (part) element.dataset.btPart = part;
+        }),
+      );
+      const elements = [...host.querySelectorAll<HTMLElement>('[data-bt-kind]')];
+      const matches = (element: HTMLElement) =>
+        element.dataset.btKind === selected?.component &&
+        (!selected?.part || element.dataset.btPart === selected.part);
+      const active =
+        activeTarget.current && host.contains(activeTarget.current) && matches(activeTarget.current)
+          ? activeTarget.current
+          : elements.find(matches);
+      elements.forEach((element) => {
+        const current = element === active;
+        element.dataset.btSelected = String(current);
+        const label = selectionLabel({
+          component: element.dataset.btKind as EditorSelection['component'],
+          part: element.dataset.btPart,
+        });
+        element.dataset.btLabel = `${current ? '已选' : '选择'}：${label}`;
+      });
+    };
+    decorate();
+    const observer = new MutationObserver(decorate);
+    observer.observe(host, { childList: true, subtree: true });
+    return () => observer.disconnect();
+  }, [selected, project.scene, project.framework, inspect]);
   return (
     <div
       ref={root}
       className={`sp-scene ${inspect ? 'sp-inspecting' : ''}`}
       data-theme={mode}
-      data-selected-kind={selected || undefined}
+      data-selected-kind={selected?.component}
       style={createTheme(project.theme, mode) as CSSProperties}
       onClickCapture={(event) => {
         if (!inspect) return;
@@ -1327,7 +1412,8 @@ export function ScenePreview({
         if (kind && inspectKinds.includes(kind)) {
           event.preventDefault();
           event.stopPropagation();
-          onSelect(kind);
+          activeTarget.current = target;
+          onSelect({ component: kind, part: target?.dataset.btPart });
         }
       }}
       onKeyDownCapture={(event) => {
@@ -1340,7 +1426,8 @@ export function ScenePreview({
         if (kind && inspectKinds.includes(kind)) {
           event.preventDefault();
           event.stopPropagation();
-          onSelect(kind);
+          activeTarget.current = target;
+          onSelect({ component: kind, part: target?.dataset.btPart });
         }
       }}
     >

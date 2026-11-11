@@ -1,49 +1,64 @@
-import { useState } from 'react';
 import type { ProjectSpec } from '@btdesign/core';
 import type { ThemeMode } from '@btdesign/tokens';
+import { Moon, Sun } from 'lucide-react';
 import { ComponentWorkbench } from '../ComponentWorkbench';
-import { catalog, type ComponentId } from '../catalog';
+import { catalog, componentCategories, type ComponentId } from '../catalog';
+import type { EditorSelection } from './component-controls';
+import './ComponentCanvas.css';
 
 export function ComponentCanvas({
   project,
+  selection,
+  onSelect,
   mode,
   onModeChange,
   onPatch,
   notify,
 }: {
   project: ProjectSpec;
+  selection: EditorSelection;
+  onSelect: (selection: EditorSelection) => void;
   mode: ThemeMode;
   onModeChange: () => void;
   onPatch: (patch: unknown) => void;
   notify: (message: string) => void;
 }) {
-  const [kind, setKind] = useState<ComponentId>('form');
+  const kind = selection.component === 'page' ? 'button' : selection.component;
   return (
-    <section className="bt-component-canvas">
-      <header>
-        <span className="bt-overline">在真实组件上验证设计规则</span>
-        <h1>一套规则，每一个细节。</h1>
-        <p>切换组件、框架和状态，用右侧规则统一调整。当前预览直接继承这套设计系统。</p>
-      </header>
+    <section className="bt-component-canvas" aria-label="组件画布">
       <div className="bt-component-canvas-select">
         <label>
           组件
           <select
             aria-label="组件画布选择"
             value={kind}
-            onChange={(e) => setKind(e.target.value as ComponentId)}
+            onChange={(event) => onSelect({ component: event.target.value as ComponentId })}
           >
-            {catalog.map((item) => (
-              <option key={item.id} value={item.id}>
-                {item.cn} · {item.name}
-              </option>
+            {componentCategories.map((category) => (
+              <optgroup key={category} label={category}>
+                {catalog
+                  .filter((item) => item.category === category)
+                  .map((item) => (
+                    <option key={item.id} value={item.id}>
+                      {item.cn} · {item.name}
+                    </option>
+                  ))}
+              </optgroup>
             ))}
           </select>
         </label>
-        <button className="bt-button" onClick={onModeChange}>
-          {mode === 'light' ? '预览深色组件' : '预览浅色组件'}
-        </button>
-        <a href={`#/components/${kind}`}>打开完整用法 →</a>
+        <div className="bt-component-canvas-actions">
+          <button
+            className="bt-button"
+            onClick={onModeChange}
+            aria-label={mode === 'light' ? '预览深色组件' : '预览浅色组件'}
+            title={mode === 'light' ? '预览深色组件' : '预览浅色组件'}
+          >
+            {mode === 'light' ? <Moon size={14} /> : <Sun size={14} />}
+            {mode === 'light' ? '深色' : '浅色'}
+          </button>
+          <a href={`#/components/${kind}`}>组件文档 ↗</a>
+        </div>
       </div>
       <ComponentWorkbench
         key={kind}
@@ -51,6 +66,7 @@ export function ComponentCanvas({
         framework={project.framework}
         mode={mode}
         liveProject={project}
+        embedded
         onFrameworkChange={(framework) => onPatch({ framework })}
         onAction={notify}
       />

@@ -4,6 +4,8 @@ import { createProject, updateProject } from '@btdesign/core';
 import {
   loadStudio,
   projectDifferences,
+  patchHistory,
+  resetProjectStyle,
   recordChange,
   redoChange,
   STORE_KEY,
@@ -217,4 +219,175 @@ test('comparison includes name, brief, framework, theme, content and nested bran
     projectDifferences(locked, { ...locked, policy: { locked: ['font', 'primary'] } }),
     [],
   );
+});
+
+test('stored undo/redo history survives reload with the reachable fifty valid snapshots', (t) => {
+  const projects = Array.from({ length: 65 }, (_, index) => createProject({ name: String(index) }));
+  const invalid = [
+    null,
+    { ...projects[0], id: {} },
+    { ...projects[0], updatedAt: 'invalid' },
+    { ...projects[0], schemaVersion: 9 },
+  ];
+  storage(t, {
+    [STORE_KEY]: JSON.stringify({
+      project: projects[64],
+      revisions: [],
+      past: [...projects, ...invalid],
+      future: [...invalid, ...projects],
+    }),
+  });
+  const loaded = loadStudio();
+  assert.equal(loaded.past.length, 50);
+  assert.equal(loaded.past[0].name, '15');
+  assert.equal(loaded.past.at(-1)?.name, '64');
+  assert.equal(loaded.future.length, 50);
+  assert.equal(loaded.future[0].name, '0');
+  assert.equal(loaded.future.at(-1)?.name, '49');
+  const timeline: Timeline = { present: loaded.project, past: loaded.past, future: loaded.future };
+  assert.equal(undoChange(timeline).present.name, '64');
+  assert.equal(redoChange(timeline).present.name, '0');
+});
+
+test('legacy stores load with empty history and a recovered project drops unrelated history', (t) => {
+  storage(t, { [STORE_KEY]: JSON.stringify({ project: createProject(), revisions: [] }) });
+  assert.deepEqual(loadStudio().past, []);
+  assert.deepEqual(loadStudio().future, []);
+});
+
+test('corrupt active snapshots recover a saved revision without applying stale history', (t) => {
+  const revision = snapshot(1);
+  storage(t, {
+    [STORE_KEY]: JSON.stringify({
+      project: { schemaVersion: 999 },
+      revisions: [revision],
+      past: [createProject({ name: 'Unrelated past' })],
+      future: [createProject({ name: 'Unrelated future' })],
+    }),
+  });
+  const loaded = loadStudio();
+  assert.equal(loaded.project.id, revision.project.id);
+  assert.deepEqual(loaded.past, []);
+  assert.deepEqual(loaded.future, []);
+});
+
+test('a continuous gesture is one undo step while keeping successive partial edits', () => {
+  const initial = createProject({
+    theme: {
+      primary: '#123456',
+      radius: 8,
+      density: 'comfortable',
+      font: 'system',
+      name: 'Company',
+    },
+  });
+  const baseline: Timeline = { past: [], present: initial, future: [] };
+  let state = baseline;
+  for (let radius = 9; radius <= 20; radius++) {
+    state = patchHistory(state, { theme: { radius } }, baseline);
+    assert.equal(state.past.length, 1);
+  }
+  state = patchHistory(state, { theme: { components: { button: { height: 48 } } } }, baseline);
+  assert.equal(state.present.theme.radius, 20);
+  assert.equal(state.present.theme.components?.button?.height, 48);
+  assert.equal(state.past.length, 1);
+  assert.equal(undoChange(state).present.theme.radius, 8);
+  assert.equal(undoChange(state).present.theme.components, undefined);
+
+  // A new completed gesture is a separate, reachable operation.
+  const secondBase = state;
+  state = patchHistory(state, { theme: { radius: 12 } }, secondBase);
+  state = patchHistory(state, { theme: { radius: 11 } }, secondBase);
+  assert.equal(state.past.length, 2);
+  assert.equal(undoChange(state).present.theme.radius, 20);
+  assert.equal(undoChange(state).present.theme.components?.button?.height, 48);
+});
+
+test('returning a gesture to its starting value creates no empty history and preserves redo', () => {
+  const present = createProject({
+    theme: {
+      name: 'Company',
+      primary: '#123456',
+      radius: 8,
+      density: 'comfortable',
+      font: 'system',
+    },
+  });
+  const future = updateProject(present, { theme: { radius: 16 } });
+  const baseline: Timeline = { past: [], present, future: [future] };
+  const moved = patchHistory(baseline, { theme: { radius: 20 } }, baseline);
+  assert.equal(moved.future.length, 0);
+  const restored = patchHistory(moved, { theme: { radius: 8 } }, baseline);
+  assert.equal(restored, baseline);
+  assert.equal(redoChange(restored).present.theme.radius, 16);
+  const newBranch = patchHistory(restored, { theme: { radius: 10 } });
+  assert.equal(newBranch.future.length, 0);
+});
+
+test('one long gesture never evicts more than one historical operation', () => {
+  let state: Timeline = { past: [], present: createProject({ name: 'Initial' }), future: [] };
+  for (let index = 1; index <= 50; index++) state = patchHistory(state, { name: String(index) });
+  const baseline = state;
+  for (let index = 0; index < 200; index++) {
+    state = patchHistory(state, { theme: { radius: index % 21 } }, baseline);
+  }
+  assert.equal(state.past.length, 50);
+  assert.equal(state.past[0].name, '1');
+  assert.equal(undoChange(state).present.name, '50');
+});
+
+test('resetting style restores defaults while retaining locked decisions and project content', () => {
+  const project = createProject({
+    name: 'Enterprise workspace',
+    brief: 'Keep this brief',
+    framework: 'vue',
+    scene: 'projects',
+    content: { title: 'Delivery', description: 'Custom content', actionLabel: 'New task' },
+    theme: {
+      name: 'Enterprise brand',
+      primary: '#123456',
+      radius: 16,
+      density: 'compact',
+      font: 'inter',
+      semantic: { dark: { text: '#FFFFFF' } },
+      components: { button: { height: 48 }, calendar: { cellSize: 44 } },
+    },
+    policy: { locked: ['primary', 'font', 'semantic'] },
+  });
+  const restored = resetProjectStyle(project);
+  assert.equal(restored.id, project.id);
+  assert.equal(restored.name, project.name);
+  assert.equal(restored.brief, project.brief);
+  assert.equal(restored.framework, 'vue');
+  assert.equal(restored.scene, 'projects');
+  assert.deepEqual(restored.content, project.content);
+  assert.deepEqual(restored.policy, project.policy);
+  assert.equal(restored.theme.name, 'Enterprise brand');
+  assert.equal(restored.theme.primary, '#123456');
+  assert.equal(restored.theme.font, 'inter');
+  assert.deepEqual(restored.theme.semantic, project.theme.semantic);
+  assert.equal(restored.theme.radius, 8);
+  assert.equal(restored.theme.density, 'comfortable');
+  assert.equal(restored.theme.components, undefined);
+  const changed = recordChange({ past: [], present: project, future: [] }, restored);
+  assert.equal(changed.past.length, 1);
+  assert.deepEqual(undoChange(changed).present, project);
+});
+
+test('reset respects component locks and is a no-op when every changed style is locked', () => {
+  const project = createProject({
+    theme: {
+      name: 'Locked',
+      primary: '#123456',
+      radius: 16,
+      density: 'compact',
+      font: 'mono',
+      semantic: { light: { background: '#121212' } },
+      components: { tree: { indent: 28 }, table: { rowHeight: 56 } },
+    },
+    policy: { locked: ['primary', 'radius', 'density', 'font', 'semantic', 'components'] },
+  });
+  const state: Timeline = { past: [], present: project, future: [] };
+  assert.deepEqual(resetProjectStyle(project).theme, project.theme);
+  assert.equal(recordChange(state, resetProjectStyle(project)), state);
 });

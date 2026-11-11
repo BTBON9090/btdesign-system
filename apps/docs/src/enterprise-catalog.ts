@@ -1,4 +1,4 @@
-import type { AnatomyPart, DemoOptions, Framework } from './catalog';
+import type { AnatomyPart, DemoOptions, Framework } from './component-types';
 import {
   enterpriseColumns,
   enterpriseFiles,
@@ -13,7 +13,7 @@ export const enterpriseCatalog = [
     id: 'form',
     name: 'Form',
     cn: '表单',
-    category: '数据输入',
+    category: '文本与字段',
     description: '用一致的字段绑定、校验与错误反馈完成一项业务提交。',
     props: [
       ['initialValues / values', 'Record<string, unknown>', '{}'],
@@ -26,7 +26,7 @@ export const enterpriseCatalog = [
     id: 'calendar',
     name: 'Calendar',
     cn: '日历',
-    category: '数据输入',
+    category: '日期',
     description: '可独立组合的日期网格，支持月份切换、日期约束与键盘选择。',
     props: [
       ['value / modelValue', 'YYYY-MM-DD', '空'],
@@ -39,7 +39,7 @@ export const enterpriseCatalog = [
     id: 'date-picker',
     name: 'DatePicker',
     cn: '日期选择器',
-    category: '数据输入',
+    category: '日期',
     description: '把可编辑日期与日历组合，在输入效率与可视选择之间自由切换。',
     props: [
       ['value / modelValue', 'YYYY-MM-DD', '空'],
@@ -52,7 +52,7 @@ export const enterpriseCatalog = [
     id: 'date-range-picker',
     name: 'DateRangePicker',
     cn: '日期范围',
-    category: '数据输入',
+    category: '日期',
     description: '选择起止日期，保留明确的范围关系与边界规则。',
     props: [
       ['value / modelValue', '[start, end]', '["", ""]'],
@@ -64,7 +64,7 @@ export const enterpriseCatalog = [
     id: 'radio',
     name: 'Radio',
     cn: '单选按钮',
-    category: '数据输入',
+    category: '选择与切换',
     description: '保留原生单选语义，把选择项组合进自己的业务布局。',
     props: [
       ['label / value / name', 'string', '—'],
@@ -76,7 +76,7 @@ export const enterpriseCatalog = [
     id: 'checkbox-group',
     name: 'CheckboxGroup',
     cn: '多选组',
-    category: '数据输入',
+    category: '选择与切换',
     description: '集中管理多项独立选择，保持每个选项的名称与状态清晰可见。',
     props: [
       ['options', 'ChoiceOption[]', '必填'],
@@ -88,7 +88,7 @@ export const enterpriseCatalog = [
     id: 'toggle-group',
     name: 'ToggleGroup',
     cn: '选择按钮组',
-    category: '数据输入',
+    category: '选择与切换',
     description: '用按钮外观表达单选或多选，选择状态与普通操作按钮保持区别。',
     props: [
       ['options', 'ChoiceOption[]', '必填'],
@@ -101,7 +101,7 @@ export const enterpriseCatalog = [
     id: 'segmented',
     name: 'Segmented',
     cn: '分段切换器',
-    category: '导航',
+    category: '选择与切换',
     description: '在紧密关联的视图之间切换，保持选中状态与键盘行为一致。',
     props: [
       ['options', 'ChoiceOption[]', '必填'],
@@ -113,7 +113,7 @@ export const enterpriseCatalog = [
     id: 'button-group',
     name: 'ButtonGroup',
     cn: '按钮组',
-    category: '通用',
+    category: '操作',
     description: '把相关动作组织为一组，继承同一套按钮尺寸与形状规则。',
     props: [
       ['label', 'string', '—'],
@@ -124,7 +124,7 @@ export const enterpriseCatalog = [
     id: 'list',
     name: 'List',
     cn: '列表',
-    category: '数据展示',
+    category: '表格与列表',
     description: '以语义化列表承载内容、辅助说明与逐项操作。',
     props: [
       ['children / default slot', 'ListItem', '—'],
@@ -135,7 +135,7 @@ export const enterpriseCatalog = [
     id: 'file-list',
     name: 'FileList',
     cn: '文件列表',
-    category: '数据展示',
+    category: '表格与列表',
     description: '呈现文件、大小、进度与失败原因，明确每项可执行的动作。',
     props: [
       ['files', 'FileItem[]', '必填'],
@@ -148,7 +148,7 @@ export const enterpriseCatalog = [
     id: 'tree',
     name: 'Tree',
     cn: '树形控件',
-    category: '数据展示',
+    category: '层级与组织',
     description: '展开层级、搜索路径并进行单选或多选，让父子关系与半选状态可理解。',
     props: [
       ['nodes', 'TreeNode[]', '必填'],
@@ -161,7 +161,7 @@ export const enterpriseCatalog = [
     id: 'tree-select',
     name: 'TreeSelect',
     cn: '树选择器',
-    category: '数据输入',
+    category: '层级与组织',
     description: '把树形选择放进字段，在紧凑空间中保留层级、搜索与已选项。',
     props: [
       ['nodes', 'TreeNode[]', '必填'],
@@ -174,7 +174,7 @@ export const enterpriseCatalog = [
     id: 'cascader',
     name: 'Cascader',
     cn: '级联选择器',
-    category: '数据输入',
+    category: '层级与组织',
     description: '逐级理解选项路径，支持单选与多选，并可搜索叶节点。',
     props: [
       ['nodes', 'TreeNode[]', '必填'],
@@ -187,7 +187,7 @@ export const enterpriseCatalog = [
     id: 'org-picker',
     name: 'OrgPicker',
     cn: '组织架构选择器',
-    category: '数据输入',
+    category: '层级与组织',
     description: '在企业组织层级中定位部门与成员，并保留所选项目的完整路径。',
     props: [
       ['nodes', 'TreeNode[]', '必填'],
@@ -200,7 +200,7 @@ export const enterpriseCatalog = [
     id: 'transfer',
     name: 'Transfer',
     cn: '穿梭器',
-    category: '数据输入',
+    category: '选择与切换',
     description: '通过双栏搜索、勾选和移动，明确区分待选项与已选集合。',
     props: [
       ['options', 'ChoiceOption[]', '必填'],
@@ -252,7 +252,7 @@ export const enterpriseCatalog = [
     id: 'data-table',
     name: 'DataTable',
     cn: '高级表格',
-    category: '数据展示',
+    category: '表格与列表',
     description: '把多级表头、树形行、筛选排序和选择编辑组合为可维护的业务表格。',
     props: [
       ['columns / data', 'DataColumn[] / Record[]', '必填'],

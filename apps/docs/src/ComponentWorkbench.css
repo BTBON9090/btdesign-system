@@ -313,3 +313,50 @@
     padding: 12px;
   }
 }
+
+.bt-workbench-code {
+  border: 1px solid var(--f-border);
+  border-top: 0;
+  border-radius: 0 0 7px 7px;
+  background: var(--f-surface);
+}
+.bt-workbench-code > summary {
+  padding: 12px 16px;
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--f-muted);
+}
+.bt-workbench-code > summary:hover {
+  color: var(--f-text);
+}
+.bt-workbench-code > summary:focus-visible {
+  outline: 2px solid var(--f-focus);
+  outline-offset: -3px;
+}
+.bt-workbench-code[open] > summary {
+  border-bottom: 1px solid var(--f-border);
+}
+.bt-workbench-code .code-block {
+  border: 0;
+  margin: 0;
+}
+.bt-workbench-embedded .bt-workbench-controls {
+  gap: 12px 16px;
+}
+.bt-workbench-embedded .bt-workbench-controls .segmented {
+  margin-right: auto;
+}
+.docs-sidebar .bt-component-nav-link {
+  display: grid;
+  gap: 3px;
+}
+.docs-sidebar .bt-component-nav-link > b {
+  font-weight: 500;
+  color: inherit;
+}
+.docs-sidebar .bt-component-nav-link > span {
+  margin-left: 0;
+  font-size: 10px;
+  overflow-wrap: anywhere;
+  opacity: 0.8;
+}

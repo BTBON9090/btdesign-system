@@ -1,4 +1,10 @@
-import { createProject, normalizeProject as normalizeSpec, type ProjectSpec } from '@btdesign/core';
+import {
+  createProject,
+  normalizeProject as normalizeSpec,
+  updateProject,
+  type ProjectSpec,
+} from '@btdesign/core';
+import { defaultTheme } from '@btdesign/tokens';
 
 function normalizeProject(value: unknown): ProjectSpec {
   const project = normalizeSpec(value);
@@ -7,7 +13,12 @@ function normalizeProject(value: unknown): ProjectSpec {
 }
 
 export type Revision = { id: string; label: string; project: ProjectSpec; createdAt: string };
-export type StudioStore = { project: ProjectSpec; revisions: Revision[] };
+export type StudioStore = {
+  project: ProjectSpec;
+  revisions: Revision[];
+  past: ProjectSpec[];
+  future: ProjectSpec[];
+};
 export type Timeline = { past: ProjectSpec[]; present: ProjectSpec; future: ProjectSpec[] };
 export const STORE_KEY = 'btdesign.studio.v1';
 const REVISION_LIMIT = 20;
@@ -63,14 +74,49 @@ function loadRevisions(value: unknown): Revision[] {
   return revisions;
 }
 
+function loadHistory(value: unknown, direction: 'past' | 'future'): ProjectSpec[] {
+  if (!Array.isArray(value)) return [];
+  const history: ProjectSpec[] = [];
+  // Past is oldest first; future is the next redo first. Keep the reachable end.
+  const candidates = direction === 'past' ? value.slice().reverse() : value;
+  for (const candidate of candidates) {
+    const data = record(candidate);
+    if (
+      typeof data.id !== 'string' ||
+      !/^[A-Za-z0-9_-]{1,80}$/.test(data.id) ||
+      typeof data.updatedAt !== 'string' ||
+      !Number.isFinite(Date.parse(data.updatedAt))
+    )
+      continue;
+    try {
+      history.push(normalizeProject(candidate));
+      if (history.length === HISTORY_LIMIT) break;
+    } catch {
+      // A corrupt history entry must not prevent opening the active project.
+    }
+  }
+  return direction === 'past' ? history.reverse() : history;
+}
+
 export function loadStudio(): StudioStore {
   const data = record(readStored(STORE_KEY));
   const revisions = loadRevisions(data.revisions);
   try {
-    return { project: normalizeProject(data.project), revisions };
+    return {
+      project: normalizeProject(data.project),
+      revisions,
+      past: loadHistory(data.past, 'past'),
+      future: loadHistory(data.future, 'future'),
+    };
   } catch {
     // Preserve recoverable work if only the active snapshot was damaged.
-    if (revisions.length) return { project: normalizeProject(revisions[0].project), revisions };
+    if (revisions.length)
+      return {
+        project: normalizeProject(revisions[0].project),
+        revisions,
+        past: [],
+        future: [],
+      };
   }
   const legacy = record(readStored('forma-lab-v1'));
   const initial = createProject({ name: '我的第一套设计系统', scene: 'workspace' });
@@ -81,6 +127,8 @@ export function loadStudio(): StudioStore {
       ...(legacy.policy ? { policy: legacy.policy } : {}),
     }),
     revisions,
+    past: [],
+    future: [],
   };
 }
 
@@ -98,6 +146,23 @@ export function recordChange(state: Timeline, next: ProjectSpec): Timeline {
     present: normalized,
     future: [],
   };
+}
+
+/** Recompute the whole gesture from its original timeline, while merging into the live value. */
+export function patchHistory(state: Timeline, patch: unknown, gestureBase?: Timeline): Timeline {
+  return recordChange(gestureBase ?? state, updateProject(state.present, patch));
+}
+
+/** Reset editable design decisions only; locked rules and all project content survive. */
+export function resetProjectStyle(project: ProjectSpec): ProjectSpec {
+  return updateProject(project, {
+    theme: {
+      ...defaultTheme,
+      name: project.theme.name,
+      semantic: null,
+      components: null,
+    },
+  });
 }
 
 export function undoChange(state: Timeline): Timeline {
