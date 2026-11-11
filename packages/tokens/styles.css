@@ -1781,7 +1781,6 @@
 .f-nav-group-toggle {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 8px;
   min-height: var(--f-nav-item-height);
   width: 100%;
@@ -1794,6 +1793,9 @@
   text-decoration: none;
   text-align: start;
   cursor: pointer;
+}
+.f-nav-group-toggle > span:last-child {
+  margin-inline-start: auto;
 }
 .f-nav-link:hover:not(:disabled),
 .f-nav-group-toggle:hover:not(:disabled) {

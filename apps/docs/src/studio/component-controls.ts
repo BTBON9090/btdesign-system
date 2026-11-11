@@ -46,7 +46,7 @@ export const controlDefinitions = {
   choiceGap: geometry('choice', 'gap', '选项间距'),
   calendarCellSize: geometry('calendar', 'cellSize', '日期尺寸'),
   calendarGap: geometry('calendar', 'gap', '日期间距'),
-  tabsMinHeight: geometry('tabs', 'minHeight', '标签高度'),
+  tabsMinHeight: geometry('tabs', 'minHeight', '标签最小高度'),
   tabsPadding: geometry('tabs', 'paddingInline', '左右留白'),
   tabsFontSize: geometry('tabs', 'fontSize', '文字字号'),
   tabsGap: geometry('tabs', 'gap', '标签间距'),
