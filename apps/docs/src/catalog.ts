@@ -1,3 +1,5 @@
+import { listExampleCode, listPreviewOptions } from './ListExample';
+import { breadcrumbExampleCode } from './breadcrumb-example-code';
 import {
   enterpriseCatalog,
   enterpriseAnatomy,
@@ -25,6 +27,7 @@ import { imageExampleCode, imagePreviewOptions } from './ImageExample';
 import { carouselExampleCode, carouselPreviewOptions } from './CarouselExample';
 import { popoverExampleCode, popoverPreviewOptions } from './PopoverExample';
 import { backTopExampleCode, backTopPreviewOptions } from './BackTopExample';
+import { resizeBoxExampleCode, resizeBoxPreviewOptions } from './resize-box-example-code';
 import { emptyExampleCode, emptyPreviewOptions } from './EmptyStateExample';
 export type { ComponentId, Framework, DemoOptions, AnatomyPart } from './component-types';
 
@@ -216,6 +219,7 @@ export const catalog = [
     props: [
       ['label', 'string', '—'],
       ['checked / modelValue', 'boolean', 'false'],
+      ['indeterminate', 'boolean（由应用控制半选）', 'false'],
       ['disabled', 'boolean', 'false'],
     ],
   },
@@ -455,6 +459,21 @@ export const catalog = [
     ],
   },
   {
+    id: 'resize-box',
+    name: 'ResizeBox',
+    cn: '伸缩框',
+    category: '布局与容器',
+    description: '用可拖动、可键盘调整的分隔条改变两个面板的占比。',
+    props: [
+      ['orientation', 'horizontal | vertical', 'horizontal'],
+      ['size / defaultSize', 'number（百分比）', '— / 50'],
+      ['min / max / step', 'number（百分比）', '10 / 90 / 1'],
+      ['onSizeChange / update:size', '(size: number) => void', '—'],
+      ['disabled / handleLabel', 'boolean / string', 'false / 调整面板大小'],
+      ['first / second', 'ReactNode / Vue slots', '—'],
+    ],
+  },
+  {
     id: 'popover',
     name: 'Popover',
     cn: '气泡卡片',
@@ -634,6 +653,7 @@ export const catalog = [
     props: [
       ['items', '{label, href?}[]', '必填'],
       ['label', 'string', '面包屑导航'],
+      ['separator', 'slash | dot | arrow', 'slash'],
     ],
   },
   {
@@ -734,6 +754,9 @@ function reactCode(id: ComponentId) {
 }
 
 export function componentCode(id: ComponentId, framework: Framework, options?: DemoOptions) {
+  if (id === 'list') return listExampleCode(framework, listPreviewOptions(options));
+  if (id === 'breadcrumb')
+    return breadcrumbExampleCode(framework, options?.breadcrumbSeparator ?? 'slash');
   if (id === 'tabs') return tabsExampleCode(framework, tabsPreviewOptions(options));
   if (id === 'badge') return badgeExampleCode(framework, badgePreviewOptions(options));
   if (id === 'rate') return rateExample(framework, options ?? defaultDemoOptions);
@@ -757,6 +780,7 @@ export function componentCode(id: ComponentId, framework: Framework, options?: D
   if (id === 'carousel') return carouselExampleCode(framework, carouselPreviewOptions(options));
   if (id === 'popover') return popoverExampleCode(framework, popoverPreviewOptions(options));
   if (id === 'back-top') return backTopExampleCode(framework, backTopPreviewOptions(options));
+  if (id === 'resize-box') return resizeBoxExampleCode(framework, resizeBoxPreviewOptions(options));
   if (id === 'empty-state') return emptyExampleCode(framework, emptyPreviewOptions(options));
   if ((id === 'slider' || id === 'time-picker') && !options)
     return configuredComponentCode(id, framework, defaultDemoOptions)!;
@@ -1373,6 +1397,18 @@ export const componentAnatomy: Record<ComponentId, AnatomyPart[]> = {
       '--f-primary',
     ),
   ],
+  'resize-box': [
+    part('面板', 'first / second', '两个面板共享空间，内容由应用提供。', '--f-text'),
+    part(
+      '分隔条',
+      'separator',
+      '拖动或使用方向键调整占比，Home / End 到达边界。',
+      '--f-resize-handle-size',
+      '--f-border',
+      '--f-primary',
+      '--f-focus',
+    ),
+  ],
   popover: [
     part(
       '触发按钮',
@@ -1669,7 +1705,7 @@ function configuredComponentCode(
     case 'switch': {
       const name = id === 'checkbox' ? 'Checkbox' : 'Switch';
       imports = name;
-      body = `<${name} label="${id === 'checkbox' ? '接收产品更新' : '邮件通知'}"${disabled} ${vue ? 'v-model="checked"' : 'defaultChecked'} />`;
+      body = `<${name} label="${id === 'checkbox' ? '接收产品更新' : '邮件通知'}"${disabled}${id === 'checkbox' && o.checkboxIndeterminate ? ' indeterminate' : ''} ${vue ? 'v-model="checked"' : 'defaultChecked'} />`;
       if (vue) state = 'const checked = ref(true);';
       break;
     }

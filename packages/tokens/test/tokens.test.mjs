@@ -260,3 +260,33 @@ test('enterprise geometry shares density defaults, bounds, locks and reset acros
   assert.equal(createTheme({ ...defaultTheme, radius: 15 })['--f-overlay-radius'], '15px');
   assert.match(themeToCSS(theme), /--f-form-gap: 32px/);
 });
+
+test('ResizeBox handle follows bounded, lockable Lab geometry in both themes', () => {
+  const theme = normalizeTheme({ ...defaultTheme, components: { resize: { handleSize: 200 } } });
+  assert.equal(theme.components.resize.handleSize, 24);
+  for (const mode of ['light', 'dark']) {
+    assert.equal(createTheme(theme, mode)['--f-resize-handle-size'], '24px');
+    assert.equal(
+      createTheme({ ...defaultTheme, density: 'compact' }, mode)['--f-resize-handle-size'],
+      '6px',
+    );
+  }
+  assert.deepEqual(
+    applyThemePatch(
+      theme,
+      { components: { resize: { handleSize: 4 } } },
+      { locked: ['components'] },
+    ),
+    theme,
+  );
+  assert.equal(
+    createTheme(applyThemePatch(theme, { components: { resize: { handleSize: null } } }))[
+      '--f-resize-handle-size'
+    ],
+    '8px',
+  );
+  assert.match(
+    readFileSync(new URL('../styles.css', import.meta.url), 'utf8'),
+    /flex:\s*0 0 var\(--f-resize-handle-size/,
+  );
+});

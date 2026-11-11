@@ -2,6 +2,9 @@ import type { DemoOptions } from './catalog';
 import type { EnterpriseId } from './enterprise-catalog';
 import type { FileItem } from '@btdesign/engine';
 import { dropdownPreviewItems } from './dropdown-preview';
+import { dateRangePresets } from './date-range-fixtures';
+import { listVuePreview } from './ListVuePreview';
+import { listPreviewOptions } from './ListExample';
 import {
   enterpriseColumns,
   enterpriseFiles,
@@ -33,6 +36,10 @@ export function createEnterpriseVueDemo(
   onAction: (message: string) => void,
 ) {
   const { defineComponent, h, ref } = vue;
+  const dateOptions = o as DemoOptions & {
+    dateRangeCalendar?: boolean;
+    dateRangePresets?: boolean;
+  };
   return defineComponent({
     name: 'EnterpriseVueExample',
     setup() {
@@ -147,6 +154,8 @@ export function createEnterpriseVueDemo(
                 'onUpdate:modelValue': (next: [string, string]) => (range.value = next),
                 disabled,
                 readonly: o.dateReadOnly,
+                showCalendar: dateOptions.dateRangeCalendar,
+                presets: dateOptions.dateRangePresets ? dateRangePresets : undefined,
               }),
               result(`${range.value[0] || '开始日期'} → ${range.value[1] || '结束日期'}`),
             ]);
@@ -168,6 +177,7 @@ export function createEnterpriseVueDemo(
           case 'checkbox-group':
             return h(ui.CheckboxGroup, {
               ...choice,
+              orientation: o.orientation,
               label: '协作团队',
               modelValue: selected.value,
               'onUpdate:modelValue': (next: string[]) => (selected.value = next),
@@ -206,23 +216,7 @@ export function createEnterpriseVueDemo(
             );
           }
           case 'list':
-            return h(ui.List, { class: 'enterprise-wide' }, () =>
-              ['品牌体系升级', '客户服务门户', '品牌资产中心'].map((name, index) =>
-                h(ui.ListItem, { key: name }, () => [
-                  h(ui.ListItemContent, {}, () => [
-                    h('strong', name),
-                    h('p', `${index === 2 ? '待启动' : '进行中'} · 设计与研发共同维护`),
-                  ]),
-                  h(ui.ListItemActions, {}, () =>
-                    h(
-                      ui.Button,
-                      { variant: 'ghost', onClick: () => onAction(`正在查看 ${name} 的示例`) },
-                      () => '查看',
-                    ),
-                  ),
-                ]),
-              ),
-            );
+            return listVuePreview(vue, ui, listPreviewOptions(o));
           case 'file-list':
             return h(ui.FileList, {
               files: files.value,

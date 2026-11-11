@@ -55,6 +55,7 @@ const groupProps = {
   modelValue: { type: [String, Array] as PropType<string | string[]>, default: undefined },
   defaultValue: { type: [String, Array] as PropType<string | string[]>, default: undefined },
   multiple: Boolean,
+  orientation: { type: String as PropType<'horizontal' | 'vertical'>, default: 'vertical' },
   label: String,
   name: String,
   disabled: { type: Boolean, default: undefined },
@@ -83,7 +84,10 @@ function group(name: string, kind: 'checkbox' | 'toggle' | 'segmented') {
           mergeProps(attrs, bound, {
             class: [
               kind === 'checkbox'
-                ? 'f-choice-group'
+                ? [
+                    'f-choice-group',
+                    props.orientation === 'horizontal' && 'f-choice-group--horizontal',
+                  ]
                 : kind === 'segmented'
                   ? 'f-toggle-group f-segmented'
                   : 'f-toggle-group',
@@ -125,6 +129,18 @@ function group(name: string, kind: 'checkbox' | 'toggle' | 'segmented') {
                           : selected.filter((v) => v !== option.value)
                         : option.value,
                     );
+                    if (props.modelValue !== undefined) {
+                      const target = event.target as HTMLInputElement;
+                      target.checked = selected.includes(option.value);
+                      if (!multi() && typeof target.closest === 'function') {
+                        target
+                          .closest('[role="radiogroup"]')
+                          ?.querySelectorAll<HTMLInputElement>('input[type="radio"]')
+                          .forEach((input) => {
+                            input.checked = selected.includes(input.value);
+                          });
+                      }
+                    }
                   },
                 }),
                 h('span', { class: 'f-choice-copy' }, [
@@ -160,18 +176,7 @@ export const ButtonGroup = defineComponent({
       );
   },
 });
-function part(name: string, tag: string, css: string) {
-  return defineComponent({
-    name,
-    setup(_, { attrs, slots }) {
-      return () => h(tag, mergeProps(attrs, { class: css }), slots.default?.());
-    },
-  });
-}
-export const List = part('BTDESIGNList', 'ul', 'f-list');
-export const ListItem = part('BTDESIGNListItem', 'li', 'f-list-item');
-export const ListItemContent = part('BTDESIGNListItemContent', 'div', 'f-list-item-content');
-export const ListItemActions = part('BTDESIGNListItemActions', 'div', 'f-list-item-actions');
+export { List, ListItem, ListItemContent, ListItemActions } from './list.js';
 export const FileList = defineComponent({
   name: 'BTDESIGNFileList',
   inheritAttrs: false,

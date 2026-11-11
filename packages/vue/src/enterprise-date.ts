@@ -1,3 +1,4 @@
+export type { DateRangePreset } from './date-range-calendar.js';
 import { computed, defineComponent, h, mergeProps, nextTick, ref, watch } from 'vue';
 import type { PropType } from 'vue';
 import {
@@ -12,6 +13,7 @@ import {
 import type { DateRange } from '@btdesign/engine';
 import { useControlId, useFieldControl } from './field.js';
 import { useValue, useDismiss, isDisabled } from './enterprise-shared.js';
+import { DateRangeCalendar, type DateRangePreset } from './date-range-calendar.js';
 const dateProps = {
   modelValue: { type: String, default: undefined },
   defaultValue: { type: String, default: '' },
@@ -26,6 +28,7 @@ export const Calendar = defineComponent({
   props: {
     ...dateProps,
     month: String,
+    range: Array as unknown as PropType<DateRange>,
     weekStartsOn: { type: Number as PropType<0 | 1>, default: 1 },
     label: { type: String, default: '日历' },
   },
@@ -202,6 +205,7 @@ export const Calendar = defineComponent({
             'table',
             {
               role: 'grid',
+              'aria-multiselectable': props.range ? true : undefined,
               'aria-label': `${year}年${Number(displayMonth.value.slice(5))}月`,
               class: 'f-calendar-grid',
             },
@@ -227,7 +231,12 @@ export const Calendar = defineComponent({
                     days.slice(week * 7, week * 7 + 7).map((day) =>
                       h(
                         'td',
-                        { 'aria-selected': day.value === state.value.value },
+                        {
+                          'aria-selected':
+                            props.range?.[0] && props.range?.[1]
+                              ? day.value >= props.range[0] && day.value <= props.range[1]
+                              : day.value === state.value.value,
+                        },
                         h(
                           'button',
                           {
@@ -242,6 +251,15 @@ export const Calendar = defineComponent({
                             'data-date': day.value,
                             'data-outside': !day.currentMonth || undefined,
                             'data-selected': day.value === state.value.value || undefined,
+                            'data-range-start': props.range?.[0] === day.value || undefined,
+                            'data-range-end': props.range?.[1] === day.value || undefined,
+                            'data-in-range':
+                              Boolean(
+                                props.range?.[0] &&
+                                props.range?.[1] &&
+                                day.value >= props.range[0] &&
+                                day.value <= props.range[1],
+                              ) || undefined,
                             'aria-label': day.value,
                             'aria-current': day.value === today ? 'date' : undefined,
                             onFocus: () => (focused.value = day.value),
@@ -532,6 +550,8 @@ export const DateRangePicker = defineComponent({
     disabledDate: Function as PropType<(value: string) => boolean>,
     disabled: { type: Boolean, default: undefined },
     required: { type: Boolean, default: undefined },
+    showCalendar: Boolean,
+    presets: { type: Array as PropType<readonly DateRangePreset[]>, default: () => [] },
   },
   emits: ['update:modelValue'],
   setup(props, { attrs, emit }) {
@@ -549,30 +569,46 @@ export const DateRangePicker = defineComponent({
           { ...attrs, id: undefined, readonly: undefined, readOnly: undefined },
           { class: 'f-date-range', role: 'group', 'aria-label': props.label },
         ),
-        [0, 1].map((index) =>
-          h(DatePicker, {
-            id:
-              index === 0
-                ? String(field(attrs).id ?? generated)
-                : `${String(field(attrs).id ?? generated)}-end`,
-            label: `${props.label}${index === 0 ? '开始' : '结束'}`,
-            showLabel: true,
-            modelValue: state.value.value[index] ?? '',
-            name: props.name ? `${props.name}[${index}]` : undefined,
-            min: props.min,
-            max: props.max,
-            disabledDate: props.disabledDate,
-            disabled: props.disabled,
-            required: props.required,
-            readonly: attrs.readonly ?? attrs.readOnly,
-            'onUpdate:modelValue': (value: string) => {
-              if (props.disabled) return;
-              const range = [...state.value.value];
-              range[index] = value;
-              state.set(normalizeDateRange(range));
-            },
-          }),
-        ),
+        [
+          ...[0, 1].map((index) =>
+            h(DatePicker, {
+              id:
+                index === 0
+                  ? String(field(attrs).id ?? generated)
+                  : `${String(field(attrs).id ?? generated)}-end`,
+              label: `${props.label}${index === 0 ? '开始' : '结束'}`,
+              showLabel: true,
+              modelValue: state.value.value[index] ?? '',
+              name: props.name ? `${props.name}[${index}]` : undefined,
+              min: props.min,
+              max: props.max,
+              disabledDate: props.disabledDate,
+              disabled: props.disabled,
+              required: props.required,
+              readonly: attrs.readonly ?? attrs.readOnly,
+              'onUpdate:modelValue': (value: string) => {
+                if (props.disabled) return;
+                const range = [...state.value.value];
+                range[index] = value;
+                state.set(normalizeDateRange(range));
+              },
+            }),
+          ),
+          props.showCalendar
+            ? h(DateRangeCalendar, {
+                label: props.label,
+                value: state.value.value,
+                disabled:
+                  isDisabled(field({ ...attrs, disabled: props.disabled }).disabled) ||
+                  isDisabled(attrs.readonly ?? attrs.readOnly),
+                presets: props.presets,
+                min: props.min,
+                max: props.max,
+                disabledDate: props.disabledDate,
+                onChange: (range: DateRange) => state.set(range),
+              })
+            : null,
+        ],
       );
   },
 });

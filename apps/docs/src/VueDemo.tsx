@@ -29,6 +29,8 @@ import { statisticPreviewOptions } from './StatisticExample';
 import { imageVueDemo } from './ImageVueDemo';
 import { imagePreviewOptions } from './ImageExample';
 import { createBackTopVueDemo } from './BackTopVueDemo';
+import { createResizeBoxVueDemo } from './ResizeBoxVueDemo';
+import { resizeBoxPreviewOptions } from './resize-box-example-code';
 import { backTopPreviewOptions } from './BackTopExample';
 import { emptyPreviewOptions } from './EmptyStateExample';
 import { popoverVueDemo } from './PopoverVueDemo';
@@ -70,6 +72,7 @@ export function VueDemo({ kind, onAction, options }: VueDemoProps) {
         const emitAction = (message: string) => action.current?.(message);
         const CommentVueDemo = createCommentVueDemo(vue, ui);
         const BackTopVueDemo = createBackTopVueDemo(vue, ui);
+        const ResizeBoxVueDemo = createResizeBoxVueDemo(vue, ui.ResizeBox);
         const TagVueDemo = createTagVueDemo(vue, ui);
         const AnchorVueDemo = createAnchorVueDemo(vue, ui.Anchor);
         if (isEnterpriseId(kind)) {
@@ -181,6 +184,8 @@ export function VueDemo({ kind, onAction, options }: VueDemoProps) {
                   return h(AnchorVueDemo, { options: anchorPreviewOptions(o) });
                 if (kind === 'back-top')
                   return h(BackTopVueDemo, { options: backTopPreviewOptions(o) });
+                if (kind === 'resize-box')
+                  return h(ResizeBoxVueDemo, { options: resizeBoxPreviewOptions(o) });
                 if (kind === 'popover') return popoverVueDemo(vue, ui, popoverPreviewOptions(o));
                 if (kind === 'carousel') return carouselVueDemo(vue, ui, carouselPreviewOptions(o));
                 if (kind === 'image') return imageVueDemo(vue, ui, imagePreviewOptions(o));
@@ -364,6 +369,7 @@ export function VueDemo({ kind, onAction, options }: VueDemoProps) {
                     case 'checkbox':
                       return h(ui.Checkbox, {
                         label: '接收产品更新',
+                        indeterminate: o.checkboxIndeterminate ?? false,
                         disabled,
                         modelValue: notifications.value,
                         'onUpdate:modelValue': (value: boolean) => (notifications.value = value),
@@ -459,6 +465,7 @@ export function VueDemo({ kind, onAction, options }: VueDemoProps) {
                       );
                     case 'breadcrumb':
                       return h(ui.Breadcrumb, {
+                        separator: o.breadcrumbSeparator ?? 'slash',
                         items: [
                           { label: '组件总览', href: '#/components' },
                           { label: '导航' },

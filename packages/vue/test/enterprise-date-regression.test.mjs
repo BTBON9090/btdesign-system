@@ -26,3 +26,25 @@ test('clearable=false removes the clear action', async () => {
   const html = await render(DatePicker, { defaultValue: '2024-02-01', clearable: false });
   assert.doesNotMatch(html, /清空日期/);
 });
+
+test('range calendar is optional and respects disabled and read-only states', async () => {
+  const initial = await render(DateRangePicker, { label: '项目周期' });
+  assert.doesNotMatch(initial, /aria-label="选择项目周期"/);
+  for (const props of [{ disabled: true }, { readonly: true }]) {
+    const html = await render(DateRangePicker, { label: '项目周期', showCalendar: true, ...props });
+    assert.match(html, /<button[^>]*aria-label="选择项目周期"[^>]*disabled/);
+    assert.doesNotMatch(html, /role="dialog"/);
+  }
+});
+
+test('calendar marks range endpoints and interior dates', async () => {
+  const html = await render(Calendar, {
+    month: '2024-02',
+    modelValue: '2024-02-10',
+    range: ['2024-02-10', '2024-02-12'],
+  });
+  assert.match(html, /aria-multiselectable="true"/);
+  assert.equal((html.match(/data-in-range="true"/g) ?? []).length, 3);
+  assert.equal((html.match(/data-range-start="true"/g) ?? []).length, 1);
+  assert.equal((html.match(/data-range-end="true"/g) ?? []).length, 1);
+});

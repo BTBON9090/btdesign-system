@@ -29,6 +29,7 @@ export interface ComponentOverrides {
   navigation?: { itemHeight?: number; padding?: number };
   list?: { rowPadding?: number; gap?: number };
   overlay?: { radius?: number; padding?: number };
+  resize?: { handleSize?: number };
 }
 /** One geometry contract drives normalization, Lab controls and import/export. */
 export const componentGeometry = {
@@ -59,6 +60,9 @@ export const componentGeometry = {
   overlay: {
     radius: { min: 0, max: 20, comfortable: 8, compact: 8, token: '--f-overlay-radius' },
     padding: { min: 8, max: 24, comfortable: 12, compact: 8, token: '--f-overlay-padding' },
+  },
+  resize: {
+    handleSize: { min: 4, max: 24, comfortable: 8, compact: 6, token: '--f-resize-handle-size' },
   },
 } as const;
 export type ThemeLock = 'primary' | 'radius' | 'density' | 'font' | 'semantic' | 'components';

@@ -302,6 +302,7 @@ export const Breadcrumb = defineComponent({
   props: {
     items: { type: Array as PropType<BreadcrumbItem[]>, required: true },
     label: { type: String, default: '面包屑导航' },
+    separator: { type: String as PropType<'slash' | 'dot' | 'arrow'>, default: 'slash' },
   },
   setup(props, { attrs }) {
     return () =>
@@ -320,7 +321,7 @@ export const Breadcrumb = defineComponent({
                 : undefined;
             return h('li', { class: 'f-breadcrumb-item', key: index }, [
               index
-                ? h('span', { class: 'f-breadcrumb-separator', 'aria-hidden': 'true' }, '/')
+                ? h('span', { class: 'f-breadcrumb-separator', 'aria-hidden': 'true' }, props.separator === 'dot' ? '·' : props.separator === 'arrow' ? '›' : '/')
                 : null,
               href && !current
                 ? h('a', { href }, item.label)

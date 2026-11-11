@@ -7,6 +7,7 @@ dist/
 *.log
 *.tgz
 !assets/legacy-downloads/0.3.0/*.tgz
+!assets/legacy-downloads/0.4.0/*.tgz
 apps/docs/public/downloads/
 .vercel/
 test-results/

@@ -235,13 +235,14 @@ export const NumberInput = forwardRef<HTMLInputElement, NumberInputProps>(functi
 export interface BreadcrumbProps extends HTMLAttributes<HTMLElement> {
   items: { label: string; href?: string }[];
   label?: string;
+  separator?: 'slash' | 'dot' | 'arrow';
 }
 function safeHref(href?: string) {
   if (!href || /^(javascript|data|vbscript):/i.test(href.replace(/[\u0000-\u0020\u007f]/g, '')))
     return undefined;
   return href;
 }
-export function Breadcrumb({ items, label = '面包屑导航', className, ...props }: BreadcrumbProps) {
+export function Breadcrumb({ items, label = '面包屑导航', separator = 'slash', className, ...props }: BreadcrumbProps) {
   return (
     <nav
       {...props}
@@ -253,7 +254,7 @@ export function Breadcrumb({ items, label = '面包屑导航', className, ...pro
           <li key={`${index}-${item.label}`} className="f-breadcrumb-item">
             {index > 0 && (
               <span className="f-breadcrumb-separator" aria-hidden="true">
-                /
+                {separator === 'dot' ? '·' : separator === 'arrow' ? '›' : '/'}
               </span>
             )}
             {index === items.length - 1 ? (

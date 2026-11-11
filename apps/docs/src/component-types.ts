@@ -29,6 +29,7 @@ export type ComponentId =
   | 'carousel'
   | 'popover'
   | 'back-top'
+  | 'resize-box'
   | 'alert'
   | 'tabs'
   | 'dialog'
@@ -114,6 +115,10 @@ export interface DemoOptions {
   backTopShape?: 'square' | 'circle';
   backTopVariant?: 'neutral' | 'primary';
   backTopContent?: 'arrow' | 'up' | 'top';
+  listMode?: 'basic' | 'advanced' | 'grid';
+  listColumns?: 2 | 3 | 4;
+  listBordered?: boolean;
+  listSplit?: boolean;
   emptyVariant?: import('./EmptyStateExample').EmptyPreviewVariant;
   emptySize?: 'compact' | 'default' | 'page';
   emptyHeadingLevel?: 2 | 3 | 4 | 5 | 6;
@@ -124,6 +129,8 @@ export interface DemoOptions {
   mentionEmpty?: boolean;
   dateReadOnly?: boolean;
   dateClearable?: boolean;
+  dateRangeCalendar?: boolean;
+  dateRangePresets?: boolean;
   uploadMultiple?: boolean;
   uploadAccept?: 'any' | 'image' | 'text';
   sliderMarks?: boolean;
@@ -149,6 +156,8 @@ export interface DemoOptions {
   dropdownGroup?: boolean;
   dropdownSeparator?: boolean;
   dropdownSubmenu?: boolean;
+  checkboxIndeterminate?: boolean;
+  breadcrumbSeparator?: 'slash' | 'dot' | 'arrow';
   tabsVariant?: 'default' | 'line' | 'text' | 'card' | 'card-gutter' | 'rounded';
   tabsDisabledItem?: boolean;
   size: 'sm' | 'md' | 'lg';

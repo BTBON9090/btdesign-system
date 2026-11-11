@@ -4,6 +4,9 @@ import type { FileItem } from '@btdesign/engine';
 import type { DemoOptions } from './catalog';
 import type { EnterpriseId } from './enterprise-catalog';
 import { dropdownPreviewItems } from './dropdown-preview';
+import { dateRangePresets } from './date-range-fixtures';
+import { ListPreview } from './ListPreview';
+import { listPreviewOptions } from './ListExample';
 import {
   enterpriseColumns,
   enterpriseFiles,
@@ -37,6 +40,10 @@ export function EnterpriseDemo({
   onAction: (message: string) => void;
 }) {
   const disabled = o.state === 'disabled';
+  const dateOptions = o as DemoOptions & {
+    dateRangeCalendar?: boolean;
+    dateRangePresets?: boolean;
+  };
   const [value, setValue] = useState<string | string[]>(o.multiple ? ['design'] : 'design');
   const [checked, setChecked] = useState('team');
   const [selected, setSelected] = useState<string[]>(['design']);
@@ -130,6 +137,8 @@ export function EnterpriseDemo({
             onValueChange={setRange}
             disabled={disabled}
             readOnly={o.dateReadOnly}
+            showCalendar={dateOptions.dateRangeCalendar}
+            presets={dateOptions.dateRangePresets ? dateRangePresets : undefined}
           />
           <output className="enterprise-demo-result">
             {range[0] || '开始日期'} → {range[1] || '结束日期'}
@@ -160,6 +169,7 @@ export function EnterpriseDemo({
     case 'checkbox-group':
       return (
         <ui.CheckboxGroup
+          orientation={o.orientation}
           label="协作团队"
           {...choice}
           value={selected}
@@ -204,23 +214,7 @@ export function EnterpriseDemo({
       );
     }
     case 'list':
-      return (
-        <ui.List className="enterprise-wide">
-          {['品牌体系升级', '客户服务门户', '品牌资产中心'].map((name, index) => (
-            <ui.ListItem key={name}>
-              <ui.ListItemContent>
-                <strong>{name}</strong>
-                <p>{index === 2 ? '待启动' : '进行中'} · 设计与研发共同维护</p>
-              </ui.ListItemContent>
-              <ui.ListItemActions>
-                <ui.Button variant="ghost" onClick={() => onAction(`正在查看 ${name} 的示例`)}>
-                  查看
-                </ui.Button>
-              </ui.ListItemActions>
-            </ui.ListItem>
-          ))}
-        </ui.List>
-      );
+      return <ListPreview options={listPreviewOptions(o)} />;
     case 'file-list':
       return (
         <ui.FileList

@@ -53,6 +53,7 @@ export const controlDefinitions = {
   listGap: geometry('list', 'gap', '条目间距'),
   overlayRadius: geometry('overlay', 'radius', '浮层圆角'),
   overlayPadding: geometry('overlay', 'padding', '浮层内边距'),
+  resizeHandleSize: geometry('resize', 'handleSize', '分隔条宽度'),
 } as const;
 export type ControlId = keyof typeof controlDefinitions;
 export type ControlPart = { id: string; label: string; controls: ControlId[]; anatomy?: number[] };
@@ -142,6 +143,10 @@ const partsByComponent: Record<ComponentId, ControlPart[]> = {
     part('preview', '查看大图', [], [2]),
   ],
   'back-top': [part('button', '返回按钮', ['buttonHeight', 'buttonRadius'], [0])],
+  'resize-box': [
+    part('panes', '面板内容', [], [0]),
+    part('handle', '分隔条', ['resizeHandleSize'], [1]),
+  ],
   popover: [
     part('trigger', '触发按钮', ['buttonHeight', 'buttonRadius'], [0]),
     part('overlay', '浮层', ['overlayRadius', 'overlayPadding'], [1]),

@@ -45,6 +45,7 @@ import {
   Steps,
   Tooltip,
   PageHeader,
+  ResizeBox,
   Anchor,
   Progress,
   Select,
@@ -75,6 +76,8 @@ import { statisticPreviewOptions } from './StatisticExample';
 import { ImageDemo } from './ImageDemo';
 import { imagePreviewOptions } from './ImageExample';
 import { BackTopDemo } from './BackTopDemo';
+import { ResizeBoxDemo } from './ResizeBoxDemo';
+import { resizeBoxPreviewOptions } from './resize-box-example-code';
 import { backTopPreviewOptions } from './BackTopExample';
 import { emptyPreviewOptions } from './EmptyStateExample';
 import { PopoverDemo } from './PopoverDemo';
@@ -125,6 +128,8 @@ export function ComponentDemo({
       />
     );
   if (kind === 'back-top') return <BackTopDemo options={backTopPreviewOptions(options)} />;
+  if (kind === 'resize-box')
+    return <ResizeBoxDemo component={ResizeBox} options={resizeBoxPreviewOptions(options)} />;
   if (kind === 'popover') return <PopoverDemo options={popoverPreviewOptions(options)} />;
   if (kind === 'carousel') return <CarouselDemo options={carouselPreviewOptions(options)} />;
   if (kind === 'image') return <ImageDemo options={imagePreviewOptions(options)} />;
@@ -682,6 +687,7 @@ function ConfiguredDemo({
         <Checkbox
           label="接收产品更新"
           checked={checked}
+          indeterminate={o.checkboxIndeterminate ?? false}
           onCheckedChange={setChecked}
           disabled={disabled}
         />
@@ -781,6 +787,7 @@ function ConfiguredDemo({
     case 'breadcrumb':
       return (
         <Breadcrumb
+          separator={o.breadcrumbSeparator ?? 'slash'}
           items={[
             { label: '组件总览', href: '#/components' },
             { label: '导航' },

@@ -58,6 +58,11 @@ try {
       variants.push(['readonly', { ...defaults, dateReadOnly: true }]);
       if (component.id === 'date-picker')
         variants.push(['no-clear', { ...defaults, dateClearable: false }]);
+      if (component.id === 'date-range-picker')
+        variants.push([
+          'calendar-presets',
+          { ...defaults, dateRangeCalendar: true, dateRangePresets: true },
+        ]);
     }
     if (component.id === 'time-picker') {
       variants.push(['disabled', { ...defaults, state: 'disabled' }]);
@@ -150,6 +155,21 @@ try {
       variants.push([
         'circle-primary-top',
         { ...defaults, backTopShape: 'circle', backTopVariant: 'primary', backTopContent: 'top' },
+      ]);
+    if (component.id === 'breadcrumb')
+      variants.push(['arrow', { ...defaults, breadcrumbSeparator: 'arrow' }]);
+    if (component.id === 'checkbox')
+      variants.push(['indeterminate', { ...defaults, checkboxIndeterminate: true }]);
+    if (component.id === 'checkbox-group')
+      variants.push(['horizontal', { ...defaults, orientation: 'horizontal' }]);
+    if (component.id === 'list') {
+      variants.push(['advanced', { ...defaults, listMode: 'advanced', listBordered: true }]);
+      variants.push(['grid', { ...defaults, listMode: 'grid', listColumns: 4, listSplit: false }]);
+    }
+    if (component.id === 'resize-box')
+      variants.push([
+        'vertical-disabled',
+        { ...defaults, orientation: 'vertical', state: 'disabled' },
       ]);
     if (component.id === 'empty-state')
       variants.push([

@@ -3511,3 +3511,140 @@
   min-height: 16rem;
   padding: calc(var(--f-space) * 3);
 }
+.f-resize-box {
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  color: var(--f-text);
+}
+.f-resize-box--vertical {
+  flex-direction: column;
+}
+.f-resize-box-pane {
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+}
+.f-resize-box-pane--first {
+  flex-grow: 0;
+  flex-shrink: 0;
+}
+.f-resize-box-pane--second {
+  flex: 1;
+}
+.f-resize-box-handle {
+  position: relative;
+  flex: 0 0 var(--f-resize-handle-size, calc(var(--f-space) * 0.5));
+  background: var(--f-resize-handle-color, var(--f-border));
+  cursor: col-resize;
+  touch-action: none;
+}
+.f-resize-box--vertical > .f-resize-box-handle {
+  cursor: row-resize;
+}
+.f-resize-box-handle:hover:not([aria-disabled='true']) {
+  background: var(--f-primary);
+}
+.f-resize-box-handle:focus-visible {
+  outline: 2px solid var(--f-focus);
+  outline-offset: 2px;
+}
+.f-resize-box-handle[aria-disabled='true'] {
+  cursor: default;
+  opacity: 0.5;
+}
+
+/* List layouts */
+.f-list--grid {
+  grid-template-columns: repeat(var(--f-list-columns, 3), minmax(0, 1fr));
+}
+.f-list--bordered {
+  border: 1px solid var(--f-border);
+  border-radius: var(--f-radius);
+}
+.f-list--no-split > .f-list-item {
+  border-bottom: 0;
+}
+.f-list-item-leading,
+.f-list-item-extra {
+  flex: none;
+}
+.f-list-item-extra img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+@media (max-width: 640px) {
+  .f-list--grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Date range calendar */
+.f-date-range-calendar {
+  position: relative;
+  flex: 0 0 auto;
+}
+.f-date-range-open {
+  white-space: nowrap;
+}
+.f-date-range-panel {
+  position: absolute;
+  z-index: 20;
+  inset-block-start: calc(100% + 6px);
+  inset-inline-end: 0;
+  width: max-content;
+  max-width: min(760px, calc(100vw - 32px));
+  max-height: min(80vh, 600px);
+  overflow: auto;
+}
+.f-date-range-calendars {
+  display: flex;
+  align-items: start;
+  gap: var(--f-space, 12px);
+}
+.f-date-range-calendars .f-calendar {
+  flex: 1 0 260px;
+}
+.f-date-range-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--f-choice-gap, 8px);
+  margin-block-end: var(--f-space, 12px);
+}
+.f-date-range-close {
+  margin-block-start: var(--f-space, 12px);
+}
+.f-calendar-day[data-in-range='true'] {
+  background: var(--f-primary-soft);
+  color: var(--f-text);
+}
+.f-calendar-day[data-range-start='true'],
+.f-calendar-day[data-range-end='true'] {
+  background: var(--f-primary);
+  color: var(--f-on-primary);
+}
+@media (max-width: 700px) {
+  .f-date-range-calendars {
+    flex-wrap: wrap;
+  }
+  .f-date-range-calendars .f-calendar {
+    flex-basis: 100%;
+  }
+}
+@media (forced-colors: active) {
+  .f-calendar-day[data-in-range='true'] {
+    outline: 1px solid Highlight;
+  }
+  .f-calendar-day[data-range-start='true'],
+  .f-calendar-day[data-range-end='true'] {
+    outline: 2px solid Highlight;
+  }
+}
+
+/* Choice group orientation */
+.f-choice-group--horizontal {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: start;
+}

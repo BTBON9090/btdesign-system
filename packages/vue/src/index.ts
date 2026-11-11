@@ -43,6 +43,7 @@ import { Popover } from './popover.js';
 import { Mention } from './mention.js';
 import { BackTop } from './back-top.js';
 import { Upload } from './upload.js';
+import { ResizeBox } from './resize-box.js';
 export * from './enterprise-choice.js';
 export * from './enterprise-form.js';
 export * from './enterprise-date.js';
@@ -72,6 +73,7 @@ export * from './popover.js';
 export * from './mention.js';
 export * from './back-top.js';
 export * from './upload.js';
+export * from './resize-box.js';
 export type {
   ChoiceOption,
   TreeNode,
@@ -277,8 +279,13 @@ export const Checkbox = defineComponent({
               : props.modelValue === undefined
                 ? attrs.checked
                 : props.modelValue,
-            onChange: (event: Event) =>
-              emit('update:modelValue', (event.target as HTMLInputElement).checked),
+            onChange: (event: Event) => {
+              const target = event.target as HTMLInputElement;
+              if (!event.defaultPrevented && !props.disabled)
+                emit('update:modelValue', target.checked);
+              if (props.modelValue !== undefined) target.checked = props.modelValue;
+              target.indeterminate = props.indeterminate;
+            },
           }),
         ),
         h('span', {}, slots.default?.() ?? props.label),
@@ -817,6 +824,7 @@ const components = {
   Mention,
   BackTop,
   Upload,
+  ResizeBox,
   Separator,
   Table,
   Skeleton,

@@ -32,6 +32,7 @@ const sizeable: ComponentId[] = [
   'spinner',
 ];
 const disableable: ComponentId[] = [
+  'resize-box',
   'collapse',
   'tag',
   'tooltip',
@@ -121,7 +122,7 @@ export function ComponentWorkbench({
   const [options, setOptions] = useState<DemoOptions>({
     ...defaultDemoOptions,
     variant: variants[kind]?.[0] ?? 'primary',
-    orientation: kind === 'radio-group' || kind === 'timeline' ? 'vertical' : 'horizontal',
+    orientation: kind === 'radio-group' || kind === 'checkbox-group' || kind === 'timeline' ? 'vertical' : 'horizontal',
   });
   const [partIndex, setPartIndex] = useState(0);
   const [savedProject] = useState(() => loadStudio().project);
@@ -293,6 +294,22 @@ export function ComponentWorkbench({
                 <option value="hidden">隐藏</option>
               </select>
             </label>
+          )}
+          {kind === 'date-range-picker' && (
+            <>
+              <label>
+                <input type="checkbox" aria-label="预览双月日历" checked={options.dateRangeCalendar ?? false}
+                  onChange={(event) => update('dateRangeCalendar', event.target.checked)} />
+                双月日历
+              </label>
+              {options.dateRangeCalendar && (
+                <label>
+                  <input type="checkbox" aria-label="预览快捷范围" checked={options.dateRangePresets ?? false}
+                    onChange={(event) => update('dateRangePresets', event.target.checked)} />
+                  快捷范围
+                </label>
+              )}
+            </>
           )}
           {kind === 'upload' && (
             <>
@@ -499,6 +516,65 @@ export function ComponentWorkbench({
                   <option value={4}>H4</option>
                   <option value={5}>H5</option>
                   <option value={6}>H6</option>
+                </select>
+              </label>
+            </>
+          )}
+          {kind === 'list' && (
+            <>
+              <label>
+                布局
+                <select
+                  aria-label="预览列表布局"
+                  value={options.listMode ?? 'basic'}
+                  onChange={(event) =>
+                    update('listMode', event.target.value as NonNullable<DemoOptions['listMode']>)
+                  }
+                >
+                  <option value="basic">基础列表</option>
+                  <option value="advanced">高级列表</option>
+                  <option value="grid">网格列表</option>
+                </select>
+              </label>
+              {options.listMode === 'grid' && (
+                <label>
+                  列数
+                  <select
+                    aria-label="预览列表列数"
+                    value={options.listColumns ?? 3}
+                    onChange={(event) =>
+                      update(
+                        'listColumns',
+                        Number(event.target.value) as NonNullable<DemoOptions['listColumns']>,
+                      )
+                    }
+                  >
+                    <option value={2}>2 列</option>
+                    <option value={3}>3 列</option>
+                    <option value={4}>4 列</option>
+                  </select>
+                </label>
+              )}
+              <label>
+                边框
+                <select
+                  aria-label="预览列表边框"
+                  value={options.listBordered ? 'on' : 'off'}
+                  onChange={(event) => update('listBordered', event.target.value === 'on')}
+                >
+                  <option value="off">无</option>
+                  <option value="on">显示</option>
+                </select>
+              </label>
+              <label>
+                分隔线
+                <select
+                  aria-label="预览列表分隔线"
+                  value={options.listSplit === false ? 'off' : 'on'}
+                  onChange={(event) => update('listSplit', event.target.value === 'on')}
+                >
+                  <option value="on">显示</option>
+                  <option value="off">隐藏</option>
                 </select>
               </label>
             </>
@@ -913,6 +989,32 @@ export function ComponentWorkbench({
               </label>
             </>
           )}
+          {kind === 'checkbox' && (
+            <label>
+              <input type="checkbox" aria-label="预览半选状态" checked={options.checkboxIndeterminate ?? false}
+                onChange={(event) => update('checkboxIndeterminate', event.target.checked)} />
+              半选
+            </label>
+          )}
+          {kind === 'breadcrumb' && (
+            <label>
+              分隔符
+              <select
+                aria-label="预览面包屑分隔符"
+                value={options.breadcrumbSeparator ?? 'slash'}
+                onChange={(event) =>
+                  update(
+                    'breadcrumbSeparator',
+                    event.target.value as NonNullable<DemoOptions['breadcrumbSeparator']>,
+                  )
+                }
+              >
+                <option value="slash">斜杠</option>
+                <option value="dot">圆点</option>
+                <option value="arrow">箭头</option>
+              </select>
+            </label>
+          )}
           {kind === 'tabs' && (
             <>
               <label>
@@ -1310,7 +1412,9 @@ export function ComponentWorkbench({
               </select>
             </label>
           )}
-          {['separator', 'radio-group', 'timeline', 'steps', 'tabs'].includes(kind) && (
+          {['separator', 'radio-group', 'checkbox-group', 'timeline', 'steps', 'tabs', 'resize-box'].includes(
+            kind,
+          ) && (
             <label>
               方向
               <select

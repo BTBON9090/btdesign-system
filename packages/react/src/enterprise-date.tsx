@@ -1,3 +1,4 @@
+export type { DateRangePreset } from './date-range-calendar.js';
 import { useEffect, useId, useRef, useState, type HTMLAttributes, type KeyboardEvent } from 'react';
 import {
   addDays,
@@ -12,6 +13,7 @@ import {
 } from '@btdesign/engine';
 import { Input, useFieldControl } from './fields.js';
 import { cx, useControllable, usePopup } from './enterprise-utils.js';
+import { DateRangeCalendar, type DateRangePreset } from './date-range-calendar.js';
 
 export interface CalendarProps
   extends Omit<HTMLAttributes<HTMLDivElement>, 'defaultValue' | 'onChange'>, DateConstraints {
@@ -19,6 +21,7 @@ export interface CalendarProps
   defaultValue?: string;
   onValueChange?: (value: string) => void;
   month?: string;
+  range?: DateRange;
   onMonthChange?: (month: string) => void;
   disabled?: boolean;
   weekStartsOn?: 0 | 1;
@@ -30,6 +33,7 @@ export function Calendar({
   defaultValue = '',
   onValueChange,
   month,
+  range,
   onMonthChange,
   min,
   max,
@@ -69,7 +73,7 @@ export function Calendar({
       setFocused(value);
       if (month === undefined) setLocalMonth(value.slice(0, 7));
     }
-  }, [value, month]);
+  }, [value]);
   useEffect(() => {
     if (!shouldFocus.current) return;
     shouldFocus.current = false;
@@ -170,6 +174,7 @@ export function Calendar({
       <table
         className="f-calendar-grid"
         role="grid"
+        aria-multiselectable={range ? true : undefined}
         aria-label={`${year}年${Number(safeMonth.slice(5))}月`}
       >
         <thead>
@@ -185,13 +190,27 @@ export function Calendar({
           {Array.from({ length: 6 }, (_, row) => (
             <tr key={row}>
               {days.slice(row * 7, row * 7 + 7).map((day) => (
-                <td key={day.value} aria-selected={selected === day.value}>
+                <td
+                  key={day.value}
+                  aria-selected={
+                    range?.[0] && range?.[1]
+                      ? day.value >= range[0] && day.value <= range[1]
+                      : selected === day.value
+                  }
+                >
                   <button
                     type="button"
                     className="f-calendar-day"
                     data-calendar-day
                     data-outside={!day.currentMonth || undefined}
                     data-selected={selected === day.value || undefined}
+                    data-range-start={range?.[0] === day.value || undefined}
+                    data-range-end={range?.[1] === day.value || undefined}
+                    data-in-range={
+                      Boolean(
+                        range?.[0] && range?.[1] && day.value >= range[0] && day.value <= range[1],
+                      ) || undefined
+                    }
                     aria-label={day.value}
                     aria-current={day.value === today ? 'date' : undefined}
                     disabled={!allowed(day.value)}
@@ -434,6 +453,8 @@ export interface DateRangePickerProps extends Omit<
   value?: DateRange;
   defaultValue?: DateRange;
   onValueChange?: (range: DateRange) => void;
+  showCalendar?: boolean;
+  presets?: readonly DateRangePreset[];
 }
 export function DateRangePicker({
   value,
@@ -442,6 +463,8 @@ export function DateRangePicker({
   label = '日期范围',
   name,
   className,
+  showCalendar = false,
+  presets,
   ...props
 }: DateRangePickerProps) {
   const [range, update] = useControllable(value, defaultValue, onValueChange);
@@ -471,6 +494,18 @@ export function DateRangePicker({
         value={range[1]}
         onValueChange={(next) => update(normalizeDateRange([range[0], next]))}
       />
+      {showCalendar && (
+        <DateRangeCalendar
+          label={label}
+          value={range}
+          onValueChange={update}
+          disabled={Boolean(field.disabled || props.readOnly)}
+          min={props.min}
+          max={props.max}
+          disabledDate={props.disabledDate}
+          presets={presets}
+        />
+      )}
     </div>
   );
 }

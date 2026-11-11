@@ -1,7 +1,7 @@
 export const componentRegistry = {
   schemaVersion: 1,
   library: 'BTDESIGN',
-  version: '0.4.0',
+  version: '0.5.0',
   packages: {
     react: '@btdesign/react',
     vue: '@btdesign/vue',
@@ -51,6 +51,7 @@ export const componentRegistry = {
       '--f-list-gap',
       '--f-overlay-radius',
       '--f-overlay-padding',
+      '--f-resize-handle-size',
     ],
   },
   composition: {
@@ -216,6 +217,24 @@ export const componentRegistry = {
       props: { items: '{id,href,title,children?}[]', activeHref: 'string', label: 'string' },
       notes:
         'The application supplies the current section; hash routers may intercept navigation. Automatic scroll tracking is not implemented.',
+    },
+    {
+      name: 'ResizeBox',
+      purpose: 'Resize two panels using a draggable and keyboard-operable separator',
+      props: {
+        orientation: ['horizontal', 'vertical'],
+        size: 'number (percentage)',
+        defaultSize: 'number (percentage)',
+        min: 'number (percentage)',
+        max: 'number (percentage)',
+        step: 'number (percentage)',
+        disabled: 'boolean',
+        handleLabel: 'string',
+      },
+      react: { first: 'ReactNode', second: 'ReactNode', onSizeChange: '(size:number)=>void' },
+      vue: { first: 'slot', second: 'slot', 'update:size': 'number' },
+      notes:
+        'Two panels only; horizontal or vertical layout. Vertical layout needs an explicit container height.',
     },
     {
       name: 'BackTop',
@@ -426,13 +445,13 @@ export const componentRegistry = {
     {
       name: 'Checkbox',
       purpose: 'Independent selection',
-      props: { label: 'string', disabled: 'boolean' },
+      props: { label: 'string', disabled: 'boolean', indeterminate: 'boolean (controlled by application)' },
       react: {
         checked: 'boolean',
         defaultChecked: 'boolean',
         onCheckedChange: '(checked:boolean)=>void',
       },
-      vue: { modelValue: 'boolean', 'update:modelValue': 'boolean', indeterminate: 'boolean' },
+      vue: { modelValue: 'boolean', 'update:modelValue': 'boolean' },
     },
     {
       name: 'Switch',
@@ -598,7 +617,11 @@ export const componentRegistry = {
     {
       name: 'Breadcrumb',
       purpose: 'Describe location in an information hierarchy',
-      props: { items: '{label:string,href?:string}[]', label: 'string' },
+      props: {
+        items: '{label:string,href?:string}[]',
+        label: 'string',
+        separator: 'slash | dot | arrow',
+      },
       notes:
         'Navigation landmark; final item is the current page. Supply actual destinations, not placeholder hrefs.',
     },
@@ -732,6 +755,8 @@ export const componentRegistry = {
         max: 'ISODate',
         disabledDate: '(ISODate)=>boolean',
         disabled: 'boolean',
+        showCalendar: 'boolean',
+        presets: '{label, value: date pair | () => date pair, disabled?}[]',
       },
       react: {
         value: '[ISODate | empty string, ISODate | empty string]',
@@ -742,7 +767,7 @@ export const componentRegistry = {
         'update:modelValue': 'date pair',
       },
       notes:
-        'Composes two date pickers and normalizes endpoint order. Endpoint constraints do not validate business rules for every date inside the range. Names serialize as name[start] and name[end].',
+        'Composes two date pickers with an optional adjacent-month calendar and caller-supplied presets; normalizes endpoint order. Endpoint constraints do not validate every date inside the range. Names serialize as name[0] and name[1].',
     },
     {
       name: 'Radio',
@@ -769,6 +794,7 @@ export const componentRegistry = {
       name: 'CheckboxGroup',
       purpose: 'Select several independent options',
       props: {
+        orientation: 'horizontal | vertical',
         options: 'ChoiceOption[]',
         name: 'string',
         label: 'string',
@@ -845,6 +871,14 @@ export const componentRegistry = {
     {
       name: 'List',
       purpose: 'Semantic list with independently composable content and actions',
+      props: {
+        layout: 'vertical | grid',
+        columns: '1 | 2 | 3 | 4',
+        bordered: 'boolean',
+        split: 'boolean',
+        leading: 'item leading content',
+        extra: 'item trailing content',
+      },
       react: {
         children: 'ListItem containing ListItemContent and ListItemActions',
       },

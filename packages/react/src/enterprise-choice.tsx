@@ -10,6 +10,9 @@ import type { ChoiceOption, FileItem } from '@btdesign/engine';
 import { formatFileSize, safeHref } from '@btdesign/engine';
 import { useFieldControl } from './fields.js';
 import { cx, useControllable } from './enterprise-utils.js';
+import { List, ListItem, ListItemContent, ListItemActions } from './list.js';
+export { List, ListItem, ListItemContent, ListItemActions } from './list.js';
+export type { ListProps, ListItemProps } from './list.js';
 
 export interface RadioProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'type'> {
   label?: ReactNode;
@@ -49,6 +52,7 @@ export interface CheckboxGroupProps extends Omit<
   disabled?: boolean;
   required?: boolean;
   invalid?: boolean;
+  orientation?: 'horizontal' | 'vertical';
 }
 export function CheckboxGroup({
   options,
@@ -59,6 +63,7 @@ export function CheckboxGroup({
   label,
   className,
   invalid,
+  orientation = 'vertical',
   ...props
 }: CheckboxGroupProps) {
   const id = useId();
@@ -75,7 +80,11 @@ export function CheckboxGroup({
       aria-describedby={field['aria-describedby']}
       aria-invalid={field['aria-invalid']}
       aria-disabled={field.disabled || undefined}
-      className={cx('f-choice-group', className)}
+      className={cx(
+        'f-choice-group',
+        orientation === 'horizontal' && 'f-choice-group--horizontal',
+        className,
+      )}
     >
       {options.map((option, index) => (
         <label
@@ -237,28 +246,6 @@ export function ButtonGroup({ label = '操作', className, ...props }: ButtonGro
     <div {...props} role="group" aria-label={label} className={cx('f-button-group', className)} />
   );
 }
-export const List = forwardRef<HTMLUListElement, HTMLAttributes<HTMLUListElement>>(function List(
-  { className, ...props },
-  ref,
-) {
-  return <ul {...props} ref={ref} className={cx('f-list', className)} />;
-});
-export const ListItem = forwardRef<HTMLLIElement, HTMLAttributes<HTMLLIElement>>(function ListItem(
-  { className, ...props },
-  ref,
-) {
-  return <li {...props} ref={ref} className={cx('f-list-item', className)} />;
-});
-export const ListItemContent = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
-  function ListItemContent({ className, ...props }, ref) {
-    return <div {...props} ref={ref} className={cx('f-list-item-content', className)} />;
-  },
-);
-export const ListItemActions = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
-  function ListItemActions({ className, ...props }, ref) {
-    return <div {...props} ref={ref} className={cx('f-list-item-actions', className)} />;
-  },
-);
 export interface FileListProps extends HTMLAttributes<HTMLUListElement> {
   files: FileItem[];
   disabled?: boolean;

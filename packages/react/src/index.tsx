@@ -2,6 +2,7 @@ import {
   forwardRef,
   useEffect,
   useId,
+  useImperativeHandle,
   useRef,
   useState,
   type ButtonHTMLAttributes,
@@ -101,6 +102,7 @@ export * from './popover.js';
 export * from './mention.js';
 export * from './back-top.js';
 export * from './upload.js';
+export * from './resize-box.js';
 export type {
   ChoiceOption,
   TreeNode,
@@ -117,21 +119,30 @@ export type {
 export interface CheckboxProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'type'> {
   label?: ReactNode;
   onCheckedChange?: (checked: boolean) => void;
+  indeterminate?: boolean;
 }
 export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(function Checkbox(
-  { label, className, onChange, onCheckedChange, ...props },
+  { label, className, onChange, onCheckedChange, indeterminate = false, ...props },
   ref,
 ) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  useImperativeHandle(ref, () => inputRef.current!, []);
+  useEffect(() => {
+    if (inputRef.current) inputRef.current.indeterminate = indeterminate;
+  }, [indeterminate]);
   return (
     <label className={cx('f-choice', className)}>
       <input
         {...props}
         type="checkbox"
-        ref={ref}
+        ref={inputRef}
         className="f-checkbox"
+        aria-checked={indeterminate ? 'mixed' : props['aria-checked']}
         onChange={(event) => {
           onChange?.(event);
-          onCheckedChange?.(event.target.checked);
+          if (!event.defaultPrevented && !props.disabled)
+            onCheckedChange?.(event.currentTarget.checked);
+          event.currentTarget.indeterminate = indeterminate;
         }}
       />
       {label && <span>{label}</span>}

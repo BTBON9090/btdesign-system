@@ -1,5 +1,6 @@
 import type { AnatomyPart, DemoOptions, Framework } from './component-types';
 import { dropdownPreviewItems } from './dropdown-preview';
+import { dateRangePresets } from './date-range-fixtures';
 import {
   enterpriseColumns,
   enterpriseFiles,
@@ -56,12 +57,14 @@ export const enterpriseCatalog = [
     name: 'DateRangePicker',
     cn: '日期范围',
     category: '日期',
-    description: '选择起止日期，保留明确的范围关系与边界规则。',
+    description: '选择起止日期；日期约束检查两个端点，范围内的日期由应用按需校验。',
     props: [
       ['value / modelValue', '[start, end]', '["", ""]'],
       ['min / max / disabledDate', '日期约束', '—'],
       ['label / disabled', 'string / boolean', '—'],
       ['readOnly / readonly', 'boolean', 'false'],
+      ['showCalendar', 'boolean（显示双月日历）', 'false'],
+      ['presets', '{ label, value: [start, end] | () => [start, end], disabled? }[]', '[]'],
     ],
   },
   {
@@ -85,6 +88,7 @@ export const enterpriseCatalog = [
     props: [
       ['options', 'ChoiceOption[]', '必填'],
       ['value / modelValue', 'string[]', '[]'],
+      ['orientation', 'horizontal | vertical', 'vertical'],
       ['label / name / disabled', '原生表单与禁用语义', '—'],
     ],
   },
@@ -131,7 +135,9 @@ export const enterpriseCatalog = [
     category: '表格与列表',
     description: '以语义化列表承载内容、辅助说明与逐项操作。',
     props: [
-      ['children / default slot', 'ListItem', '—'],
+      ['layout / columns', 'vertical | grid / 1–4', 'vertical / 3'],
+      ['bordered / split', 'boolean', 'false / true'],
+      ['leading / extra', 'ReactNode / Vue slots', '—'],
       ['ListItemContent / ListItemActions', '内容与操作部件', '—'],
     ],
   },
@@ -616,6 +622,8 @@ export function enterpriseComponentCode(
   const disabled = o?.state === 'disabled';
   const multiple = o?.multiple ?? false;
   const cascade = o?.cascade ?? false;
+  const dateOptions = o as
+    (DemoOptions & { dateRangeCalendar?: boolean; dateRangePresets?: boolean }) | undefined;
   const options = json(enterpriseOptions),
     nodes = json(enterpriseTree);
   const name = enterpriseCatalog.find((item) => item.id === id)!.name;
@@ -641,7 +649,9 @@ export function enterpriseComponentCode(
         break;
       case 'date-range-picker':
         setup = `const [value, setValue] = useState<[string,string]>(['2026-11-10','2026-11-18']);`;
-        body = `<DateRangePicker label="项目周期" value={value} onValueChange={setValue}${reactDisabled}${reactDateReadOnly} />`;
+        if (dateOptions?.dateRangeCalendar && dateOptions.dateRangePresets)
+          setup += `\n  const presets: { label: string; value: [string, string] }[] = ${json(dateRangePresets)};`;
+        body = `<DateRangePicker label="项目周期" value={value} onValueChange={setValue}${reactDisabled}${reactDateReadOnly}${dateOptions?.dateRangeCalendar ? ' showCalendar' : ''}${dateOptions?.dateRangeCalendar && dateOptions.dateRangePresets ? ' presets={presets}' : ''} />`;
         break;
       case 'radio':
         body = `<Radio name="access" value="team" label="团队可见" defaultChecked${reactDisabled}/>`;
@@ -649,7 +659,7 @@ export function enterpriseComponentCode(
       case 'checkbox-group':
       case 'transfer':
         setup = `const [value, setValue] = useState<string[]>(['design']);`;
-        body = `<${name} label="协作团队" options={${options}} value={value} onValueChange={setValue}${reactDisabled}/>`;
+        body = `<${name} label="协作团队" options={${options}} value={value} onValueChange={setValue}${id === 'checkbox-group' ? ` orientation="${o?.orientation ?? 'vertical'}"` : ''}${reactDisabled}/>`;
         break;
       case 'toggle-group':
       case 'segmented':
@@ -704,7 +714,9 @@ export function enterpriseComponentCode(
       break;
     case 'date-range-picker':
       setup = "const value = ref<[string,string]>(['2026-11-10','2026-11-18']);";
-      body = `<DateRangePicker label="项目周期" v-model="value"${vueDisabled}${vueDateReadOnly}/>`;
+      if (dateOptions?.dateRangeCalendar && dateOptions.dateRangePresets)
+        setup += `\nconst presets: { label: string; value: [string, string] }[] = ${json(dateRangePresets)};`;
+      body = `<DateRangePicker label="项目周期" v-model="value"${vueDisabled}${vueDateReadOnly}${dateOptions?.dateRangeCalendar ? ' show-calendar' : ''}${dateOptions?.dateRangeCalendar && dateOptions.dateRangePresets ? ' :presets="presets"' : ''}/>`;
       break;
     case 'radio':
       setup = "const value = ref('team');";
@@ -713,7 +725,7 @@ export function enterpriseComponentCode(
     case 'checkbox-group':
     case 'transfer':
       setup = `const value = ref(['design']);\nconst options = ${options};`;
-      body = `<${name} label="协作团队" :options="options" v-model="value"${vueDisabled}/>`;
+      body = `<${name} label="协作团队" :options="options" v-model="value"${id === 'checkbox-group' ? ` orientation="${o?.orientation ?? 'vertical'}"` : ''}${vueDisabled}/>`;
       break;
     case 'toggle-group':
     case 'segmented':
