@@ -52,6 +52,9 @@ import { OrganizationTransfer } from './organization-transfer.js';
 import { UploadDropzone } from './upload-dropzone.js';
 export { UploadDropzone } from './upload-dropzone.js';
 export type { UploadDropzoneSource } from './upload-dropzone.js';
+import { UploadFileList } from './upload-file-list.js';
+export { UploadFileList } from './upload-file-list.js';
+export type { UploadFileItem, UploadFileListVariant } from './upload-file-list.js';
 export * from './enterprise-choice.js';
 export * from './enterprise-form.js';
 export * from './enterprise-date.js';
@@ -802,6 +805,7 @@ const components = {
   SearchSelect,
   OrganizationTransfer,
   UploadDropzone,
+  UploadFileList,
   Separator,
   Table,
   Skeleton,

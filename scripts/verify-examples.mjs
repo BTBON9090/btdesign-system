@@ -144,6 +144,16 @@ try {
           state: 'disabled',
         },
       ]);
+    if (component.id === 'upload-file-list')
+      variants.push([
+        'picture-card-error',
+        {
+          ...defaults,
+          uploadFileListVariant: 'picture-card',
+          uploadFileListStatus: 'error',
+          state: 'disabled',
+        },
+      ]);
     if (component.id === 'auto-complete') {
       variants.push([
         'details-suffix',

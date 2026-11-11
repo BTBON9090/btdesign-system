@@ -11,6 +11,8 @@ import { autoCompleteVuePreview } from './auto-complete-preview';
 import { mentionVuePreview } from './mention-preview';
 import { uploadVuePreview } from './upload-preview';
 import { createUploadDropzoneVuePreview } from './UploadDropzoneVuePreview';
+import { createUploadFileListVuePreview } from './UploadFileListVuePreview';
+import { uploadFileListPreviewOptions } from './UploadFileListExample';
 import { uploadDropzonePreviewOptions } from './UploadDropzoneExample';
 import { rateVuePreview } from './rate-preview';
 import { isEnterpriseId } from './enterprise-catalog';
@@ -99,6 +101,7 @@ export function VueDemo({ kind, onAction, options }: VueDemoProps) {
         const AnchorVueDemo = createAnchorVueDemo(vue, ui.Anchor);
         const NumberInputVueDemo = createNumberInputVueDemo(vue, ui.NumberInput, ui.Field);
         const UploadDropzoneVueDemo = createUploadDropzoneVuePreview(vue, ui.UploadDropzone);
+        const UploadFileListVueDemo = createUploadFileListVuePreview(vue, ui.UploadFileList);
         const OrganizationTransferVueDemo = createOrganizationTransferVuePreview(vue, ui);
         if (isEnterpriseId(kind) && kind !== 'tree' && kind !== 'tree-select') {
           app = createApp(
@@ -206,6 +209,8 @@ export function VueDemo({ kind, onAction, options }: VueDemoProps) {
                   return h(NumberInputVueDemo, { options: numberInputPreviewOptions(o) });
                 if (kind === 'upload-dropzone')
                   return h(UploadDropzoneVueDemo, { options: uploadDropzonePreviewOptions(o) });
+                if (kind === 'upload-file-list')
+                  return h(UploadFileListVueDemo, { options: uploadFileListPreviewOptions(o) });
                 if (kind === 'tree') return treeVariantsVuePreview(vue, ui, treeVariantsOptions(o));
                 if (kind === 'tree-select')
                   return treeSelectVuePreview(vue, ui, treeSelectPreviewOptions(o));

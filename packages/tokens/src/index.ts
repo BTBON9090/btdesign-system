@@ -28,6 +28,7 @@ export interface ComponentOverrides {
   tree?: { rowHeight?: number; indent?: number };
   navigation?: { itemHeight?: number; padding?: number };
   list?: { rowPadding?: number; gap?: number };
+  fileList?: { thumbnailSize?: number; pictureCardSize?: number; pictureRadius?: number };
   overlay?: { radius?: number; padding?: number };
   resize?: { handleSize?: number };
   progress?: {
@@ -63,6 +64,29 @@ export const componentGeometry = {
   list: {
     rowPadding: { min: 8, max: 24, comfortable: 16, compact: 10, token: '--f-list-row-padding' },
     gap: { min: 0, max: 16, comfortable: 4, compact: 0, token: '--f-list-gap' },
+  },
+  fileList: {
+    thumbnailSize: {
+      min: 24,
+      max: 160,
+      comfortable: 64,
+      compact: 64,
+      token: '--f-file-thumbnail-size',
+    },
+    pictureCardSize: {
+      min: 64,
+      max: 320,
+      comfortable: 160,
+      compact: 160,
+      token: '--f-file-picture-card-size',
+    },
+    pictureRadius: {
+      min: 0,
+      max: 20,
+      comfortable: 8,
+      compact: 8,
+      token: '--f-file-picture-radius',
+    },
   },
   overlay: {
     radius: { min: 0, max: 20, comfortable: 8, compact: 8, token: '--f-overlay-radius' },
@@ -291,7 +315,10 @@ export function createTheme(input: ThemeConfig, mode: ThemeMode = 'light'): Reco
         Object.entries(fields).map(([key, rule]) => {
           const override = record(record(config.components)[section])[key];
           const fallback =
-            section === 'overlay' && key === 'radius' ? config.radius : rule[config.density];
+            (section === 'overlay' && key === 'radius') ||
+            (section === 'fileList' && key === 'pictureRadius')
+              ? config.radius
+              : rule[config.density];
           return [rule.token, `${override ?? fallback}px`];
         }),
       ),

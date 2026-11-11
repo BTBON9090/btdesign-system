@@ -9,3 +9,4 @@ export * from './organization.js';
 
 export * from './organization-transfer-model.js';
 export * from './file-validation.js';
+export * from './safe-image-href.js';

@@ -18,6 +18,7 @@ import { autoCompleteExample } from './auto-complete-preview';
 import { mentionExample } from './mention-preview';
 import { uploadExample } from './upload-preview';
 import { uploadDropzoneExampleCode, uploadDropzonePreviewOptions } from './UploadDropzoneExample';
+import { uploadFileListExampleCode, uploadFileListPreviewOptions } from './UploadFileListExample';
 import { rateExample } from './rate-preview';
 import { tagExampleCode, type TagPreviewOptions } from './tag-example-code';
 import { timelineExampleCode, type TimelinePreviewOptions } from './timeline-example-code';
@@ -155,6 +156,21 @@ export const catalog = [
       ['maxFiles / existingCount', 'number', '— / 0'],
       ['label', 'string', '选择或拖放文件'],
       ['onFilesChange / filesChange', '(accepted, rejected, source) => void', '—'],
+    ],
+  },
+  {
+    id: 'upload-file-list',
+    name: 'UploadFileList',
+    cn: '上传文件列表',
+    category: '表格与列表',
+    description: '以文件、图片列表或照片墙展示由应用管理的文件状态。',
+    props: [
+      ['items', 'UploadFileItem[]', '必填'],
+      ['variant', 'file | picture | picture-card', 'file'],
+      ['disabled', 'boolean', 'false'],
+      ['onRemove / remove', '(id: string) => void', '—'],
+      ['onRetry / retry', '(id: string) => void', '—'],
+      ['onPreview / preview', '(id: string) => void', '—'],
     ],
   },
   {
@@ -832,6 +848,8 @@ export function componentCode(id: ComponentId, framework: Framework, options?: D
   if (id === 'upload') return uploadExample(framework, options ?? defaultDemoOptions);
   if (id === 'upload-dropzone')
     return uploadDropzoneExampleCode(framework, uploadDropzonePreviewOptions(options));
+  if (id === 'upload-file-list')
+    return uploadFileListExampleCode(framework, uploadFileListPreviewOptions(options));
   if (id === 'input-tag') return inputTagExample(framework, options ?? defaultDemoOptions);
   if (isEnterpriseId(id)) return enterpriseComponentCode(id, framework, options);
   if (id === 'tag') return tagExampleCode(framework, tagPreviewOptions(options));
@@ -1126,6 +1144,37 @@ export const componentAnatomy: Record<ComponentId, AnatomyPart[]> = {
       'validation → status',
       '解释不符合限制的文件；应用负责传输和服务端校验。',
       '--f-danger',
+    ),
+  ],
+  'upload-file-list': [
+    part(
+      '文件条目',
+      'UploadFileList → ul / li',
+      '展示文件名称与应用提供的状态。',
+      '--f-list-row-padding',
+      '--f-list-gap',
+      '--f-choice-gap',
+    ),
+    part(
+      '图片列表缩略图',
+      'picture → image / placeholder',
+      '调整图片列表中的缩略图大小与圆角。',
+      '--f-file-thumbnail-size',
+      '--f-file-picture-radius',
+    ),
+    part(
+      '照片墙卡片',
+      'picture-card → image / placeholder',
+      '调整照片墙卡片的最小宽度与图片圆角。',
+      '--f-file-picture-card-size',
+      '--f-file-picture-radius',
+    ),
+    part(
+      '文件操作',
+      'actions → button',
+      '由应用决定是否允许预览、重试和移除。',
+      '--f-button-height',
+      '--f-button-radius',
     ),
   ],
   mention: [

@@ -1,6 +1,6 @@
 # 企业组件：组合、规则与迁移
 
-BTDESIGN v0.9 提供 69 个组件族、91 个公开组件。React 与 Vue 使用同一份主题和 `@btdesign/engine` 行为层；表单校验、日期计算、树选择与表格处理不再各自复制一套规则。
+BTDESIGN v0.10 提供 70 个组件族、92 个公开组件。React 与 Vue 使用同一份主题和 `@btdesign/engine` 行为层；表单校验、日期计算、树选择与表格处理不再各自复制一套规则。
 
 ## 安装与主题
 
@@ -8,10 +8,10 @@ BTDESIGN v0.9 提供 69 个组件族、91 个公开组件。React 与 Vue 使用
 
 ```sh
 # React
-npm install ./btdesign-engine-0.9.0.tgz ./btdesign-tokens-0.9.0.tgz ./btdesign-react-0.9.0.tgz
+npm install ./btdesign-engine-0.10.0.tgz ./btdesign-tokens-0.10.0.tgz ./btdesign-react-0.10.0.tgz
 
 # Vue
-npm install ./btdesign-engine-0.9.0.tgz ./btdesign-tokens-0.9.0.tgz ./btdesign-vue-0.9.0.tgz
+npm install ./btdesign-engine-0.10.0.tgz ./btdesign-tokens-0.10.0.tgz ./btdesign-vue-0.10.0.tgz
 ```
 
 先导入 `@btdesign/tokens/styles.css`，再导入 Lab 导出的 `theme.css`。所有细分部件沿用品牌色、语义色、字体、尺寸和密度；表单、选择项、日历、树、导航、列表、浮层新增的几何规则同样可以保存、导入、导出与锁定。

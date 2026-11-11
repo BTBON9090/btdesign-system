@@ -15,6 +15,8 @@ import { AutoCompletePreview } from './auto-complete-preview';
 import { MentionPreview } from './mention-preview';
 import { UploadPreview } from './upload-preview';
 import { UploadDropzonePreview } from './UploadDropzonePreview';
+import { UploadFileListPreview } from './UploadFileListPreview';
+import { uploadFileListPreviewOptions } from './UploadFileListExample';
 import { uploadDropzonePreviewOptions } from './UploadDropzoneExample';
 import { RatePreview } from './rate-preview';
 import { isEnterpriseId } from './enterprise-catalog';
@@ -38,6 +40,7 @@ import {
   RadioGroup,
   NumberInput,
   UploadDropzone,
+  UploadFileList,
   Breadcrumb,
   Pagination,
   EmptyState,
@@ -149,6 +152,13 @@ export function ComponentDemo({
       <UploadDropzonePreview
         component={UploadDropzone}
         options={uploadDropzonePreviewOptions(options)}
+      />
+    );
+  if (kind === 'upload-file-list')
+    return (
+      <UploadFileListPreview
+        component={UploadFileList}
+        options={uploadFileListPreviewOptions(options)}
       />
     );
   if (kind === 'tree-select')

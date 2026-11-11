@@ -1,4 +1,4 @@
-import { useState, type CSSProperties } from 'react';
+import { useEffect, useState, type CSSProperties } from 'react';
 import { createTheme, defaultTheme, type ThemeMode, type ThemeConfig } from '@btdesign/tokens';
 import { loadStudio } from './studio/model';
 import {
@@ -61,6 +61,7 @@ const disableable: ComponentId[] = [
   'mention',
   'upload',
   'upload-dropzone',
+  'upload-file-list',
   'input-tag',
   'textarea',
   'select',
@@ -113,6 +114,7 @@ export function ComponentWorkbench({
   onAction,
   liveProject,
   embedded = false,
+  selectedPart,
 }: {
   kind: ComponentId;
   framework: Framework;
@@ -121,6 +123,7 @@ export function ComponentWorkbench({
   onAction: (message: string) => void;
   liveProject?: { name: string; theme: ThemeConfig };
   embedded?: boolean;
+  selectedPart?: string;
 }) {
   const [options, setOptions] = useState<DemoOptions>({
     ...defaultDemoOptions,
@@ -131,6 +134,21 @@ export function ComponentWorkbench({
         : 'horizontal',
   });
   const [partIndex, setPartIndex] = useState(0);
+  useEffect(() => {
+    if (!embedded || kind !== 'upload-file-list') return;
+    const variant =
+      selectedPart === 'thumbnail'
+        ? 'picture'
+        : selectedPart === 'picture-card'
+          ? 'picture-card'
+          : undefined;
+    if (variant)
+      setOptions((current) =>
+        current.uploadFileListVariant === variant
+          ? current
+          : { ...current, uploadFileListVariant: variant },
+      );
+  }, [embedded, kind, selectedPart]);
   const [savedProject] = useState(() => loadStudio().project);
   const project = liveProject ?? savedProject;
   const [themeSource, setThemeSource] = useState<'workspace' | 'default'>('workspace');
@@ -542,6 +560,46 @@ export function ComponentWorkbench({
                   </select>
                 </label>
               )}
+            </>
+          )}
+          {kind === 'upload-file-list' && (
+            <>
+              <label>
+                展示方式
+                <select
+                  aria-label="预览文件列表展示方式"
+                  value={options.uploadFileListVariant ?? 'file'}
+                  onChange={(event) =>
+                    update(
+                      'uploadFileListVariant',
+                      event.target.value as NonNullable<DemoOptions['uploadFileListVariant']>,
+                    )
+                  }
+                >
+                  <option value="file">文件列表</option>
+                  <option value="picture">图片列表</option>
+                  <option value="picture-card">照片墙</option>
+                </select>
+              </label>
+              <label>
+                文件状态
+                <select
+                  aria-label="预览文件列表状态"
+                  value={options.uploadFileListStatus ?? 'mixed'}
+                  onChange={(event) =>
+                    update(
+                      'uploadFileListStatus',
+                      event.target.value as NonNullable<DemoOptions['uploadFileListStatus']>,
+                    )
+                  }
+                >
+                  <option value="mixed">混合</option>
+                  <option value="ready">待上传</option>
+                  <option value="uploading">上传中</option>
+                  <option value="done">已完成</option>
+                  <option value="error">上传失败</option>
+                </select>
+              </label>
             </>
           )}
           {kind === 'mention' && (

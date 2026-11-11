@@ -4202,3 +4202,45 @@
   color: var(--f-danger);
   overflow-wrap: anywhere;
 }
+
+.f-upload-file-list--picture-card {
+  grid-template-columns: repeat(
+    auto-fill,
+    minmax(min(100%, var(--f-file-picture-card-size, 160px)), 1fr)
+  );
+}
+.f-upload-file-list .f-file-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(var(--f-choice-gap, 12px) / 2);
+}
+.f-upload-file-list--picture-card .f-upload-file-item {
+  align-items: stretch;
+  flex-direction: column;
+  border: 1px solid var(--f-border);
+  border-radius: var(--f-file-picture-radius, var(--f-radius));
+}
+.f-upload-file-thumbnail,
+.f-upload-file-thumbnail-placeholder {
+  flex: 0 0 var(--f-file-thumbnail-size, 64px);
+  width: var(--f-file-thumbnail-size, 64px);
+  height: var(--f-file-thumbnail-size, 64px);
+  border-radius: var(--f-file-picture-radius, var(--f-radius));
+  background: var(--f-subtle);
+  object-fit: cover;
+}
+.f-upload-file-thumbnail-placeholder {
+  display: grid;
+  place-items: center;
+  color: var(--f-muted);
+  text-align: center;
+  font-size: 0.75em;
+  overflow-wrap: anywhere;
+}
+.f-upload-file-list--picture-card .f-upload-file-thumbnail,
+.f-upload-file-list--picture-card .f-upload-file-thumbnail-placeholder {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  flex-basis: auto;
+}

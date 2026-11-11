@@ -6,6 +6,7 @@ export type ComponentId =
   | 'mention'
   | 'upload'
   | 'upload-dropzone'
+  | 'upload-file-list'
   | 'input-tag'
   | 'slider'
   | 'rate'
@@ -150,6 +151,8 @@ export interface DemoOptions {
   uploadDropzoneSizeLimit?: boolean;
   uploadDropzoneCountLimit?: boolean;
   uploadDropzoneExisting?: boolean;
+  uploadFileListVariant?: 'file' | 'picture' | 'picture-card';
+  uploadFileListStatus?: 'mixed' | 'ready' | 'uploading' | 'done' | 'error';
   sliderMarks?: boolean;
   rateShape?: 'star' | 'heart';
   rateHalf?: boolean;

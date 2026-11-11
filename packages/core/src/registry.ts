@@ -1,7 +1,7 @@
 export const componentRegistry = {
   schemaVersion: 1,
   library: 'BTDESIGN',
-  version: '0.9.0',
+  version: '0.10.0',
   packages: {
     react: '@btdesign/react',
     vue: '@btdesign/vue',
@@ -58,6 +58,9 @@ export const componentRegistry = {
       '--f-progress-circle-stroke',
       '--f-progress-mini-size',
       '--f-progress-mini-stroke',
+      '--f-file-thumbnail-size',
+      '--f-file-picture-card-size',
+      '--f-file-picture-radius',
     ],
   },
   composition: {
@@ -130,6 +133,20 @@ export const componentRegistry = {
       vue: { filesChange: '(files:File[])=>void' },
       notes:
         'This is a file-selection control. Upload transport, progress, retries and persistence belong to the application.',
+    },
+    {
+      name: 'UploadFileList',
+      purpose: 'Display caller-managed file, image-list and picture-card states',
+      props: {
+        items: 'UploadFileItem[] (caller-managed state, optional thumbnailUrl and alt)',
+        variant: ['file', 'picture', 'picture-card'],
+        disabled: 'boolean',
+        emptyText: 'string',
+      },
+      react: { onRemove: '(id)=>void', onRetry: '(id)=>void', onPreview: '(id)=>void' },
+      vue: { remove: '(id)', retry: '(id)', preview: '(id)' },
+      notes:
+        'State, transfer, retries and file removal belong to the application. Thumbnail and download addresses are separate; component validates URL schemes but does not trust or verify remote content.',
     },
     {
       name: 'UploadDropzone',

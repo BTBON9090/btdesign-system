@@ -67,6 +67,7 @@ export function ComponentCanvas({
         mode={mode}
         liveProject={project}
         embedded
+        selectedPart={selection.part}
         onFrameworkChange={(framework) => onPatch({ framework })}
         onAction={notify}
       />
