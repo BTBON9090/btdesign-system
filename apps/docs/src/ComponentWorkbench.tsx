@@ -209,6 +209,15 @@ export function ComponentWorkbench({
         current.pageHeaderTabs ? current : { ...current, pageHeaderTabs: true },
       );
   }, [embedded, kind, selectedPart]);
+  useEffect(() => {
+    if (!embedded || kind !== 'pagination') return;
+    if (selectedPart === 'size')
+      setOptions((current) => ({ ...current, paginationSimple: false, paginationPageSizes: true }));
+    if (selectedPart === 'jumper')
+      setOptions((current) => ({ ...current, paginationSimple: false, paginationJumper: true }));
+    if (selectedPart === 'total')
+      setOptions((current) => ({ ...current, paginationSimple: false, paginationShowTotal: true }));
+  }, [embedded, kind, selectedPart]);
   const [savedProject] = useState(() => loadStudio().project);
   const project = liveProject ?? savedProject;
   const [themeSource, setThemeSource] = useState<'workspace' | 'default'>('workspace');
@@ -1795,6 +1804,70 @@ export function ComponentWorkbench({
               嵌套目录
             </label>
           )}
+          {kind === 'pagination' && (
+            <>
+              <label>
+                尺寸
+                <select
+                  aria-label="预览分页尺寸"
+                  value={options.paginationSize ?? 'medium'}
+                  onChange={(event) =>
+                    update(
+                      'paginationSize',
+                      event.target.value as NonNullable<DemoOptions['paginationSize']>,
+                    )
+                  }
+                >
+                  <option value="mini">迷你</option>
+                  <option value="small">小</option>
+                  <option value="medium">中</option>
+                  <option value="big">大</option>
+                </select>
+              </label>
+              <label>
+                形式
+                <select
+                  aria-label="预览分页形式"
+                  value={options.paginationSimple ? 'simple' : 'standard'}
+                  onChange={(event) => update('paginationSimple', event.target.value === 'simple')}
+                >
+                  <option value="standard">标准</option>
+                  <option value="simple">简洁</option>
+                </select>
+              </label>
+              <label>
+                箭头
+                <select
+                  aria-label="预览分页箭头"
+                  value={options.paginationArrow ?? 'text'}
+                  onChange={(event) =>
+                    update('paginationArrow', event.target.value as 'text' | 'icon')
+                  }
+                >
+                  <option value="text">文字</option>
+                  <option value="icon">图标</option>
+                </select>
+              </label>
+              {(
+                [
+                  ['paginationShowTotal', '总条数'],
+                  ['paginationPageSizes', '每页条数'],
+                  ['paginationJumper', '快速跳转'],
+                ] as const
+              ).map(([key, label]) => (
+                <label key={key}>
+                  <input
+                    type="checkbox"
+                    aria-label={`预览分页${label}`}
+                    checked={options[key] ?? false}
+                    disabled={options.paginationSimple}
+                    onChange={(event) => update(key, event.target.checked)}
+                  />
+                  {label}
+                </label>
+              ))}
+            </>
+          )}
           {kind === 'page-header' && (
             <>
               <label>
@@ -1967,6 +2040,9 @@ export function ComponentWorkbench({
                 </select>
               </label>
             </>
+          )}
+          {kind === 'pagination' && options.paginationSimple && (
+            <p className="bt-workbench-hint">简洁模式仅显示前后页和当前页数。</p>
           )}
           {embedded && kind === 'workspace-tabs' && selectedPart === 'scroll' && (
             <p className="bt-workbench-hint">使用左右箭头浏览溢出页签。</p>

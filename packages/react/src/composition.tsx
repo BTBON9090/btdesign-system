@@ -1,5 +1,6 @@
 import {
   forwardRef,
+  useEffect,
   useId,
   useRef,
   useState,
@@ -10,6 +11,7 @@ import {
   type ThHTMLAttributes,
 } from 'react';
 import { Input, useFieldControl, type ControlProps } from './fields.js';
+import { paginationJumpResolution, paginationJumpTarget, paginationSizeOptions } from './pagination-utils.js';
 import {
   commitNumberInputBlur,
   numberBounds,
@@ -316,6 +318,13 @@ export interface PaginationProps extends HTMLAttributes<HTMLElement> {
   siblingCount?: number;
   label?: string;
   disabled?: boolean;
+  size?: 'mini' | 'small' | 'medium' | 'big';
+  simple?: boolean;
+  showTotal?: boolean;
+  pageSizeOptions?: number[];
+  onPageSizeChange?: (size: number) => void;
+  showQuickJumper?: boolean;
+  arrow?: 'text' | 'icon';
 }
 export function Pagination({
   page,
@@ -325,62 +334,145 @@ export function Pagination({
   siblingCount = 1,
   label = '分页导航',
   disabled,
+  size = 'medium',
+  simple = false,
+  showTotal = false,
+  pageSizeOptions,
+  onPageSizeChange,
+  showQuickJumper = false,
+  arrow = 'text',
   className,
   ...props
 }: PaginationProps) {
+  const [jump, setJump] = useState('');
+  const pendingJump = useRef<{ from: number; target: number } | null>(null);
   const state = paginationState(page, total, pageSize, siblingCount);
+  useEffect(() => {
+    const result = paginationJumpResolution(pendingJump.current, state.page);
+    pendingJump.current = result.pending;
+    if (result.value !== undefined) setJump(result.value);
+  }, [state.page]);
+  const normalizedSize = Number.isFinite(pageSize) && pageSize >= 1 ? Math.floor(pageSize) : 10;
+  const choices = paginationSizeOptions(pageSizeOptions);
+  const canSelectSize = choices.length > 0 && Boolean(onPageSizeChange);
+  const sizes = choices.includes(normalizedSize) ? choices : [...choices, normalizedSize];
+  const blocked = Boolean(disabled || state.total === 0);
+  const change = (next: number) => {
+    if (!blocked && next !== state.page) onPageChange?.(next);
+  };
   return (
     <nav
       {...props}
       aria-label={props['aria-label'] ?? label}
-      className={cx('f-pagination', className)}
+      className={cx('f-pagination', size !== 'medium' && `f-pagination--${size}`, className)}
     >
+      {!simple && showTotal && <span className="f-pagination-total">共 {state.total} 条</span>}
       <ol className="f-pagination-list">
         <li>
           <button
             type="button"
             className="f-pagination-button"
             aria-label="上一页"
-            disabled={disabled || state.total === 0 || state.page <= 1}
-            onClick={() => onPageChange?.(state.page - 1)}
+            disabled={blocked || state.page <= 1}
+            onClick={() => change(state.page - 1)}
           >
-            上一页
+            {arrow === 'icon' ? <span aria-hidden="true">‹</span> : '上一页'}
           </button>
         </li>
-        {state.pages.map((item, index) => (
-          <li key={`${item}-${index}`}>
-            {item === 'ellipsis' ? (
-              <span className="f-pagination-ellipsis" aria-hidden="true">
-                …
-              </span>
-            ) : (
-              <button
-                type="button"
-                className="f-pagination-button"
-                aria-label={`第 ${item} 页`}
-                aria-current={item === state.page ? 'page' : undefined}
-                disabled={disabled || state.total === 0}
-                onClick={() => {
-                  if (item !== state.page) onPageChange?.(item);
-                }}
-              >
-                {item}
-              </button>
-            )}
+        {simple ? (
+          <li>
+            <span
+              className="f-pagination-simple"
+              role="status"
+              aria-label={`第 ${state.page} 页，共 ${state.pageCount} 页`}
+            >
+              {state.page} / {state.pageCount}
+            </span>
           </li>
-        ))}
+        ) : (
+          state.pages.map((item, index) => (
+            <li key={`${item}-${index}`}>
+              {item === 'ellipsis' ? (
+                <span className="f-pagination-ellipsis" aria-hidden="true">
+                  …
+                </span>
+              ) : (
+                <button
+                  type="button"
+                  className="f-pagination-button"
+                  aria-label={`第 ${item} 页`}
+                  aria-current={item === state.page ? 'page' : undefined}
+                  disabled={blocked}
+                  onClick={() => change(item)}
+                >
+                  {item}
+                </button>
+              )}
+            </li>
+          ))
+        )}
         <li>
           <button
             type="button"
             className="f-pagination-button"
             aria-label="下一页"
-            disabled={disabled || state.total === 0 || state.page >= state.pageCount}
-            onClick={() => onPageChange?.(state.page + 1)}
+            disabled={blocked || state.page >= state.pageCount}
+            onClick={() => change(state.page + 1)}
           >
-            下一页
+            {arrow === 'icon' ? <span aria-hidden="true">›</span> : '下一页'}
           </button>
         </li>
       </ol>
+      {!simple && canSelectSize && (
+        <select
+          className="f-pagination-size-select"
+          aria-label="每页条数"
+          value={normalizedSize}
+          disabled={blocked}
+          onChange={(event) => {
+            const next = Number(event.currentTarget.value);
+            if (!blocked && choices.includes(next) && next !== normalizedSize)
+              onPageSizeChange?.(next);
+          }}
+        >
+          {sizes.map((value) => (
+            <option key={value} value={value} disabled={!Number.isSafeInteger(value)}>
+              {value} 条/页
+            </option>
+          ))}
+        </select>
+      )}
+      {!simple && showQuickJumper && (
+        <label className="f-pagination-jumper">
+          跳至{' '}
+          <input
+            className="f-pagination-jump-input"
+            aria-label="跳转页码"
+            type="text"
+            inputMode="numeric"
+            value={jump}
+            disabled={blocked || !onPageChange}
+            onChange={(event) => {
+              pendingJump.current = null;
+              setJump(event.currentTarget.value);
+            }}
+            onKeyDown={(event) => {
+              if (event.key !== 'Enter' || event.nativeEvent.isComposing) return;
+              event.preventDefault();
+              const target = paginationJumpTarget(jump, state.pageCount);
+              if (target === undefined) return;
+              if (target === state.page) {
+                pendingJump.current = null;
+                setJump(String(target));
+              } else {
+                pendingJump.current = { from: state.page, target };
+                change(target);
+              }
+            }}
+          />{' '}
+          页
+        </label>
+      )}
     </nav>
   );
 }

@@ -74,6 +74,12 @@ export type ComponentId =
   | 'data-table';
 
 export interface DemoOptions {
+  paginationSize?: 'mini' | 'small' | 'medium' | 'big';
+  paginationSimple?: boolean;
+  paginationShowTotal?: boolean;
+  paginationPageSizes?: boolean;
+  paginationJumper?: boolean;
+  paginationArrow?: 'text' | 'icon';
   workspaceTabsClosable?: boolean;
   workspaceTabsMore?: boolean;
   headerSearch?: boolean;

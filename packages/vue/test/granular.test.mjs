@@ -515,3 +515,186 @@ test('NumberInput CSR synchronizes native defaultValue on mount and accepted upd
   );
   controlled.app.unmount();
 });
+
+test('Pagination optional sizes, totals and simple icon mode are semantic and keep defaults', async () => {
+  const regular = await render(Pagination, {
+    page: 2,
+    total: 40,
+    size: 'big',
+    showTotal: true,
+    pageSizeOptions: [20, 20, -1, 1.5, Infinity],
+    'onUpdate:pageSize': () => {},
+    showQuickJumper: true,
+    'onUpdate:page': () => {},
+  });
+  assert.match(regular, /f-pagination--big/);
+  assert.match(regular, /f-pagination-total">共 40 条/);
+  assert.match(regular, /aria-label="每页条数"/);
+  assert.equal((regular.match(/<option/g) ?? []).length, 2);
+  assert.match(regular, /value="10"/);
+  assert.match(regular, /aria-label="跳转页码"/);
+  const noListener = await render(Pagination, {
+    page: 1,
+    total: 40,
+    pageSizeOptions: [20],
+    showQuickJumper: true,
+  });
+  assert.doesNotMatch(noListener, /f-pagination-size-select/);
+  assert.match(noListener, /aria-label="跳转页码"[^>]*disabled/);
+  const simple = await render(Pagination, {
+    page: 2,
+    total: 40,
+    simple: true,
+    arrow: 'icon',
+    showTotal: true,
+    showQuickJumper: true,
+    pageSizeOptions: [20],
+    'onUpdate:pageSize': () => {},
+  });
+  assert.match(simple, /aria-label="上一页"[^>]*><span aria-hidden="true">‹<\/span>/);
+  assert.match(simple, /f-pagination-simple[^>]*>2 \/ 4/);
+  assert.match(
+    simple,
+    /<li><span class="f-pagination-simple" role="status" aria-label="第 2 页，共 4 页">2 \/ 4<\/span><\/li>/,
+  );
+  assert.doesNotMatch(
+    simple,
+    /f-pagination-total|f-pagination-size-select|f-pagination-jumper|aria-current/,
+  );
+});
+
+test('Pagination page size and quick jump emit only valid controlled changes', async () => {
+  const pages = [],
+    sizes = [];
+  const view = mount(Pagination, {
+    page: 2,
+    total: 100,
+    pageSize: 10,
+    pageSizeOptions: [10, 20],
+    showQuickJumper: true,
+    'onUpdate:page': (value) => pages.push(value),
+    'onUpdate:pageSize': (value) => sizes.push(value),
+  });
+  const select = view.findAll('select')[0];
+  const target = { value: '20' };
+  select.props.onChange({ target });
+  assert.deepEqual(sizes, [20]);
+  assert.equal(target.value, '10', 'a rejected controlled update restores the original selection');
+  assert.deepEqual(pages, []);
+  const input = view.findAll('input')[0];
+  let prevented = 0;
+  const submit = async (value, key = 'Enter', isComposing = false) => {
+    input.props.onInput({ target: { value } });
+    await nextTick();
+    input.props.onKeydown({ key, isComposing, preventDefault: () => prevented++ });
+  };
+  for (const value of ['', '1.5', '1e2', 'abc', 'Infinity', '9'.repeat(400)]) await submit(value);
+  await submit('5', 'Tab');
+  await submit('5', 'Enter', true);
+  assert.deepEqual(pages, []);
+  assert.equal(prevented, 6, 'Enter prevents form submission except during IME composition');
+  await submit(' 999 ');
+  await submit('-3');
+  await submit('2');
+  assert.deepEqual(pages, [10, 1]);
+  assert.equal(
+    input.props.value,
+    '2',
+    'the application controls page while the draft remains visible',
+  );
+  view.app.unmount();
+});
+
+test('Pagination empty and once listeners do not expose inert actions', async () => {
+  const disabled = await render(Pagination, {
+    page: 1,
+    total: 0,
+    pageSizeOptions: [20],
+    showQuickJumper: true,
+    'onUpdate:page': () => {},
+    'onUpdate:pageSize': () => {},
+  });
+  assert.match(disabled, /<select[^>]*disabled/);
+  assert.match(disabled, /aria-label="跳转页码"[^>]*disabled/);
+  let sizes = 0,
+    pages = 0;
+  const view = mount(Pagination, {
+    page: 1,
+    total: 100,
+    pageSizeOptions: [20],
+    showQuickJumper: true,
+    'onUpdate:pageOnce': () => pages++,
+    'onUpdate:pageSizeOnce': () => sizes++,
+  });
+  view.findAll('select')[0].props.onChange({ target: { value: '20' } });
+  const input = view.findAll('input')[0];
+  input.props.onInput({ target: { value: '3' } });
+  await nextTick();
+  input.props.onKeydown({ key: 'Enter', preventDefault: () => {} });
+  await nextTick();
+  assert.equal(sizes, 1);
+  assert.equal(pages, 1);
+  assert.equal(view.findAll('select').length, 0);
+  assert.equal(view.findAll('input')[0].props.disabled, true);
+  view.app.unmount();
+});
+
+test('Pagination normalizes a jump only after the parent accepts it and respects later editing', async () => {
+  const page = ref(2);
+  const updates = [];
+  const view = mount({
+    setup: () => () =>
+      h(Pagination, {
+        page: page.value,
+        total: 130,
+        showQuickJumper: true,
+        'onUpdate:page': (value) => updates.push(value),
+      }),
+  });
+  const input = view.findAll('input')[0];
+  const edit = async (value) => {
+    input.props.onInput({ target: { value } });
+    await nextTick();
+  };
+  const submit = () => input.props.onKeydown({ key: 'Enter', preventDefault() {} });
+  await edit('99');
+  submit();
+  await nextTick();
+  assert.deepEqual(updates, [13]);
+  assert.equal(input.props.value, '99', 'rejected changes preserve the original input');
+  page.value = 13;
+  await nextTick();
+  await nextTick();
+  assert.equal(input.props.value, '13', 'the accepted target replaces the out-of-range draft');
+  await edit(' +0013 ');
+  submit();
+  await nextTick();
+  assert.equal(input.props.value, '13', 'the current page is normalized without emitting');
+  assert.deepEqual(updates, [13]);
+  await edit('8');
+  submit();
+  await edit('9');
+  page.value = 8;
+  await nextTick();
+  await nextTick();
+  assert.equal(input.props.value, '9', 'an edit made while awaiting acceptance is preserved');
+  await edit('4');
+  submit();
+  page.value = 5;
+  await nextTick();
+  await nextTick();
+  page.value = 4;
+  await nextTick();
+  await nextTick();
+  assert.equal(input.props.value, '4', 'unrelated navigation cancels the pending target');
+  await edit('draft');
+  page.value = 6;
+  await nextTick();
+  await nextTick();
+  assert.equal(
+    input.props.value,
+    'draft',
+    'external navigation does not overwrite an unsubmitted draft',
+  );
+  view.app.unmount();
+});

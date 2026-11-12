@@ -1,3 +1,5 @@
+import { PaginationPreview } from './PaginationPreview';
+import { paginationPreviewOptions } from './PaginationExample';
 import { WorkspaceTabsPreview } from './WorkspaceTabsPreview';
 import { workspaceTabsPreviewOptions } from './WorkspaceTabsExample';
 import { SystemHeaderPreview } from './SystemHeaderPreview';
@@ -131,6 +133,8 @@ export function ComponentDemo({
 }) {
   const [open, setOpen] = useState(false);
   const [checked, setChecked] = useState(true);
+  if (kind === 'pagination')
+    return <PaginationPreview options={paginationPreviewOptions(options)} />;
   if (kind === 'tabs') return <TabsDetailPreview options={tabsDetailOptions(options)} />;
   if (kind === 'badge')
     return <BadgeDemo component={Badge} avatar={Avatar} options={badgePreviewOptions(options)} />;

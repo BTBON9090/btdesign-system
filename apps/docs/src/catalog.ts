@@ -1,3 +1,4 @@
+import { paginationExampleCode, paginationPreviewOptions } from './PaginationExample';
 import { tabsDetailExampleCode, tabsDetailOptions } from './TabsDetailExample';
 import { treeVariantsExampleCode, treeVariantsOptions } from './TreeVariantsExample';
 import { treeSelectExampleCode, treeSelectPreviewOptions } from './TreeSelectExample';
@@ -731,6 +732,10 @@ export const catalog = [
       ['pageSize', 'number', '10'],
       ['onPageChange / update:page', 'callback', '—'],
       ['siblingCount', 'number', '1'],
+      ['size', 'mini | small | medium | big', 'medium'],
+      ['simple / showTotal / showQuickJumper', 'boolean', 'false'],
+      ['pageSizeOptions / onPageSizeChange / update:pageSize', 'number[] / callback', '—'],
+      ['arrow', 'text | icon', 'text'],
       ['disabled', 'boolean', 'false'],
     ],
   },
@@ -844,6 +849,8 @@ export function componentCode(id: ComponentId, framework: Framework, options?: D
     return numberInputExampleCode(framework, numberInputPreviewOptions(options));
   if (id === 'progress') return progressExampleCode(framework, progressPreviewOptions(options));
   if (id === 'list') return listExampleCode(framework, listPreviewOptions(options));
+  if (id === 'pagination')
+    return paginationExampleCode(framework, paginationPreviewOptions(options));
   if (id === 'breadcrumb')
     return breadcrumbExampleCode(framework, options?.breadcrumbSeparator ?? 'slash');
   if (id === 'tabs') return tabsDetailExampleCode(framework, tabsDetailOptions(options));
@@ -936,9 +943,7 @@ export function componentCode(id: ComponentId, framework: Framework, options?: D
       ? '\nconst checked = ref(true);'
       : id === 'dialog'
         ? '\nconst open = ref(false);'
-        : id === 'pagination'
-          ? '\nconst page = ref(1);'
-          : '';
+        : '';
   const extraImports: Partial<Record<ComponentId, string>> = {
     dialog: ', Button',
     field: ', Input',
@@ -1836,6 +1841,21 @@ export const componentAnatomy: Record<ComponentId, AnatomyPart[]> = {
       '--f-primary-soft',
     ),
     part('省略段', 'siblingCount', '保留首尾和当前附近页面，避免大量按钮挤满一行。', '--f-muted'),
+    part(
+      '每页条数',
+      'pageSizeOptions + change',
+      '页大小与变化后的页码由应用管理。',
+      '--f-input-height',
+      '--f-input-radius',
+    ),
+    part(
+      '快速跳转',
+      'showQuickJumper → input',
+      '回车提交整数页码，越界时限制在有效范围。',
+      '--f-input-height',
+      '--f-input-radius',
+    ),
+    part('总条数', 'showTotal', '标准模式按数据总量显示条数。', '--f-muted'),
   ],
   'empty-state': [
     part(

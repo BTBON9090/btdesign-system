@@ -1,4 +1,4 @@
-import { computed, defineComponent, h, mergeProps, ref } from 'vue';
+import { computed, defineComponent, getCurrentInstance, h, mergeProps, ref, watch } from 'vue';
 import type { PropType } from 'vue';
 import { controlProps, useControlId, useFieldControl } from './field.js';
 import type { ControlSize } from './field.js';
@@ -362,9 +362,28 @@ export const Pagination = defineComponent({
     siblingCount: { type: Number, default: 1 },
     label: { type: String, default: '分页导航' },
     disabled: Boolean,
+    size: { type: String as PropType<'mini' | 'small' | 'medium' | 'big'>, default: 'medium' },
+    simple: Boolean,
+    showTotal: Boolean,
+    pageSizeOptions: Array as PropType<number[]>,
+    showQuickJumper: Boolean,
+    arrow: { type: String as PropType<'text' | 'icon'>, default: 'text' },
   },
-  emits: ['update:page'],
+  emits: ['update:page', 'update:pageSize'],
   setup(props, { attrs, emit }) {
+    const instance = getCurrentInstance();
+    const onceConsumed = ref(false);
+    const pageOnceConsumed = ref(false);
+    const jumpDraft = ref('');
+    let pendingJump: number | undefined;
+    watch(
+      () => props.page,
+      (page) => {
+        if (pendingJump === undefined) return;
+        if (page === pendingJump) jumpDraft.value = String(page);
+        pendingJump = undefined;
+      },
+    );
     return () => {
       const pageSize =
         finite(props.pageSize) && props.pageSize >= 1 ? Math.floor(props.pageSize) : 10;
@@ -385,8 +404,10 @@ export const Pagination = defineComponent({
         visible.add(index);
       const numbers = [...visible].sort((a, b) => a - b);
       const select = (value: number) => {
-        if (!props.disabled && total > 0 && value !== page)
+        if (!props.disabled && total > 0 && value !== page) {
+          if (instance?.vnode.props?.['onUpdate:pageOnce']) pageOnceConsumed.value = true;
           emit('update:page', Math.min(pages, Math.max(1, value)));
+        }
       };
       const button = (text: string, target: number, disabled: boolean, current = false) =>
         h(
@@ -403,26 +424,142 @@ export const Pagination = defineComponent({
             'aria-current': current ? 'page' : undefined,
             onClick: () => select(target),
           },
-          text,
+          props.arrow === 'icon' && (text === '上一页' || text === '下一页')
+            ? h('span', { 'aria-hidden': 'true' }, text === '上一页' ? '‹' : '›')
+            : text,
         );
-      return h('nav', mergeProps({ 'aria-label': props.label }, attrs, { class: 'f-pagination' }), [
-        h('ul', { class: 'f-pagination-list' }, [
-          h('li', {}, button('上一页', page - 1, page <= 1)),
-          ...numbers.flatMap((number, index) => [
-            index > 0 && number - numbers[index - 1] === 2
-              ? h('li', { key: number - 1 }, button(String(number - 1), number - 1, false))
-              : index > 0 && number - numbers[index - 1] > 2
-                ? h(
+      const listener = Boolean(
+        instance?.vnode.props?.['onUpdate:pageSize'] ||
+        (!onceConsumed.value && instance?.vnode.props?.['onUpdate:pageSizeOnce']),
+      );
+      const pageListener = Boolean(
+        instance?.vnode.props?.['onUpdate:page'] ||
+        (!pageOnceConsumed.value && instance?.vnode.props?.['onUpdate:pageOnce']),
+      );
+      const options = [
+        ...new Set(
+          (props.pageSizeOptions ?? []).filter((value) => Number.isSafeInteger(value) && value > 0),
+        ),
+      ];
+      if (options.length && !options.includes(pageSize)) options.push(pageSize);
+      return h(
+        'nav',
+        mergeProps({ 'aria-label': props.label }, attrs, {
+          class: ['f-pagination', props.size !== 'medium' ? `f-pagination--${props.size}` : ''],
+        }),
+        [
+          !props.simple && props.showTotal
+            ? h('span', { class: 'f-pagination-total' }, `共 ${total} 条`)
+            : null,
+          h('ul', { class: 'f-pagination-list' }, [
+            h('li', {}, button('上一页', page - 1, page <= 1)),
+            ...(props.simple
+              ? [
+                  h(
                     'li',
-                    { class: 'f-pagination-ellipsis', 'aria-hidden': 'true', key: `gap-${number}` },
-                    '…',
-                  )
-                : null,
-            h('li', { key: number }, button(String(number), number, false, number === page)),
+                    {},
+                    h(
+                      'span',
+                      {
+                        class: 'f-pagination-simple',
+                        role: 'status',
+                        'aria-label': `第 ${page} 页，共 ${pages} 页`,
+                      },
+                      `${page} / ${pages}`,
+                    ),
+                  ),
+                ]
+              : numbers.flatMap((number, index) => [
+                  index > 0 && number - numbers[index - 1] === 2
+                    ? h('li', { key: number - 1 }, button(String(number - 1), number - 1, false))
+                    : index > 0 && number - numbers[index - 1] > 2
+                      ? h(
+                          'li',
+                          {
+                            class: 'f-pagination-ellipsis',
+                            'aria-hidden': 'true',
+                            key: `gap-${number}`,
+                          },
+                          '…',
+                        )
+                      : null,
+                  h('li', { key: number }, button(String(number), number, false, number === page)),
+                ])),
+            h('li', {}, button('下一页', page + 1, page >= pages)),
           ]),
-          h('li', {}, button('下一页', page + 1, page >= pages)),
-        ]),
-      ]);
+          !props.simple && listener && options.length
+            ? h(
+                'select',
+                {
+                  class: 'f-pagination-size-select',
+                  'aria-label': '每页条数',
+                  value: pageSize,
+                  disabled: props.disabled || total === 0,
+                  onChange: (event: Event) => {
+                    const target = event.target as HTMLSelectElement;
+                    const value = Number(target.value);
+                    // The host owns the value; a rejected update must not leave a false selection.
+                    target.value = String(pageSize);
+                    if (
+                      props.disabled ||
+                      total === 0 ||
+                      !options.includes(value) ||
+                      value === pageSize ||
+                      (onceConsumed.value && !instance?.vnode.props?.['onUpdate:pageSize'])
+                    )
+                      return;
+                    if (instance?.vnode.props?.['onUpdate:pageSizeOnce']) onceConsumed.value = true;
+                    const vnodeProps = instance?.vnode.props;
+                    const once = vnodeProps?.['onUpdate:pageSizeOnce'];
+                    // Vue's model-event fallback otherwise misses camelCase .once listeners
+                    // when no ordinary update listener is present.
+                    if (once && !vnodeProps?.['onUpdate:pageSize']) {
+                      for (const handler of Array.isArray(once) ? once : [once]) handler(value);
+                    } else emit('update:pageSize', value);
+                  },
+                },
+                options.map((option) =>
+                  h('option', { value: option, key: option }, `${option} 条/页`),
+                ),
+              )
+            : null,
+          !props.simple && props.showQuickJumper
+            ? h('label', { class: 'f-pagination-jumper' }, [
+                '跳至',
+                h('input', {
+                  class: 'f-pagination-jump-input',
+                  type: 'text',
+                  inputmode: 'numeric',
+                  'aria-label': '跳转页码',
+                  value: jumpDraft.value,
+                  disabled: props.disabled || total === 0 || !pageListener,
+                  onInput: (event: Event) => {
+                    jumpDraft.value = (event.target as HTMLInputElement).value;
+                    pendingJump = undefined;
+                  },
+                  onKeydown: (event: KeyboardEvent) => {
+                    if (event.key !== 'Enter' || event.isComposing) return;
+                    event.preventDefault();
+                    if (props.disabled || total === 0 || !pageListener) return;
+                    const value = jumpDraft.value.trim();
+                    if (!/^[+-]?\d+$/.test(value)) return;
+                    const numeric = Number(value);
+                    if (!Number.isFinite(numeric)) return;
+                    const target = Math.min(pages, Math.max(1, numeric));
+                    if (target === page) {
+                      pendingJump = undefined;
+                      jumpDraft.value = String(page);
+                    } else {
+                      pendingJump = target;
+                      select(target);
+                    }
+                  },
+                }),
+                '页',
+              ])
+            : null,
+        ],
+      );
     };
   },
 });

@@ -1,3 +1,5 @@
+import { createPaginationVuePreview } from './PaginationVuePreview';
+import { paginationPreviewOptions } from './PaginationExample';
 import { createWorkspaceTabsVuePreview } from './WorkspaceTabsVuePreview';
 import { workspaceTabsPreviewOptions } from './WorkspaceTabsExample';
 import { createSystemHeaderVuePreview } from './SystemHeaderVuePreview';
@@ -117,6 +119,7 @@ export function VueDemo({ kind, onAction, options, onNavCollapsedChange }: VueDe
         const NavigationVueDemo = createNavigationVuePreview(vue, ui);
         const SystemHeaderVueDemo = createSystemHeaderVuePreview(vue, ui);
         const WorkspaceTabsVueDemo = createWorkspaceTabsVuePreview(vue, ui);
+        const PaginationVueDemo = createPaginationVuePreview(vue, ui);
         const OrganizationTransferVueDemo = createOrganizationTransferVuePreview(vue, ui);
         if (
           isEnterpriseId(kind) &&
@@ -252,6 +255,8 @@ export function VueDemo({ kind, onAction, options, onNavCollapsedChange }: VueDe
                   return treeSelectVuePreview(vue, ui, treeSelectPreviewOptions(o));
                 if (kind === 'search-select')
                   return searchSelectVuePreview(vue, ui, searchSelectPreviewOptions(o));
+                if (kind === 'pagination')
+                  return h(PaginationVueDemo, { options: paginationPreviewOptions(o) });
                 if (kind === 'tabs') return tabsDetailVuePreview(vue, ui, tabsDetailOptions(o));
                 if (kind === 'badge') return badgeVueDemo(vue, ui, badgePreviewOptions(o));
                 if (kind === 'anchor')

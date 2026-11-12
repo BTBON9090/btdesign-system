@@ -120,6 +120,18 @@ try {
         'with-guide-and-tabs',
         { ...defaults, pageHeaderGuide: true, pageHeaderTabs: true },
       ]);
+    if (component.id === 'pagination')
+      variants.push([
+        'configured',
+        {
+          ...defaults,
+          paginationSize: 'small',
+          paginationShowTotal: true,
+          paginationPageSizes: true,
+          paginationJumper: true,
+          paginationArrow: 'icon',
+        },
+      ]);
     if (component.id === 'cascader')
       variants.push([
         'parent-no-search',

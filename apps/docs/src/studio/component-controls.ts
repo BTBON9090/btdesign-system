@@ -58,6 +58,9 @@ export const controlDefinitions = {
   systemHeaderHeight: geometry('systemHeader', 'minHeight', '顶栏最小高度'),
   systemHeaderPadding: geometry('systemHeader', 'paddingInline', '左右留白'),
   systemHeaderGap: geometry('systemHeader', 'gap', '区域间距'),
+  paginationSize: geometry('pagination', 'size', '分页基准尺寸'),
+  paginationGap: geometry('pagination', 'gap', '分页间距'),
+  paginationFontSize: geometry('pagination', 'fontSize', '文字字号'),
   listPadding: geometry('list', 'rowPadding', '条目内边距'),
   listGap: geometry('list', 'gap', '条目间距'),
   breadcrumbItemGap: geometry('breadcrumb', 'itemGap', '层级间距'),
@@ -241,7 +244,17 @@ const partsByComponent: Record<ComponentId, ControlPart[]> = {
     part('path', '路径与文字', ['breadcrumbItemGap', 'breadcrumbFontSize'], [0, 1, 2]),
     part('separator', '分隔符', ['breadcrumbSeparatorGap'], [3]),
   ],
-  pagination: [part('items', '分页按钮', ['buttonRadius'], [0, 1])],
+  pagination: [
+    part(
+      'pages',
+      '页码与箭头',
+      ['paginationSize', 'paginationGap', 'paginationFontSize', 'buttonRadius'],
+      [0, 1],
+    ),
+    part('size', '每页条数', ['inputHeight', 'inputRadius']),
+    part('jumper', '跳转输入', ['inputHeight', 'inputRadius']),
+    part('total', '总条数', ['paginationFontSize']),
+  ],
   'empty-state': [part('content', '说明与操作', [], [0, 1, 2])],
   spinner: [part('indicator', '加载指示', [], [0, 1])],
   form: [

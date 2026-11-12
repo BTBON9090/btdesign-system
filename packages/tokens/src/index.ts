@@ -28,6 +28,7 @@ export interface ComponentOverrides {
   tree?: { rowHeight?: number; indent?: number };
   navigation?: { itemHeight?: number; padding?: number };
   systemHeader?: { minHeight?: number; paddingInline?: number; gap?: number };
+  pagination?: { size?: number; gap?: number; fontSize?: number };
   breadcrumb?: { itemGap?: number; separatorGap?: number; fontSize?: number };
   tabs?: {
     minHeight?: number;
@@ -110,6 +111,11 @@ export const componentGeometry = {
       token: '--f-system-header-padding-inline',
     },
     gap: { min: 4, max: 32, comfortable: 16, compact: 12, token: '--f-system-header-gap' },
+  },
+  pagination: {
+    size: { min: 28, max: 56, comfortable: 38, compact: 32, token: '--f-pagination-size' },
+    gap: { min: 0, max: 20, comfortable: 6, compact: 6, token: '--f-pagination-gap' },
+    fontSize: { min: 11, max: 20, comfortable: 13, compact: 13, token: '--f-pagination-font-size' },
   },
   list: {
     rowPadding: { min: 8, max: 24, comfortable: 16, compact: 10, token: '--f-list-row-padding' },

@@ -1008,6 +1008,22 @@
   border-top: 1px solid var(--f-border);
 }
 .f-breadcrumb-list,
+.f-pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--f-pagination-gap, 6px);
+  font-size: var(--f-pagination-font-size, 13px);
+}
+.f-pagination--mini {
+  --f-pagination-size-offset: -12px;
+}
+.f-pagination--small {
+  --f-pagination-size-offset: -6px;
+}
+.f-pagination--big {
+  --f-pagination-size-offset: 8px;
+}
 .f-pagination-list {
   display: flex;
   align-items: center;
@@ -1015,7 +1031,31 @@
   list-style: none;
   padding: 0;
   margin: 0;
-  gap: 6px;
+  gap: var(--f-pagination-gap, 6px);
+}
+.f-pagination-size-select,
+.f-pagination-jump-input {
+  box-sizing: border-box;
+  min-height: var(--f-input-height, var(--f-control-height));
+  padding: 4px 8px;
+  border: 1px solid var(--f-border);
+  border-radius: var(--f-input-radius, var(--f-radius));
+  color: var(--f-text);
+  background: var(--f-surface);
+  font: inherit;
+}
+.f-pagination-jump-input {
+  width: 5em;
+}
+.f-pagination-jumper {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--f-pagination-gap, 6px);
+}
+.f-pagination-size-select:focus-visible,
+.f-pagination-jump-input:focus-visible {
+  outline: 2px solid var(--f-focus);
+  outline-offset: 2px;
 }
 .f-breadcrumb-list {
   gap: var(--f-breadcrumb-item-gap, 8px);
@@ -1049,14 +1089,20 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: var(--f-control-height);
-  min-height: var(--f-control-height);
+  min-width: max(
+    20px,
+    calc(var(--f-pagination-size, var(--f-control-height)) + var(--f-pagination-size-offset, 0px))
+  );
+  min-height: max(
+    20px,
+    calc(var(--f-pagination-size, var(--f-control-height)) + var(--f-pagination-size-offset, 0px))
+  );
   padding: 4px 10px;
   border: 1px solid var(--f-border);
   border-radius: var(--f-button-radius, var(--f-radius));
   color: var(--f-text);
   background: var(--f-surface);
-  font: 13px/1.5 var(--f-font);
+  font: var(--f-pagination-font-size, 13px)/1.5 var(--f-font);
   cursor: pointer;
 }
 .f-pagination-button[aria-current='page'] {

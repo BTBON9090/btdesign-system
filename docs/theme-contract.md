@@ -1,6 +1,6 @@
 # BTDESIGN 主题契约
 
-本文件描述 v0.15 Studio 项目中的主题格式、覆盖规则和集成边界。项目规范的权威来源是 `packages/core/src/index.ts`，主题计算与样式来自 `packages/tokens/src/index.ts` 和 `packages/tokens/styles.css`。72 个组件族、94 个公开组件的 React / Vue 实现消费同一套 `--f-*` CSS 变量；它们不分别维护一份颜色或尺寸表。`@btdesign/engine` 共享行为与数据契约，不定义视觉主题。
+本文件描述 v0.16 Studio 项目中的主题格式、覆盖规则和集成边界。项目规范的权威来源是 `packages/core/src/index.ts`，主题计算与样式来自 `packages/tokens/src/index.ts` 和 `packages/tokens/styles.css`。72 个组件族、94 个公开组件的 React / Vue 实现消费同一套 `--f-*` CSS 变量；它们不分别维护一份颜色或尺寸表。`@btdesign/engine` 共享行为与数据契约，不定义视觉主题。
 
 ## 一份主题，三个层级
 
