@@ -5,6 +5,7 @@ import { catalog } from '../src/catalog.ts';
 import {
   componentControls,
   controlDefinitions,
+  controlValue,
   getSelectedPart,
   partHasOverrides,
   resetPartPatch,
@@ -26,7 +27,7 @@ test('every published family has named parts and editable controls that resolve 
       for (const id of part.controls) {
         const control = controlDefinitions[id];
         assert.ok(control, `${item.id}/${part.id}/${id}`);
-        assert.ok(Number.isFinite(parseInt(vars[control.token])), control.token);
+        assert.ok(Number.isFinite(controlValue(control, vars)), control.token);
         assert.ok(control.min <= control.max);
         const changed = applyThemePatch(defaultTheme, {
           components: { [control.group]: { [control.property]: control.max } },
@@ -35,6 +36,17 @@ test('every published family has named parts and editable controls that resolve 
       }
     }
   }
+});
+
+test('steps Lab control shows the inherited marker and restores it without changing buttons', () => {
+  const base = applyThemePatch(defaultTheme, { components: { button: { height: 50 } } });
+  const control = controlDefinitions.stepsMarkerSize;
+  assert.equal(controlValue(control, createTheme(base)), 37);
+  const changed = applyThemePatch(base, { components: { steps: { markerSize: 44 } } });
+  assert.equal(controlValue(control, createTheme(changed)), 44);
+  const restored = applyThemePatch(changed, resetPartPatch({ component: 'steps', part: 'marker' }));
+  assert.equal(controlValue(control, createTheme(restored, 'dark')), 37);
+  assert.equal(restored.components?.button?.height, 50);
 });
 
 test('a component switch resolves to that component first part and never keeps an unrelated rule group', () => {

@@ -1402,7 +1402,7 @@ export const componentAnatomy: Record<ComponentId, AnatomyPart[]> = {
       'ol → li + marker',
       '按顺序表达当前、完成、等待或错误状态，不依赖颜色传达状态。',
       '--f-primary',
-      '--f-button-height',
+      '--f-steps-standard-marker',
     ),
     part(
       '步骤内容',

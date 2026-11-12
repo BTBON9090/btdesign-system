@@ -634,8 +634,25 @@ test('Pagination empty and once listeners do not expose inert actions', async ()
   await nextTick();
   assert.equal(sizes, 1);
   assert.equal(pages, 1);
+  assert.ok(view.findAll('button').every((button) => button.props.disabled));
   assert.equal(view.findAll('select').length, 0);
   assert.equal(view.findAll('input')[0].props.disabled, true);
+  view.app.unmount();
+});
+
+test('Pagination without page listener disables navigation but keeps independent size selection', async () => {
+  const sizes = [];
+  const view = mount(Pagination, {
+    page: 2,
+    total: 100,
+    pageSizeOptions: [10, 20],
+    'onUpdate:pageSize': (value) => sizes.push(value),
+  });
+  assert.ok(view.findAll('button').every((button) => button.props.disabled));
+  const select = view.findAll('select')[0];
+  assert.equal(select.props.disabled, false);
+  select.props.onChange({ target: { value: '20' } });
+  assert.deepEqual(sizes, [20]);
   view.app.unmount();
 });
 

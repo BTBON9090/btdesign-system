@@ -61,6 +61,7 @@ export const controlDefinitions = {
   paginationSize: geometry('pagination', 'size', '分页基准尺寸'),
   paginationGap: geometry('pagination', 'gap', '分页间距'),
   paginationFontSize: geometry('pagination', 'fontSize', '文字字号'),
+  stepsMarkerSize: geometry('steps', 'markerSize', '标记尺寸'),
   listPadding: geometry('list', 'rowPadding', '条目内边距'),
   listGap: geometry('list', 'gap', '条目间距'),
   breadcrumbItemGap: geometry('breadcrumb', 'itemGap', '层级间距'),
@@ -79,6 +80,12 @@ export const controlDefinitions = {
   progressMiniStroke: geometry('progress', 'miniStroke', '小圆环粗细'),
 } as const;
 export type ControlId = keyof typeof controlDefinitions;
+/** Report the inherited size even though CSS resolves it at the Steps element. */
+export function controlValue(control: ControlDefinition, vars: Record<string, string>): number {
+  if (control.token === '--f-steps-standard-marker' && vars[control.token] === 'initial')
+    return Math.floor(Math.max(24, parseFloat(vars['--f-button-height']) * 0.74));
+  return parseInt(vars[control.token]);
+}
 export type ControlPart = { id: string; label: string; controls: ControlId[]; anatomy?: number[] };
 export type ComponentControlDefinition = {
   id: ComponentId;
@@ -155,7 +162,10 @@ const partsByComponent: Record<ComponentId, ControlPart[]> = {
   ],
   tag: [part('content', '标签与状态', [], [0]), part('close', '关闭操作', [], [1])],
   timeline: [part('marker', '时间节点', [], [0]), part('content', '事件内容', [], [1])],
-  steps: [part('marker', '步骤标记', ['buttonHeight'], [0]), part('content', '步骤内容', [], [1])],
+  steps: [
+    part('marker', '步骤标记', ['stepsMarkerSize'], [0]),
+    part('content', '步骤内容', [], [1]),
+  ],
   tooltip: [
     part('trigger', '触发元素', [], [0]),
     part('content', '文字气泡', ['overlayRadius', 'overlayPadding'], [1]),

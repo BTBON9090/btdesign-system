@@ -185,7 +185,10 @@ export const WorkspaceTabs = forwardRef<HTMLElement, WorkspaceTabsProps>(functio
               item: items.find((item) => item.key === key),
               node: links.current.get(key),
             }))
-            .find(({ item, node }) => item && !item.disabled && node);
+            .find(
+              ({ item, node }) =>
+                item && !item.disabled && node && (onSelect || safeHref(item.href)),
+            );
           if (target?.node) {
             try {
               target.node.focus({ preventScroll: true });
@@ -324,10 +327,10 @@ export const WorkspaceTabs = forwardRef<HTMLElement, WorkspaceTabsProps>(functio
                       if (node) links.current.set(item.key, node);
                       else links.current.delete(item.key);
                     }}
-                    disabled={item.disabled}
+                    disabled={item.disabled || !onSelect}
                     aria-current={current}
                     onClick={() => {
-                      if (!item.disabled) onSelect?.(item.key);
+                      if (!item.disabled && onSelect) onSelect(item.key);
                     }}
                   >
                     {item.label}

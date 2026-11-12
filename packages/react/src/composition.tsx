@@ -11,7 +11,11 @@ import {
   type ThHTMLAttributes,
 } from 'react';
 import { Input, useFieldControl, type ControlProps } from './fields.js';
-import { paginationJumpResolution, paginationJumpTarget, paginationSizeOptions } from './pagination-utils.js';
+import {
+  paginationJumpResolution,
+  paginationJumpTarget,
+  paginationSizeOptions,
+} from './pagination-utils.js';
 import {
   commitNumberInputBlur,
   numberBounds,
@@ -357,8 +361,9 @@ export function Pagination({
   const canSelectSize = choices.length > 0 && Boolean(onPageSizeChange);
   const sizes = choices.includes(normalizedSize) ? choices : [...choices, normalizedSize];
   const blocked = Boolean(disabled || state.total === 0);
+  const pageBlocked = blocked || !onPageChange;
   const change = (next: number) => {
-    if (!blocked && next !== state.page) onPageChange?.(next);
+    if (!pageBlocked && next !== state.page) onPageChange?.(next);
   };
   return (
     <nav
@@ -373,7 +378,7 @@ export function Pagination({
             type="button"
             className="f-pagination-button"
             aria-label="上一页"
-            disabled={blocked || state.page <= 1}
+            disabled={pageBlocked || state.page <= 1}
             onClick={() => change(state.page - 1)}
           >
             {arrow === 'icon' ? <span aria-hidden="true">‹</span> : '上一页'}
@@ -402,7 +407,7 @@ export function Pagination({
                   className="f-pagination-button"
                   aria-label={`第 ${item} 页`}
                   aria-current={item === state.page ? 'page' : undefined}
-                  disabled={blocked}
+                  disabled={pageBlocked}
                   onClick={() => change(item)}
                 >
                   {item}
@@ -416,7 +421,7 @@ export function Pagination({
             type="button"
             className="f-pagination-button"
             aria-label="下一页"
-            disabled={blocked || state.page >= state.pageCount}
+            disabled={pageBlocked || state.page >= state.pageCount}
             onClick={() => change(state.page + 1)}
           >
             {arrow === 'icon' ? <span aria-hidden="true">›</span> : '下一页'}

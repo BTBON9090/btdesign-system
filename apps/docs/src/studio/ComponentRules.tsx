@@ -3,6 +3,7 @@ import { createTheme, type ThemeConfig, type ThemeMode } from '@btdesign/tokens'
 import { LockKeyhole, RotateCcw, Unlock } from 'lucide-react';
 import {
   controlDefinitions,
+  controlValue,
   getSelectedPart,
   partHasOverrides,
   resetPartPatch,
@@ -161,7 +162,7 @@ export function ComponentRules({
             label={control.label}
             min={control.min}
             max={control.max}
-            value={parseInt(vars[control.token])}
+            value={controlValue(control, vars)}
             disabled={locked}
             onBeginChange={onBeginChange}
             onEndChange={onEndChange}

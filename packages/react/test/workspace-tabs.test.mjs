@@ -17,7 +17,13 @@ const entries = [
 ];
 const render = (props = {}) =>
   renderToStaticMarkup(
-    h(WorkspaceTabs, { items: entries, activeKey: 'edit', onClose: () => {}, ...props }),
+    h(WorkspaceTabs, {
+      items: entries,
+      activeKey: 'edit',
+      onSelect: () => {},
+      onClose: () => {},
+      ...props,
+    }),
   );
 test('navigation preserves genuine links, actions, current state and sibling close buttons', () => {
   const html = render({ label: '工作区', id: 'work', className: 'custom' });
@@ -43,6 +49,19 @@ test('caller updates own items and current state; absent close handler has no de
   assert.doesNotMatch(after, /设计稿|归档/);
   assert.match(after, /href="\/home" aria-current="page"/);
   assert.match(after, /f-workspace-tabs-more"><button>更多<\/button>/);
+});
+test('missing select handler disables button entries but keeps links and close actions', () => {
+  const html = render({ onSelect: undefined });
+  assert.match(html, /<a class="f-workspace-tabs-link" href="\/home">工作台<\/a>/);
+  assert.match(
+    html,
+    /class="f-workspace-tabs-link" disabled="" aria-current="page">设计稿<\/button>/,
+  );
+  assert.match(
+    html,
+    /class="f-workspace-tabs-close f-button f-button--ghost" aria-label="关闭设计稿"/,
+  );
+  assert.match(html, /class="f-workspace-tabs-link" disabled="">不安全链接<\/button>/);
 });
 test('scroll geometry handles dynamic widths, fractional edges and modern RTL offsets', () => {
   assert.deepEqual(workspaceScrollState({ clientWidth: 200, scrollWidth: 200, scrollLeft: 0 }), {

@@ -403,8 +403,14 @@ export const Pagination = defineComponent({
       )
         visible.add(index);
       const numbers = [...visible].sort((a, b) => a - b);
+      const hasPageListener = () =>
+        Boolean(
+          instance?.vnode.props?.['onUpdate:page'] ||
+          (!pageOnceConsumed.value && instance?.vnode.props?.['onUpdate:pageOnce']),
+        );
+      const pageListener = hasPageListener();
       const select = (value: number) => {
-        if (!props.disabled && total > 0 && value !== page) {
+        if (!props.disabled && total > 0 && value !== page && hasPageListener()) {
           if (instance?.vnode.props?.['onUpdate:pageOnce']) pageOnceConsumed.value = true;
           emit('update:page', Math.min(pages, Math.max(1, value)));
         }
@@ -415,7 +421,7 @@ export const Pagination = defineComponent({
           {
             class: 'f-pagination-button',
             type: 'button',
-            disabled: props.disabled || disabled || total === 0,
+            disabled: props.disabled || disabled || total === 0 || !pageListener,
             'aria-label': current
               ? `第 ${target} 页，当前页`
               : /^\d+$/.test(text)
@@ -431,10 +437,6 @@ export const Pagination = defineComponent({
       const listener = Boolean(
         instance?.vnode.props?.['onUpdate:pageSize'] ||
         (!onceConsumed.value && instance?.vnode.props?.['onUpdate:pageSizeOnce']),
-      );
-      const pageListener = Boolean(
-        instance?.vnode.props?.['onUpdate:page'] ||
-        (!pageOnceConsumed.value && instance?.vnode.props?.['onUpdate:pageOnce']),
       );
       const options = [
         ...new Set(

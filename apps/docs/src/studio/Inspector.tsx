@@ -372,7 +372,11 @@ export function Inspector({
                     <code>{token}</code>
                     <span title={vars[token]}>
                       {vars[token].startsWith('#') && <i style={{ background: vars[token] }} />}
-                      {token === '--f-font' ? project.theme.font : vars[token]}
+                      {token === '--f-font'
+                        ? project.theme.font
+                        : token === '--f-steps-standard-marker' && vars[token] === 'initial'
+                          ? '继承按钮高度'
+                          : vars[token]}
                     </span>
                   </div>
                 ))}

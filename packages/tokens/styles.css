@@ -2777,9 +2777,9 @@
   cursor: not-allowed;
 }
 .f-steps {
-  --f-steps-marker-size: max(
-    24px,
-    calc(var(--f-button-height, var(--f-control-height, 38px)) * 0.74)
+  --f-steps-marker-size: var(
+    --f-steps-standard-marker,
+    max(24px, calc(var(--f-button-height, var(--f-control-height, 38px)) * 0.74))
   );
   box-sizing: border-box;
   margin: 0;
@@ -2825,6 +2825,28 @@
 .f-steps-item--error .f-steps-marker {
   border-color: var(--f-danger);
   color: var(--f-danger);
+}
+.f-steps:not(.f-steps--dot) .f-steps-item--finish .f-steps-marker::after,
+.f-steps:not(.f-steps--dot) .f-steps-item--error .f-steps-marker::after {
+  position: absolute;
+  inset-inline-end: -4px;
+  bottom: -3px;
+  display: grid;
+  place-items: center;
+  width: 12px;
+  height: 12px;
+  border: 1px solid var(--f-surface);
+  border-radius: 50%;
+  color: var(--f-on-status);
+  font: 700 9px/1 var(--f-font);
+}
+.f-steps:not(.f-steps--dot) .f-steps-item--finish .f-steps-marker::after {
+  content: '✓';
+  background: var(--f-success);
+}
+.f-steps:not(.f-steps--dot) .f-steps-item--error .f-steps-marker::after {
+  content: '!';
+  background: var(--f-danger);
 }
 .f-steps-content {
   min-width: 0;
@@ -2875,28 +2897,27 @@
   flex: none;
 }
 .f-steps--small {
-  --f-steps-marker-size: max(
-    20px,
-    calc(var(--f-button-height, var(--f-control-height, 38px)) * 0.6)
+  --f-steps-marker-size: var(
+    --f-steps-small-marker,
+    max(20px, calc(var(--f-button-height, var(--f-control-height, 38px)) * 0.6))
   );
 }
 .f-steps--small .f-steps-content {
   font-size: 12px;
 }
 .f-steps--dot {
-  --f-steps-marker-size: max(
-    8px,
-    calc(var(--f-button-height, var(--f-control-height, 38px)) * 0.26)
+  --f-steps-marker-size: var(
+    --f-steps-dot-marker,
+    max(8px, calc(var(--f-button-height, var(--f-control-height, 38px)) * 0.26))
   );
 }
 .f-steps--dot.f-steps--small {
-  --f-steps-marker-size: max(
-    6px,
-    calc(var(--f-button-height, var(--f-control-height, 38px)) * 0.2)
+  --f-steps-marker-size: var(
+    --f-steps-small-dot-marker,
+    max(6px, calc(var(--f-button-height, var(--f-control-height, 38px)) * 0.2))
   );
 }
 .f-steps--dot .f-steps-marker {
-  overflow: hidden;
   color: transparent;
   font-size: 0;
   background: var(--f-border);
@@ -2911,6 +2932,31 @@
   background: var(--f-success);
 }
 .f-steps--dot .f-steps-item--error .f-steps-marker {
+  background: var(--f-danger);
+}
+.f-steps--dot .f-steps-item--process .f-steps-marker {
+  outline: 1px solid var(--f-primary);
+  outline-offset: 2px;
+}
+.f-steps--dot .f-steps-item--finish .f-steps-marker::after,
+.f-steps--dot .f-steps-item--error .f-steps-marker::after {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  display: grid;
+  place-items: center;
+  width: 12px;
+  height: 12px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  color: var(--f-on-status);
+  font: 700 8px/1 var(--f-font);
+}
+.f-steps--dot .f-steps-item--finish .f-steps-marker::after {
+  content: '✓';
+  background: var(--f-success);
+}
+.f-steps--dot .f-steps-item--error .f-steps-marker::after {
+  content: '!';
   background: var(--f-danger);
 }
 .f-steps--navigation .f-steps-item:not(:last-child)::after,

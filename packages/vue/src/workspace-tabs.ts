@@ -48,10 +48,16 @@ export const WorkspaceTabs = defineComponent({
   setup(props, { attrs, emit, slots }) {
     const instance = getCurrentInstance();
     const onceConsumed = ref(false);
+    const selectOnceConsumed = ref(false);
     const hasClose = () =>
       Boolean(
         instance?.vnode.props?.onClose ||
         (!onceConsumed.value && instance?.vnode.props?.onCloseOnce),
+      );
+    const hasSelect = () =>
+      Boolean(
+        instance?.vnode.props?.onSelect ||
+        (!selectOnceConsumed.value && instance?.vnode.props?.onSelectOnce),
       );
     const viewport = ref<HTMLElement>();
     const list = ref<HTMLElement>();
@@ -219,7 +225,9 @@ export const WorkspaceTabs = defineComponent({
       pendingFocus = undefined;
       if (document.activeElement !== document.body) return;
       const available = new Set(
-        props.items.filter((item) => !item.disabled).map((item) => item.key),
+        props.items
+          .filter((item) => !item.disabled && (safeHref(item.href) || hasSelect()))
+          .map((item) => item.key),
       );
       const candidates = [
         ...keys.slice(index + 1),
@@ -314,10 +322,15 @@ export const WorkspaceTabs = defineComponent({
                       if (element) entries.set(item.key, element as HTMLElement);
                       else entries.delete(item.key);
                     },
-                    ...(href ? { href } : { type: 'button', disabled: item.disabled }),
+                    ...(href
+                      ? { href }
+                      : { type: 'button', disabled: item.disabled || !hasSelect() }),
                     'aria-current': props.activeKey === item.key ? 'page' : undefined,
                     onClick: () => {
-                      if (!item.disabled) emit('select', item.key);
+                      if (!item.disabled && hasSelect()) {
+                        if (instance?.vnode.props?.onSelectOnce) selectOnceConsumed.value = true;
+                        emit('select', item.key);
+                      }
                     },
                   },
                   item.label,

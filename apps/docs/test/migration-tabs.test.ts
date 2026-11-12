@@ -52,3 +52,12 @@ test('full generated stylesheet is not accepted, but a single root block of toke
     .join(' ')} }`;
   assert.deepEqual(parseThemeImport(extracted).patch.components?.tabs, expected);
 });
+
+test('steps sizes import explicitly; inherited CSS warns instead of silently overwriting an existing rule', () => {
+  const explicit = parseThemeImport('--f-steps-standard-marker:44px;');
+  assert.equal(explicit.patch.components?.steps?.markerSize, 44);
+  const inherited = parseThemeImport('--f-button-height:50px;--f-steps-standard-marker:initial;');
+  assert.equal(inherited.patch.components?.button?.height, 50);
+  assert.equal(inherited.patch.components?.steps, undefined);
+  assert.match(inherited.warnings.join(' '), /不会清除现有覆盖/);
+});

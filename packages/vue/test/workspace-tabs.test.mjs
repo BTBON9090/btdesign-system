@@ -25,7 +25,7 @@ const render = (props = {}, slots = {}) =>
 
 test('semantic links, button selection and separate named close controls', async () => {
   const html = await render(
-    { id: 'work', class: 'custom', onClose: () => {} },
+    { id: 'work', class: 'custom', onClose: () => {}, onSelect: () => {} },
     { more: () => h('button', '更多') },
   );
   assert.match(html, /<nav aria-label="工作区标签" id="work" class="custom f-workspace-tabs">/);
@@ -53,7 +53,7 @@ test('missing close handler, empty more slot and unsafe href do not create fake 
     html,
     /href="javascript|f-workspace-tabs-close|f-workspace-tabs-more|aria-current/,
   );
-  assert.match(html, /<button class="f-workspace-tabs-link" type="button">危险<\/button>/);
+  assert.match(html, /<button class="f-workspace-tabs-link" type="button" disabled>危险<\/button>/);
 });
 function mount(input = {}, { resizeObserver = true, direction = 'ltr', slots = {} } = {}) {
   const observers = [],
@@ -150,7 +150,7 @@ function mount(input = {}, { resizeObserver = true, direction = 'ltr', slots = {
       n.parent = null;
     },
   });
-  const props = reactive({ items, activeKey: 'a', ...input });
+  const props = reactive({ items, activeKey: 'a', onSelect: () => {}, ...input });
   root = node('root');
   const app = renderer.createApp({ render: () => h(WorkspaceTabs, props, slots) });
   app.mount(root);
@@ -181,6 +181,27 @@ test('selection and close events leave parent state untouched, including rejecte
   assert.equal(view.props.activeKey, 'a');
   assert.equal(view.props.items.length, 3);
   assert.equal(view.find((n) => n.props['aria-current'] === 'page').text, '项目');
+  view.app.unmount();
+});
+test('selection requires a listener only for button items, including once listeners', async () => {
+  const closed = [];
+  const view = mount({ onSelect: undefined, onClose: (key) => closed.push(key) });
+  await nextTick();
+  const page = () => view.find((n) => n.type === 'button' && n.text === '项目');
+  const link = () => view.find((n) => n.type === 'a' && n.props.href === '/home');
+  assert.equal(page().props.disabled, true);
+  assert.ok(link(), 'real destinations remain links without a selection listener');
+  view.scroll('关闭项目').props.onClick({ currentTarget: view.scroll('关闭项目') });
+  assert.deepEqual(closed, ['a'], 'close remains independently available');
+  const selected = [];
+  view.props.onSelectOnce = (key) => selected.push(key);
+  await nextTick();
+  assert.equal(page().props.disabled, false);
+  page().props.onClick();
+  await nextTick();
+  assert.deepEqual(selected, ['a']);
+  assert.equal(page().props.disabled, true, 'one-shot listener cannot leave an inert action');
+  assert.ok(link(), 'links stay available after a one-shot listener is consumed');
   view.app.unmount();
 });
 test('actual overflow, scrolling, boundaries and ResizeObserver update correctly', async () => {
@@ -299,6 +320,23 @@ test('focused close restores the next available entry after delayed removal, the
   await nextTick();
   await nextTick();
   assert.equal(view.document.activeElement.text, '首页', 'falls back to previous enabled entry');
+  view.app.unmount();
+});
+test('focus restoration skips buttons that have no selection listener', async () => {
+  const entries = [
+    { key: 'a', label: '当前', closable: true },
+    { key: 'b', label: '不可选择' },
+    { key: 'c', label: '安全链接', href: '/next' },
+  ];
+  const view = mount({ items: entries, onSelect: undefined, onClose: () => {} });
+  await nextTick();
+  const close = view.scroll('关闭当前');
+  close.focus();
+  close.props.onClick({ currentTarget: close });
+  view.props.items = entries.slice(1);
+  await nextTick();
+  await nextTick();
+  assert.equal(view.document.activeElement.text, '安全链接');
   view.app.unmount();
 });
 test('focus deliberately moved by host is not stolen after a later close', async () => {

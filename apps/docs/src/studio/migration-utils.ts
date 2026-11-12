@@ -318,6 +318,12 @@ export function parseThemeImport(text: string): ThemeImport {
       }
       if (seen.has(target)) throw new Error(`${key} 重复定义了 ${target}，请保留一个明确的值。`);
       seen.add(target);
+      if (key === '--f-steps-standard-marker' && value === 'initial') {
+        warnings.push(
+          '步骤标记继承按钮高度；CSS 部分导入不会清除现有覆盖，请在步骤规则中选择恢复。',
+        );
+        continue;
+      }
       if (target === 'radius' || dimensions[key]) {
         const radius = /^(-?\d+(?:\.\d+)?)px$/.exec(value);
         if (radius || value === '0')

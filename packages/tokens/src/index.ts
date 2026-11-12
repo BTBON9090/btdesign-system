@@ -29,6 +29,7 @@ export interface ComponentOverrides {
   navigation?: { itemHeight?: number; padding?: number };
   systemHeader?: { minHeight?: number; paddingInline?: number; gap?: number };
   pagination?: { size?: number; gap?: number; fontSize?: number };
+  steps?: { markerSize?: number };
   breadcrumb?: { itemGap?: number; separatorGap?: number; fontSize?: number };
   tabs?: {
     minHeight?: number;
@@ -116,6 +117,15 @@ export const componentGeometry = {
     size: { min: 28, max: 56, comfortable: 38, compact: 32, token: '--f-pagination-size' },
     gap: { min: 0, max: 20, comfortable: 6, compact: 6, token: '--f-pagination-gap' },
     fontSize: { min: 11, max: 20, comfortable: 13, compact: 13, token: '--f-pagination-font-size' },
+  },
+  steps: {
+    markerSize: {
+      min: 24,
+      max: 56,
+      comfortable: 28,
+      compact: 24,
+      token: '--f-steps-standard-marker',
+    },
   },
   list: {
     rowPadding: { min: 8, max: 24, comfortable: 16, compact: 10, token: '--f-list-row-padding' },
@@ -365,6 +375,7 @@ export function createTheme(input: ThemeConfig, mode: ThemeMode = 'light'): Reco
       '"Inter Variable", Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", sans-serif',
     mono: '"SFMono-Regular", Consolas, "Liberation Mono", "PingFang SC", monospace',
   };
+  const stepMarker = config.components?.steps?.markerSize;
   return {
     ...Object.fromEntries(
       Object.entries(componentGeometry).flatMap(([section, fields]) =>
@@ -404,6 +415,15 @@ export function createTheme(input: ThemeConfig, mode: ThemeMode = 'light'): Reco
     '--f-space': config.density === 'compact' ? '12px' : '16px',
     '--f-button-radius': `${config.components?.button?.radius ?? config.radius}px`,
     '--f-button-height': `${config.components?.button?.height ?? (config.density === 'compact' ? 32 : 38)}px`,
+    // `initial` clears an inherited override and allows the stylesheet fallback to
+    // resolve --f-button-height on each Steps element, including local overrides.
+    '--f-steps-standard-marker': stepMarker === undefined ? 'initial' : `${stepMarker}px`,
+    '--f-steps-small-marker':
+      stepMarker === undefined ? 'initial' : `${Math.max(20, (stepMarker * 0.6) / 0.74)}px`,
+    '--f-steps-dot-marker':
+      stepMarker === undefined ? 'initial' : `${Math.max(8, (stepMarker * 0.26) / 0.74)}px`,
+    '--f-steps-small-dot-marker':
+      stepMarker === undefined ? 'initial' : `${Math.max(6, (stepMarker * 0.2) / 0.74)}px`,
     '--f-input-radius': `${config.components?.input?.radius ?? config.radius}px`,
     '--f-input-height': `${config.components?.input?.height ?? (config.density === 'compact' ? 32 : 38)}px`,
     '--f-card-radius': `${config.components?.card?.radius ?? config.radius + 3}px`,

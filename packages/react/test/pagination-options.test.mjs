@@ -9,7 +9,9 @@ import {
   paginationSizeOptions,
 } from '../dist/pagination-utils.js';
 const render = (props) =>
-  renderToStaticMarkup(h(Pagination, { page: 2, total: 45, pageSize: 10, ...props }));
+  renderToStaticMarkup(
+    h(Pagination, { page: 2, total: 45, pageSize: 10, onPageChange: () => {}, ...props }),
+  );
 test('defaults keep legacy markup and pagination semantics', () => {
   const html = render();
   assert.match(
@@ -79,7 +81,23 @@ test('disabled, empty datasets and missing callback disable optional controls', 
     assert.match(html, /<select[^>]*disabled=""/);
     assert.match(html, /<input[^>]*disabled=""/);
   }
-  assert.match(render({ showQuickJumper: true }), /<input[^>]*disabled=""/);
+  assert.match(
+    render({ showQuickJumper: true, onPageChange: undefined }),
+    /<input[^>]*disabled=""/,
+  );
+});
+test('missing page callback disables page controls without disabling independent size changes', () => {
+  const html = render({
+    onPageChange: undefined,
+    showQuickJumper: true,
+    pageSizeOptions: [10, 20],
+    onPageSizeChange: () => {},
+  });
+  const buttons = [...html.matchAll(/<button\b[^>]*>/g)].map((match) => match[0]);
+  assert.ok(buttons.length > 0);
+  assert.ok(buttons.every((button) => button.includes('disabled=""')));
+  assert.match(html, /<input[^>]*disabled=""/);
+  assert.match(html, /<select(?![^>]*disabled="")[^>]*aria-label="每页条数"/);
 });
 test('quick jump recognizes only integers and clamps all out-of-range requests', () => {
   for (const invalid of [
