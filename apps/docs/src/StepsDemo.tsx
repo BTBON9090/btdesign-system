@@ -13,6 +13,8 @@ export function StepsDemo({
     <Steps
       label="项目创建进度"
       orientation={options.orientation}
+      variant={options.variant}
+      size={options.size}
       current={options.current}
       items={stepsPreviewItems(options)}
     />

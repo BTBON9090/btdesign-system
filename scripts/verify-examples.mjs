@@ -132,6 +132,11 @@ try {
           paginationArrow: 'icon',
         },
       ]);
+    if (component.id === 'steps')
+      variants.push([
+        'arrow-small-six',
+        { ...defaults, stepsVariant: 'arrow', stepsSize: 'small', stepsCount: 6, stepsCurrent: 5 },
+      ]);
     if (component.id === 'cascader')
       variants.push([
         'parent-no-search',

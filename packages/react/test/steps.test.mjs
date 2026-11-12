@@ -37,3 +37,30 @@ test('Steps supports vertical orientation and bounds the current index', () => {
     'current step remains current when it has an error',
   );
 });
+
+test('variants and compact sizing preserve progress semantics and decorative markers', () => {
+  for (const variant of ['dot', 'navigation', 'arrow']) {
+    const html = renderToStaticMarkup(
+      h(Steps, {
+        items,
+        current: 1,
+        variant,
+        size: 'small',
+        orientation: 'vertical',
+        className: 'custom',
+      }),
+    );
+    assert.match(
+      html,
+      new RegExp(`class="f-steps f-steps--vertical f-steps--${variant} f-steps--small custom"`),
+    );
+    assert.equal((html.match(/aria-current="step"/g) ?? []).length, 1);
+    assert.match(html, /第 2 步，进行中：/);
+    assert.match(html, /第 3 步，错误：/);
+    assert.match(html, /f-steps-marker" aria-hidden="true"><span>✓<\/span>/);
+    assert.doesNotMatch(html, /<button|<a[ >]/);
+  }
+  const standard = renderToStaticMarkup(h(Steps, { items, variant: 'standard', size: 'default' }));
+  assert.match(standard, /class="f-steps f-steps--horizontal"/);
+  assert.doesNotMatch(standard, /f-steps--standard|f-steps--default/);
+});

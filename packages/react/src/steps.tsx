@@ -13,6 +13,8 @@ export interface StepsProps extends Omit<HTMLAttributes<HTMLOListElement>, 'chil
   items: StepItem[];
   current?: number;
   orientation?: 'horizontal' | 'vertical';
+  variant?: 'standard' | 'dot' | 'navigation' | 'arrow';
+  size?: 'default' | 'small';
   label?: string;
 }
 const labels: Record<StepStatus, string> = {
@@ -24,7 +26,16 @@ const labels: Record<StepStatus, string> = {
 
 /** Displays progress without implying that steps can be clicked or navigated. */
 export const Steps = forwardRef<HTMLOListElement, StepsProps>(function Steps(
-  { items, current = 0, orientation = 'horizontal', label = '步骤', className, ...props },
+  {
+    items,
+    current = 0,
+    orientation = 'horizontal',
+    variant = 'standard',
+    size = 'default',
+    label = '步骤',
+    className,
+    ...props
+  },
   ref,
 ) {
   const index = Number.isFinite(current)
@@ -35,7 +46,15 @@ export const Steps = forwardRef<HTMLOListElement, StepsProps>(function Steps(
       {...props}
       ref={ref}
       aria-label={props['aria-label'] ?? label}
-      className={['f-steps', `f-steps--${orientation}`, className].filter(Boolean).join(' ')}
+      className={[
+        'f-steps',
+        `f-steps--${orientation}`,
+        variant !== 'standard' && `f-steps--${variant}`,
+        size === 'small' && 'f-steps--small',
+        className,
+      ]
+        .filter(Boolean)
+        .join(' ')}
     >
       {items.map((item, i) => {
         const status = item.status ?? (i < index ? 'finish' : i === index ? 'process' : 'wait');

@@ -346,6 +346,8 @@ export const catalog = [
       ['items', 'StepItem[]', '必填'],
       ['current', 'number（从 0 开始）', '0'],
       ['orientation', 'horizontal | vertical', 'horizontal'],
+      ['variant', 'standard | dot | navigation | arrow', 'standard'],
+      ['size', 'default | small', 'default'],
       ['label', 'string', '步骤'],
       ['item: id / title / description / icon', 'string / ReactNode / VNodeChild', '—'],
       ['item: status', 'wait | process | finish | error', '由 current 推导'],
@@ -979,7 +981,10 @@ export function timelinePreviewOptions(options?: DemoOptions): TimelinePreviewOp
 export function stepsPreviewOptions(options?: DemoOptions): StepsPreviewOptions {
   return {
     orientation: options?.orientation ?? 'horizontal',
-    current: options?.stepsCurrent ?? 1,
+    current: Math.min(options?.stepsCurrent ?? 1, (options?.stepsCount ?? 3) - 1),
+    variant: options?.stepsVariant ?? 'standard',
+    size: options?.stepsSize ?? 'default',
+    count: options?.stepsCount ?? 3,
     showIcons: options?.stepsIcons ?? false,
     errorLast: options?.stepsError ?? false,
   };

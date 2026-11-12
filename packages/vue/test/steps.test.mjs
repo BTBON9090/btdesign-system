@@ -45,3 +45,25 @@ test('current step remains identifiable when its status is error', async () => {
   const html = await render({ items, current: 2 });
   assert.match(html, /f-steps-item--error" aria-current="step"/);
 });
+
+test('Steps variants and small sizing preserve accessible status, slots and noninteractive semantics', async () => {
+  for (const variant of ['dot', 'navigation', 'arrow']) {
+    for (const orientation of ['horizontal', 'vertical']) {
+      const html = await render(
+        { items, current: 1, variant, orientation, size: 'small' },
+        { 'icon-two': () => h('span', {}, '✓'), 'title-two': () => h('strong', '自定义标题') },
+      );
+      assert.match(html, new RegExp(`f-steps--${orientation} f-steps--${variant} f-steps--small`));
+      assert.match(html, /f-steps-item--process" aria-current="step"/);
+      assert.match(html, /第 1 步，已完成：/);
+      assert.match(html, /第 2 步，进行中：/);
+      assert.match(html, /第 3 步，错误：/);
+      assert.match(html, /f-steps-marker" aria-hidden="true"/);
+      assert.match(html, /<strong>自定义标题<\/strong>/);
+      assert.doesNotMatch(html, /<button|role="button"|tabindex/);
+    }
+  }
+  const standard = await render({ items, variant: 'standard', size: 'default' });
+  assert.match(standard, /class="f-steps f-steps--horizontal"/);
+  assert.doesNotMatch(standard, /f-steps--standard|f-steps--default|f-steps--small/);
+});

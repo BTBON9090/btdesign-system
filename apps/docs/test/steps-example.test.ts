@@ -53,3 +53,27 @@ test('generated Steps examples parse as React TSX and Vue SFC', () => {
   });
   assert.deepEqual(template.errors, []);
 });
+
+test('step count, variant, size and error use the same actual example data in both frameworks', () => {
+  const options = {
+    orientation: 'horizontal',
+    current: 5,
+    showIcons: true,
+    errorLast: true,
+    count: 6,
+    variant: 'arrow',
+    size: 'small',
+  } as const;
+  const items = stepsPreviewItems(options);
+  assert.equal(items.length, 6);
+  assert.equal(items[5].status, 'error');
+  assert.equal(items[5].icon, '★');
+  for (const framework of ['react', 'vue'] as const) {
+    const code = stepsExampleCode(framework, options);
+    assert.match(code, /variant="arrow"/);
+    assert.match(code, /size="small"/);
+    assert.match(code, /完成归档/);
+    assert.match(code, framework === 'react' ? /current=\{5\}/ : /:current="5"/);
+  }
+  assert.equal(stepsPreviewItems({ ...options, count: 4 })[3].status, 'error');
+});

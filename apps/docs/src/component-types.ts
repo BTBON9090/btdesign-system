@@ -179,7 +179,10 @@ export interface DemoOptions {
   rateCount?: number;
   tagClosable?: boolean;
   timelineStates?: boolean;
-  stepsCurrent?: 0 | 1 | 2;
+  stepsVariant?: 'standard' | 'dot' | 'navigation' | 'arrow';
+  stepsSize?: 'default' | 'small';
+  stepsCount?: 3 | 4 | 5 | 6;
+  stepsCurrent?: 0 | 1 | 2 | 3 | 4 | 5;
   stepsIcons?: boolean;
   stepsError?: boolean;
   tooltipPlacement?: 'top' | 'bottom' | 'left' | 'right';

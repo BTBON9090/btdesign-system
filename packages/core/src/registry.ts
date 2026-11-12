@@ -1,7 +1,7 @@
 export const componentRegistry = {
   schemaVersion: 1,
   library: 'BTDESIGN',
-  version: '0.16.0',
+  version: '0.17.0',
   packages: {
     react: '@btdesign/react',
     vue: '@btdesign/vue',
@@ -272,6 +272,8 @@ export const componentRegistry = {
         items: '{id,title,description?,status?,icon?}[]',
         current: 'number',
         orientation: ['horizontal', 'vertical'],
+        variant: ['standard', 'dot', 'navigation', 'arrow'],
+        size: ['default', 'small'],
       },
       notes: 'Displays step status; does not provide click-to-navigate behavior.',
     },

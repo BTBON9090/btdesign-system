@@ -1949,23 +1949,80 @@ export function ComponentWorkbench({
           {kind === 'steps' && (
             <>
               <label>
+                形式
+                <select
+                  aria-label="预览步骤条形式"
+                  value={options.stepsVariant ?? 'standard'}
+                  onChange={(event) =>
+                    update(
+                      'stepsVariant',
+                      event.target.value as NonNullable<DemoOptions['stepsVariant']>,
+                    )
+                  }
+                >
+                  <option value="standard">标准</option>
+                  <option value="dot">圆点</option>
+                  <option value="navigation">导航式</option>
+                  <option value="arrow">箭头式</option>
+                </select>
+              </label>
+              <label>
+                尺寸
+                <select
+                  aria-label="预览步骤条尺寸"
+                  value={options.stepsSize ?? 'default'}
+                  onChange={(event) =>
+                    update('stepsSize', event.target.value as NonNullable<DemoOptions['stepsSize']>)
+                  }
+                >
+                  <option value="default">默认</option>
+                  <option value="small">小</option>
+                </select>
+              </label>
+              <label>
+                步骤数量
+                <select
+                  aria-label="预览步骤数量"
+                  value={options.stepsCount ?? 3}
+                  onChange={(event) => {
+                    const count = Number(event.target.value) as 3 | 4 | 5 | 6;
+                    setOptions((current) => ({
+                      ...current,
+                      stepsCount: count,
+                      stepsCurrent: Math.min(current.stepsCurrent ?? 1, count - 1) as NonNullable<
+                        DemoOptions['stepsCurrent']
+                      >,
+                    }));
+                  }}
+                >
+                  {[3, 4, 5, 6].map((count) => (
+                    <option key={count} value={count}>
+                      {count} 步
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label>
                 当前步骤
                 <select
                   aria-label="预览当前步骤"
-                  value={options.stepsCurrent ?? 1}
+                  value={Math.min(options.stepsCurrent ?? 1, (options.stepsCount ?? 3) - 1)}
                   onChange={(event) =>
-                    update('stepsCurrent', Number(event.target.value) as 0 | 1 | 2)
+                    update('stepsCurrent', Number(event.target.value) as 0 | 1 | 2 | 3 | 4 | 5)
                   }
                 >
-                  <option value="0">第 1 步</option>
-                  <option value="1">第 2 步</option>
-                  <option value="2">第 3 步</option>
+                  {Array.from({ length: options.stepsCount ?? 3 }, (_, index) => (
+                    <option key={index} value={index}>
+                      第 {index + 1} 步
+                    </option>
+                  ))}
                 </select>
               </label>
               <label>
                 步骤图标
                 <select
                   aria-label="预览步骤图标"
+                  disabled={options.stepsVariant === 'dot'}
                   value={options.stepsIcons ? 'icons' : 'numbers'}
                   onChange={(event) => update('stepsIcons', event.target.value === 'icons')}
                 >
@@ -2040,6 +2097,9 @@ export function ComponentWorkbench({
                 </select>
               </label>
             </>
+          )}
+          {kind === 'steps' && options.stepsVariant === 'dot' && (
+            <p className="bt-workbench-hint">圆点形式不显示数字或图标。</p>
           )}
           {kind === 'pagination' && options.paginationSimple && (
             <p className="bt-workbench-hint">简洁模式仅显示前后页和当前页数。</p>

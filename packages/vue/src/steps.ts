@@ -1,6 +1,8 @@
 import { defineComponent, h, mergeProps, type PropType, type VNodeChild } from 'vue';
 
 export type StepStatus = 'wait' | 'process' | 'finish' | 'error';
+export type StepsVariant = 'standard' | 'dot' | 'navigation' | 'arrow';
+export type StepsSize = 'default' | 'small';
 export interface StepItem {
   id: string;
   title: VNodeChild;
@@ -23,6 +25,8 @@ export const Steps = defineComponent({
     items: { type: Array as PropType<StepItem[]>, required: true },
     current: { type: Number, default: 0 },
     orientation: { type: String as PropType<'horizontal' | 'vertical'>, default: 'horizontal' },
+    variant: { type: String as PropType<StepsVariant>, default: 'standard' },
+    size: { type: String as PropType<StepsSize>, default: 'default' },
     label: { type: String, default: '步骤' },
   },
   setup(props, { attrs, slots }) {
@@ -34,7 +38,12 @@ export const Steps = defineComponent({
         'ol',
         mergeProps(attrs, {
           'aria-label': attrs['aria-label'] ?? props.label,
-          class: ['f-steps', `f-steps--${props.orientation}`],
+          class: [
+            'f-steps',
+            `f-steps--${props.orientation}`,
+            props.variant !== 'standard' && `f-steps--${props.variant}`,
+            props.size === 'small' && 'f-steps--small',
+          ],
         }),
         props.items.map((item, i) => {
           const status = item.status ?? (i < index ? 'finish' : i === index ? 'process' : 'wait');

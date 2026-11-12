@@ -2874,6 +2874,88 @@
 .f-steps--vertical .f-steps-marker {
   flex: none;
 }
+.f-steps--small {
+  --f-steps-marker-size: max(
+    20px,
+    calc(var(--f-button-height, var(--f-control-height, 38px)) * 0.6)
+  );
+}
+.f-steps--small .f-steps-content {
+  font-size: 12px;
+}
+.f-steps--dot {
+  --f-steps-marker-size: max(
+    8px,
+    calc(var(--f-button-height, var(--f-control-height, 38px)) * 0.26)
+  );
+}
+.f-steps--dot.f-steps--small {
+  --f-steps-marker-size: max(
+    6px,
+    calc(var(--f-button-height, var(--f-control-height, 38px)) * 0.2)
+  );
+}
+.f-steps--dot .f-steps-marker {
+  overflow: hidden;
+  color: transparent;
+  font-size: 0;
+  background: var(--f-border);
+}
+.f-steps--dot .f-steps-marker > * {
+  display: none;
+}
+.f-steps--dot .f-steps-item--process .f-steps-marker {
+  background: var(--f-primary);
+}
+.f-steps--dot .f-steps-item--finish .f-steps-marker {
+  background: var(--f-success);
+}
+.f-steps--dot .f-steps-item--error .f-steps-marker {
+  background: var(--f-danger);
+}
+.f-steps--navigation .f-steps-item:not(:last-child)::after,
+.f-steps--arrow .f-steps-item:not(:last-child)::after {
+  display: none;
+}
+.f-steps--navigation .f-steps-item {
+  border-bottom: 2px solid var(--f-border);
+  padding: 8px var(--f-space, 16px);
+}
+.f-steps--navigation .f-steps-item--process {
+  border-color: var(--f-primary);
+}
+.f-steps--navigation.f-steps--vertical .f-steps-item {
+  border-bottom: 0;
+  border-inline-start: 2px solid var(--f-border);
+}
+.f-steps--navigation.f-steps--vertical .f-steps-item--process {
+  border-inline-start-color: var(--f-primary);
+}
+.f-steps--arrow .f-steps-item {
+  box-sizing: border-box;
+  display: flex;
+  align-items: flex-start;
+  gap: calc(var(--f-space, 16px) * 0.5);
+  padding: 8px 16px 8px 20px;
+  background: var(--f-subtle);
+}
+.f-steps--arrow.f-steps--horizontal .f-steps-item {
+  flex: 1 0 120px;
+  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 50%, calc(100% - 12px) 100%, 0 100%, 12px 50%);
+}
+.f-steps--arrow.f-steps--vertical .f-steps-item {
+  padding-bottom: 16px;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 8px), 50% 100%, 0 calc(100% - 8px));
+}
+.f-steps--arrow .f-steps-item--process {
+  background: var(--f-primary-soft);
+}
+.f-steps--arrow.f-steps--horizontal .f-steps-content {
+  margin-top: 0;
+}
+.f-steps--arrow .f-steps-marker {
+  flex: none;
+}
 .f-statistic {
   color: var(--f-text);
   font-family: var(--f-font);
