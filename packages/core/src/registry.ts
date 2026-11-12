@@ -1,7 +1,7 @@
 export const componentRegistry = {
   schemaVersion: 1,
   library: 'BTDESIGN',
-  version: '0.13.0',
+  version: '0.14.0',
   packages: {
     react: '@btdesign/react',
     vue: '@btdesign/vue',
@@ -1184,6 +1184,20 @@ export const componentRegistry = {
       },
       notes:
         'Collapsed group popups use click and keyboard navigation. They do not automatically avoid viewport edges or open on hover. Actual href items are links; the application owns routing, permissions and activeKey.',
+    },
+    {
+      name: 'WorkspaceTabs',
+      purpose: 'Navigate and request closing application pages',
+      props: {
+        items:
+          '{key:string,label:string,href?:string,disabled?:boolean,closable?:boolean}[] with unique stable keys',
+        activeKey: 'string | null; controlled by the application',
+        label: 'accessible navigation label',
+      },
+      react: { onSelect: '(key:string)=>void', onClose: '(key:string)=>void', more: 'ReactNode' },
+      vue: { select: 'key', close: 'key', 'more slot': 'content' },
+      notes:
+        'Closing only requests an action; the application owns page removal, the next active page and routing. Scroll controls move the overflowing page list; more content is supplied by the application.',
     },
     {
       name: 'SystemHeader',

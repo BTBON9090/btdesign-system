@@ -311,6 +311,12 @@ const partsByComponent: Record<ComponentId, ControlPart[]> = {
     part('actions', '快捷操作', ['buttonHeight', 'buttonRadius']),
     part('menu', '菜单浮层', ['overlayRadius', 'overlayPadding']),
   ],
+  'workspace-tabs': [
+    part('tabs', '页签布局', ['tabsMinHeight', 'tabsPadding', 'tabsGap', 'tabsFontSize']),
+    part('close', '关闭按钮', ['buttonHeight', 'buttonRadius']),
+    part('scroll', '滚动按钮', ['buttonHeight', 'buttonRadius']),
+    part('more', '更多菜单', ['buttonHeight', 'buttonRadius', 'overlayRadius', 'overlayPadding']),
+  ],
   'dropdown-menu': [
     button(),
     navigation(),

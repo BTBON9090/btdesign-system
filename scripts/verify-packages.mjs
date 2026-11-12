@@ -87,14 +87,14 @@ import * as react from '@btdesign/react';
 import * as vue from '@btdesign/vue';
 
 const expectedNames = ['Button','Input','Textarea','Select','Checkbox','Switch','Badge','Card','Alert','Tabs','Dialog','Avatar','Separator','Table','Skeleton','Progress','Field','InputGroup','InputAddon','RadioGroup','NumberInput','Breadcrumb','Pagination','EmptyState','Spinner','CardHeader','CardTitle','CardDescription','CardContent','CardFooter','TableCaption','TableHeader','TableBody','TableFooter','TableRow','TableHead','TableCell','Form','FormField','FormSection','FormActions','Calendar','DatePicker','DateRangePicker','Radio','CheckboxGroup','ToggleGroup','Segmented','ButtonGroup','List','ListItem','ListItemContent','ListItemActions','FileList','Tree','TreeSelect','Cascader','OrgPicker','Transfer','SidebarNav','TopNav','DropdownMenu','DataTable','AvatarGroup','PasswordInput','SearchInput','Slider','TimePicker','Collapse','Tag','Descriptions','Timeline','Comment','InputTag','Steps','Statistic','Tooltip','AutoComplete','Image','Carousel','PageHeader','Rate','Anchor','Popover','Mention','BackTop','Upload','ResizeBox','SearchSelect'];
-expectedNames.push('OrganizationTransfer', 'UploadDropzone', 'UploadFileList', 'SystemHeader');
+expectedNames.push('OrganizationTransfer', 'UploadDropzone', 'UploadFileList', 'SystemHeader', 'WorkspaceTabs');
 for (const name of expectedNames) {
   assert.ok(react[name], 'Missing React export ' + name);
   assert.ok(vue[name], 'Missing Vue export ' + name);
 }
 assert.deepEqual(Object.keys(react).sort(), [...expectedNames].sort(), 'React public component exports');
 assert.deepEqual(Object.keys(vue).sort(), [...expectedNames, 'BTDESIGNPlugin'].sort(), 'Vue public component exports and plugin');
-assert.equal(expectedNames.length, 93);
+assert.equal(expectedNames.length, 94);
 assert.equal(engine.parseDate('2026-02-30'), null);
 assert.equal(engine.addMonths('2024-01-31', 1), '2024-02-29');
 assert.deepEqual(engine.validateValues({email: ''}, {email: {required: true}}), {email: '请填写此项'});
@@ -110,6 +110,8 @@ assert.match(await renderToString(createSSRApp({render: () => h(vue.Button, {}, 
 assert.match(await renderToString(createSSRApp({render: () => h(vue.Input, {value: 'Vue native value'})})), /value="Vue native value"/);
 assert.match(renderToStaticMarkup(createElement(react.SystemHeader, {brand:'Brand', search:'Search'})), /f-system-header-search/);
 assert.match(await renderToString(createSSRApp({render: () => h(vue.SystemHeader, {}, {brand: () => 'Brand', search: () => 'Search'})})), /f-system-header-search/);
+assert.match(renderToStaticMarkup(createElement(react.WorkspaceTabs, {items:[{key:'a',label:'Page'}],activeKey:'a'})), /aria-current="page"/);
+assert.match(await renderToString(createSSRApp({render: () => h(vue.WorkspaceTabs, {items:[{key:'a',label:'Page'}],activeKey:'a'})})), /aria-current="page"/);
 const reactField = renderToStaticMarkup(createElement(react.Field, {id: 'react-budget', label: '预算', description: '每月限额', error: '请确认预算', required: true}, createElement(react.InputGroup, {}, createElement(react.InputAddon, {}, '¥'), createElement(react.NumberInput, {name: 'budget', value: 12.5, min: 0, max: 20, step: 0.5, controlSize: 'sm'}))));
 assert.match(reactField, /for="react-budget"/);
 assert.match(reactField, /aria-describedby="react-budget-description react-budget-error"/);

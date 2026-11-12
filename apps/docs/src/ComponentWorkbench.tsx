@@ -185,6 +185,19 @@ export function ComponentWorkbench({
         current.headerOrganization === false ? { ...current, headerOrganization: true } : current,
       );
   }, [embedded, kind, selectedPart]);
+  useEffect(() => {
+    if (!embedded || kind !== 'workspace-tabs') return;
+    if (selectedPart === 'close')
+      setOptions((current) =>
+        current.workspaceTabsClosable === false
+          ? { ...current, workspaceTabsClosable: true }
+          : current,
+      );
+    if (selectedPart === 'more')
+      setOptions((current) =>
+        current.workspaceTabsMore === false ? { ...current, workspaceTabsMore: true } : current,
+      );
+  }, [embedded, kind, selectedPart]);
   const [savedProject] = useState(() => loadStudio().project);
   const project = liveProject ?? savedProject;
   const [themeSource, setThemeSource] = useState<'workspace' | 'default'>('workspace');
@@ -229,6 +242,28 @@ export function ComponentWorkbench({
                 <option value="multiple">多选</option>
               </select>
             </label>
+          )}
+          {kind === 'workspace-tabs' && (
+            <>
+              {(
+                [
+                  ['workspaceTabsClosable', '关闭按钮'],
+                  ['workspaceTabsMore', '更多入口'],
+                ] as const
+              ).map(([key, label]) => (
+                <label key={key}>
+                  {label}
+                  <select
+                    aria-label={`预览页签${label}`}
+                    value={options[key] === false ? 'hide' : 'show'}
+                    onChange={(event) => update(key, event.target.value === 'show')}
+                  >
+                    <option value="show">显示</option>
+                    <option value="hide">隐藏</option>
+                  </select>
+                </label>
+              ))}
+            </>
           )}
           {kind === 'system-header' && (
             <>
@@ -1903,6 +1938,9 @@ export function ComponentWorkbench({
                 </select>
               </label>
             </>
+          )}
+          {embedded && kind === 'workspace-tabs' && selectedPart === 'scroll' && (
+            <p className="bt-workbench-hint">使用左右箭头浏览溢出页签。</p>
           )}
           {embedded && kind === 'system-header' && selectedPart === 'menu' && (
             <p className="bt-workbench-hint">打开个人菜单可查看浮层规则。</p>

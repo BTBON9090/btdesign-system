@@ -4,11 +4,11 @@ BTDESIGN 是面向 UI 设计师、前端工程师与 AI 编程工具的设计工
 
 工作流程是：**表达意图 → 选择场景 → 理解设计与结构 → 确认共享规则 → 保存版本 → 交付给开发与 AI**。组件文档、开发指南、设计指南和最佳实践随时可查，创作入口围绕当前项目展开。
 
-在线使用：[design.btbon.cn](https://design.btbon.cn)。源码仓库：[BTBON9090/btdesign-system](https://github.com/BTBON9090/btdesign-system)。当前代码版本为 v0.13.0，Studio 与文档网站使用腾讯云 EdgeOne 托管。组件包以本地安装包分发，尚未发布到 npm 公共注册表。DeepSeek 服务端密钥仍待配置。
+在线使用：[design.btbon.cn](https://design.btbon.cn)。源码仓库：[BTBON9090/btdesign-system](https://github.com/BTBON9090/btdesign-system)。当前代码版本为 v0.14.0，Studio 与文档网站使用腾讯云 EdgeOne 托管。组件包以本地安装包分发，尚未发布到 npm 公共注册表。DeepSeek 服务端密钥仍待配置。
 
-## v0.13：企业组件与共享行为层
+## v0.14：企业组件与共享行为层
 
-本轮提供 **71 个组件族、93 个公开组件**，React 与 Vue 使用相同的部件名称、共享行为规则和主题变量。Vue 另提供安装插件 `BTDESIGNPlugin`。
+本轮提供 **72 个组件族、94 个公开组件**，React 与 Vue 使用相同的部件名称、共享行为规则和主题变量。Vue 另提供安装插件 `BTDESIGNPlugin`。
 
 - 新增 20 个组件族：表单、日历与日期单选/范围、单选与多选、切换与分段控件、列表与文件、树与组织选择、级联、穿梭器、侧边/顶部导航、下拉菜单与高级表格。
 - 新增 FormField、FormSection、FormActions、ListItem、ListItemContent、ListItemActions 六个子部件；保留已有 Card、Table、InputGroup 的细分组合。
@@ -30,7 +30,7 @@ BTDESIGN 是面向 UI 设计师、前端工程师与 AI 编程工具的设计工
 | -------- | --------------------------------------------------------------------------------------- |
 | 场景     | 3 个维护好的场景：团队工作台、项目协作、登录；两种框架均真实渲染                        |
 | AI 提案  | 服务端调用 DeepSeek，返回场景选择、名称、文案、主题种子与解释；校验后在浏览器预览与应用 |
-| 组件     | 71 个组件族、93 个公开组件；包含表单、日期、层级选择、导航、列表与多级高级表格          |
+| 组件     | 72 个组件族、94 个公开组件；包含表单、日期、层级选择、导航、列表与多级高级表格          |
 | 设计规则 | 品牌主色、圆角、密度、字体；深浅色语义颜色；12 类组件几何覆盖、组件画布与品牌锁         |
 | 项目记录 | 一个本地活动项目、最多 20 个命名快照；当前会话最多 50 步撤销记录                        |
 | 迁入     | 风格映射预览、只读源码审计、报告筛选与处理建议                                          |
@@ -71,7 +71,7 @@ cp .env.example .env
 ```text
 AGENTS.md                    给编程助手的设计与实现约定
 .btdesign/system.json         ProjectSpec：场景、内容、主题、策略与版本格式
-.btdesign/components.json     71 个组件族及可组合子部件的 API 与语义变量映射
+.btdesign/components.json     72 个组件族及可组合子部件的 API 与语义变量映射
 App.tsx 或 App.vue           当前场景的页面组件
 app.css / theme.css          页面样式与深浅色主题
 package.json / vite.config.ts 运行依赖与 Vite 配置
@@ -96,10 +96,10 @@ npm run pack:libs
 
 ```sh
 # 目标项目已安装 React / React DOM 18 或 19
-npm install ./btdesign-engine-0.13.0.tgz ./btdesign-tokens-0.13.0.tgz ./btdesign-react-0.13.0.tgz
+npm install ./btdesign-engine-0.14.0.tgz ./btdesign-tokens-0.14.0.tgz ./btdesign-react-0.14.0.tgz
 
 # 或目标项目已安装 Vue 3.4+、低于 4
-npm install ./btdesign-engine-0.13.0.tgz ./btdesign-tokens-0.13.0.tgz ./btdesign-vue-0.13.0.tgz
+npm install ./btdesign-engine-0.14.0.tgz ./btdesign-tokens-0.14.0.tgz ./btdesign-vue-0.14.0.tgz
 ```
 
 包提供 ESM 与 TypeScript 声明。基础使用示例：

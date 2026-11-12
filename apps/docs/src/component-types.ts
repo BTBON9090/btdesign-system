@@ -69,10 +69,13 @@ export type ComponentId =
   | 'sidebar-nav'
   | 'top-nav'
   | 'system-header'
+  | 'workspace-tabs'
   | 'dropdown-menu'
   | 'data-table';
 
 export interface DemoOptions {
+  workspaceTabsClosable?: boolean;
+  workspaceTabsMore?: boolean;
   headerSearch?: boolean;
   headerActions?: boolean;
   headerAccount?: boolean;

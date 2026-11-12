@@ -1,3 +1,5 @@
+import { createWorkspaceTabsVuePreview } from './WorkspaceTabsVuePreview';
+import { workspaceTabsPreviewOptions } from './WorkspaceTabsExample';
 import { createSystemHeaderVuePreview } from './SystemHeaderVuePreview';
 import { systemHeaderPreviewOptions } from './SystemHeaderExample';
 import { tabsDetailVuePreview } from './TabsDetailVuePreview';
@@ -114,6 +116,7 @@ export function VueDemo({ kind, onAction, options, onNavCollapsedChange }: VueDe
         const DropdownMenuVueDemo = createDropdownMenuVuePreview(vue, ui.DropdownMenu);
         const NavigationVueDemo = createNavigationVuePreview(vue, ui);
         const SystemHeaderVueDemo = createSystemHeaderVuePreview(vue, ui);
+        const WorkspaceTabsVueDemo = createWorkspaceTabsVuePreview(vue, ui);
         const OrganizationTransferVueDemo = createOrganizationTransferVuePreview(vue, ui);
         if (
           isEnterpriseId(kind) &&
@@ -122,7 +125,8 @@ export function VueDemo({ kind, onAction, options, onNavCollapsedChange }: VueDe
           kind !== 'dropdown-menu' &&
           kind !== 'sidebar-nav' &&
           kind !== 'top-nav' &&
-          kind !== 'system-header'
+          kind !== 'system-header' &&
+          kind !== 'workspace-tabs'
         ) {
           app = createApp(
             createEnterpriseVueDemo(
@@ -223,6 +227,8 @@ export function VueDemo({ kind, onAction, options, onNavCollapsedChange }: VueDe
 
               return () => {
                 const o = optionState.value ?? defaultDemoOptions;
+                if (kind === 'workspace-tabs')
+                  return h(WorkspaceTabsVueDemo, { options: workspaceTabsPreviewOptions(o) });
                 if (kind === 'system-header')
                   return h(SystemHeaderVueDemo, { options: systemHeaderPreviewOptions(o) });
                 if (kind === 'sidebar-nav' || kind === 'top-nav')

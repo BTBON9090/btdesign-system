@@ -41,6 +41,7 @@ import { Image } from './image.js';
 import { Carousel } from './carousel.js';
 import { PageHeader } from './page-header.js';
 import { SystemHeader } from './system-header.js';
+import { WorkspaceTabs } from './workspace-tabs.js';
 import { Rate } from './rate.js';
 import { Anchor } from './anchor.js';
 import { Popover } from './popover.js';
@@ -83,6 +84,7 @@ export * from './image.js';
 export * from './carousel.js';
 export * from './page-header.js';
 export * from './system-header.js';
+export * from './workspace-tabs.js';
 export * from './rate.js';
 export * from './anchor.js';
 export * from './popover.js';
@@ -822,6 +824,7 @@ const components = {
   Carousel,
   PageHeader,
   SystemHeader,
+  WorkspaceTabs,
   Rate,
   Anchor,
   Popover,

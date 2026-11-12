@@ -1,3 +1,5 @@
+import { WorkspaceTabsPreview } from './WorkspaceTabsPreview';
+import { workspaceTabsPreviewOptions } from './WorkspaceTabsExample';
 import { SystemHeaderPreview } from './SystemHeaderPreview';
 import { systemHeaderPreviewOptions } from './SystemHeaderExample';
 import { TabsDetailPreview } from './TabsDetailPreview';
@@ -202,6 +204,8 @@ export function ComponentDemo({
       />
     );
   }
+  if (kind === 'workspace-tabs')
+    return <WorkspaceTabsPreview options={workspaceTabsPreviewOptions(options)} />;
   if (kind === 'system-header')
     return <SystemHeaderPreview options={systemHeaderPreviewOptions(options)} />;
   if (kind === 'sidebar-nav' || kind === 'top-nav')

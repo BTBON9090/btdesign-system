@@ -1,3 +1,4 @@
+import { workspaceTabsExample } from './WorkspaceTabsExample';
 import { systemHeaderExample } from './SystemHeaderExample';
 import { navigationExample } from './NavigationExample';
 import type { AnatomyPart, DemoOptions, Framework } from './component-types';
@@ -263,6 +264,21 @@ export const enterpriseCatalog = [
       ['renderIcon / #icon', '装饰性图标', '—'],
       ['item.parentLink / href', '父级链接与展开按钮分离', 'false'],
       ['label / disabled', 'string / boolean', '—'],
+    ],
+  },
+  {
+    id: 'workspace-tabs',
+    name: 'WorkspaceTabs',
+    cn: '工作区页签',
+    category: '导航',
+    description: '在工作区中切换已打开的页面，由应用管理当前页与关闭后的选择。',
+    props: [
+      ['items', '{ key, label, href?, disabled?, closable? }[]', '必填'],
+      ['activeKey', 'string | null', '必填'],
+      ['onSelect / select', '(key: string) => void', '—'],
+      ['onClose / close', '(key: string) => void', '—'],
+      ['more / #more', '更多操作', '—'],
+      ['label', 'string', '—'],
     ],
   },
   {
@@ -617,6 +633,31 @@ export const enterpriseAnatomy: Record<EnterpriseId, AnatomyPart[]> = {
       '--f-primary',
     ),
   ],
+  'workspace-tabs': [
+    anatomy(
+      '页签',
+      'WorkspaceTabs → items',
+      '应用维护打开的页面与当前页。',
+      '--f-tabs-min-height',
+      '--f-tabs-padding-inline',
+      '--f-tabs-gap',
+      '--f-tabs-font-size',
+    ),
+    anatomy(
+      '关闭',
+      'item.closable → onClose / close',
+      '关闭后由应用决定下一个当前页面。',
+      '--f-button-height',
+      '--f-button-radius',
+    ),
+    anatomy(
+      '滚动与更多',
+      'scroll controls / more slot',
+      '内容超出可视区域时滚动；更多内容由应用提供。',
+      '--f-button-height',
+      '--f-button-radius',
+    ),
+  ],
   'system-header': [
     anatomy(
       '顶栏容器',
@@ -704,6 +745,7 @@ export function enterpriseComponentCode(
   framework: Framework,
   o?: DemoOptions,
 ): string {
+  if (id === 'workspace-tabs') return workspaceTabsExample(framework, o);
   if (id === 'system-header') return systemHeaderExample(framework, o);
   if (id === 'sidebar-nav' || id === 'top-nav') return navigationExample(id, framework, o);
   const groupButtons = Array.from(

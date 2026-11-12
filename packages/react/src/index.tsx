@@ -108,6 +108,7 @@ export * from './image.js';
 export * from './carousel.js';
 export * from './page-header.js';
 export * from './system-header.js';
+export * from './workspace-tabs.js';
 export * from './rate.js';
 export * from './anchor.js';
 export * from './popover.js';
