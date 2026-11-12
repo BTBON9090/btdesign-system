@@ -19,3 +19,4 @@ apps/docs/public/downloads/
 .vercel/
 test-results/
 playwright-report/
+!assets/legacy-downloads/0.12.0/*.tgz

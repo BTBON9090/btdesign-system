@@ -40,6 +40,7 @@ import { AutoComplete } from './auto-complete.js';
 import { Image } from './image.js';
 import { Carousel } from './carousel.js';
 import { PageHeader } from './page-header.js';
+import { SystemHeader } from './system-header.js';
 import { Rate } from './rate.js';
 import { Anchor } from './anchor.js';
 import { Popover } from './popover.js';
@@ -81,6 +82,7 @@ export * from './auto-complete.js';
 export * from './image.js';
 export * from './carousel.js';
 export * from './page-header.js';
+export * from './system-header.js';
 export * from './rate.js';
 export * from './anchor.js';
 export * from './popover.js';
@@ -819,6 +821,7 @@ const components = {
   Image,
   Carousel,
   PageHeader,
+  SystemHeader,
   Rate,
   Anchor,
   Popover,

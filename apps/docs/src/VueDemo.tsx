@@ -1,3 +1,5 @@
+import { createSystemHeaderVuePreview } from './SystemHeaderVuePreview';
+import { systemHeaderPreviewOptions } from './SystemHeaderExample';
 import { tabsDetailVuePreview } from './TabsDetailVuePreview';
 import { tabsDetailOptions } from './TabsDetailExample';
 import { createNavigationVuePreview } from './NavigationVuePreview';
@@ -111,6 +113,7 @@ export function VueDemo({ kind, onAction, options, onNavCollapsedChange }: VueDe
         const UploadFileListVueDemo = createUploadFileListVuePreview(vue, ui.UploadFileList);
         const DropdownMenuVueDemo = createDropdownMenuVuePreview(vue, ui.DropdownMenu);
         const NavigationVueDemo = createNavigationVuePreview(vue, ui);
+        const SystemHeaderVueDemo = createSystemHeaderVuePreview(vue, ui);
         const OrganizationTransferVueDemo = createOrganizationTransferVuePreview(vue, ui);
         if (
           isEnterpriseId(kind) &&
@@ -118,7 +121,8 @@ export function VueDemo({ kind, onAction, options, onNavCollapsedChange }: VueDe
           kind !== 'tree-select' &&
           kind !== 'dropdown-menu' &&
           kind !== 'sidebar-nav' &&
-          kind !== 'top-nav'
+          kind !== 'top-nav' &&
+          kind !== 'system-header'
         ) {
           app = createApp(
             createEnterpriseVueDemo(
@@ -219,6 +223,8 @@ export function VueDemo({ kind, onAction, options, onNavCollapsedChange }: VueDe
 
               return () => {
                 const o = optionState.value ?? defaultDemoOptions;
+                if (kind === 'system-header')
+                  return h(SystemHeaderVueDemo, { options: systemHeaderPreviewOptions(o) });
                 if (kind === 'sidebar-nav' || kind === 'top-nav')
                   return h(NavigationVueDemo, {
                     kind,

@@ -1,7 +1,7 @@
 export const componentRegistry = {
   schemaVersion: 1,
   library: 'BTDESIGN',
-  version: '0.12.0',
+  version: '0.13.0',
   packages: {
     react: '@btdesign/react',
     vue: '@btdesign/vue',
@@ -48,6 +48,9 @@ export const componentRegistry = {
       '--f-tree-indent',
       '--f-nav-item-height',
       '--f-nav-padding',
+      '--f-system-header-min-height',
+      '--f-system-header-padding-inline',
+      '--f-system-header-gap',
       '--f-list-row-padding',
       '--f-list-gap',
       '--f-overlay-radius',
@@ -1181,6 +1184,26 @@ export const componentRegistry = {
       },
       notes:
         'Collapsed group popups use click and keyboard navigation. They do not automatically avoid viewport edges or open on hover. Actual href items are links; the application owns routing, permissions and activeKey.',
+    },
+    {
+      name: 'SystemHeader',
+      purpose: 'Composable application header for brand, search, actions, account and organization',
+      react: {
+        brand: 'ReactNode',
+        search: 'ReactNode',
+        actions: 'ReactNode',
+        account: 'ReactNode',
+        organization: 'ReactNode',
+      },
+      vue: {
+        'brand slot': 'content',
+        'search slot': 'content',
+        'actions slot': 'content',
+        'account slot': 'content',
+        'organization slot': 'content',
+      },
+      notes:
+        'Provides layout and theme only. Applications provide accessible controls, real search, menus, account and organization behavior.',
     },
     {
       name: 'TopNav',

@@ -1,3 +1,4 @@
+import { systemHeaderExample } from './SystemHeaderExample';
 import { navigationExample } from './NavigationExample';
 import type { AnatomyPart, DemoOptions, Framework } from './component-types';
 import { dropdownPreviewItems } from './dropdown-preview';
@@ -262,6 +263,20 @@ export const enterpriseCatalog = [
       ['renderIcon / #icon', '装饰性图标', '—'],
       ['item.parentLink / href', '父级链接与展开按钮分离', 'false'],
       ['label / disabled', 'string / boolean', '—'],
+    ],
+  },
+  {
+    id: 'system-header',
+    name: 'SystemHeader',
+    cn: '系统顶栏',
+    category: '导航',
+    description: '把品牌、搜索、快捷操作和账户区域组合成应用顶栏。',
+    props: [
+      ['brand / #brand', '品牌内容', '—'],
+      ['search / #search', '搜索内容', '—'],
+      ['actions / #actions', '快捷操作', '—'],
+      ['account / #account', '账户内容', '—'],
+      ['organization / #organization', '组织内容', '—'],
     ],
   },
   {
@@ -602,6 +617,30 @@ export const enterpriseAnatomy: Record<EnterpriseId, AnatomyPart[]> = {
       '--f-primary',
     ),
   ],
+  'system-header': [
+    anatomy(
+      '顶栏容器',
+      'SystemHeader → header',
+      '统一顶栏高度、留白与各区块间距。',
+      '--f-system-header-min-height',
+      '--f-system-header-padding-inline',
+      '--f-system-header-gap',
+    ),
+    anatomy(
+      '品牌与搜索',
+      'brand / search slots',
+      '品牌与搜索由应用提供，搜索使用实际输入控件。',
+      '--f-input-height',
+      '--f-input-radius',
+    ),
+    anatomy(
+      '操作与账户',
+      'actions / account / organization slots',
+      '按钮与菜单由应用组合，并继承各自的设计规则。',
+      '--f-button-height',
+      '--f-overlay-radius',
+    ),
+  ],
   'dropdown-menu': [
     anatomy(
       '触发与菜单',
@@ -665,6 +704,7 @@ export function enterpriseComponentCode(
   framework: Framework,
   o?: DemoOptions,
 ): string {
+  if (id === 'system-header') return systemHeaderExample(framework, o);
   if (id === 'sidebar-nav' || id === 'top-nav') return navigationExample(id, framework, o);
   const groupButtons = Array.from(
     { length: Math.max(2, Math.min(8, o?.buttonGroupCount ?? 3)) },

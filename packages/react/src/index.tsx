@@ -107,6 +107,7 @@ export type { AutoCompleteProps } from './auto-complete.js';
 export * from './image.js';
 export * from './carousel.js';
 export * from './page-header.js';
+export * from './system-header.js';
 export * from './rate.js';
 export * from './anchor.js';
 export * from './popover.js';

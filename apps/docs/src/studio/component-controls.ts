@@ -55,6 +55,9 @@ export const controlDefinitions = {
   treeIndent: geometry('tree', 'indent', '层级缩进'),
   navigationHeight: geometry('navigation', 'itemHeight', '导航项高度'),
   navigationPadding: geometry('navigation', 'padding', '左右留白'),
+  systemHeaderHeight: geometry('systemHeader', 'minHeight', '顶栏最小高度'),
+  systemHeaderPadding: geometry('systemHeader', 'paddingInline', '左右留白'),
+  systemHeaderGap: geometry('systemHeader', 'gap', '区域间距'),
   listPadding: geometry('list', 'rowPadding', '条目内边距'),
   listGap: geometry('list', 'gap', '条目间距'),
   breadcrumbItemGap: geometry('breadcrumb', 'itemGap', '层级间距'),
@@ -302,6 +305,12 @@ const partsByComponent: Record<ComponentId, ControlPart[]> = {
     part('popup', '收起浮层', ['overlayRadius', 'overlayPadding'], [3]),
   ],
   'top-nav': [navigation()],
+  'system-header': [
+    part('header', '顶栏布局', ['systemHeaderHeight', 'systemHeaderPadding', 'systemHeaderGap']),
+    part('search', '搜索区域', ['inputHeight', 'inputRadius']),
+    part('actions', '快捷操作', ['buttonHeight', 'buttonRadius']),
+    part('menu', '菜单浮层', ['overlayRadius', 'overlayPadding']),
+  ],
   'dropdown-menu': [
     button(),
     navigation(),

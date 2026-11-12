@@ -4,10 +4,10 @@ BTDESIGN 的框架无关行为层。React 与 Vue 组件共享同一份表单校
 
 ## 安装
 
-组件包依赖本包。使用网站下载的分发包时，将 `btdesign-engine-0.12.0.tgz` 与 tokens、所选框架的安装包一起安装。公开 npm 注册表发布状态以主仓库说明为准。
+组件包依赖本包。使用网站下载的分发包时，将 `btdesign-engine-0.13.0.tgz` 与 tokens、所选框架的安装包一起安装。公开 npm 注册表发布状态以主仓库说明为准。
 
 ```sh
-npm install ./btdesign-engine-0.12.0.tgz ./btdesign-tokens-0.12.0.tgz ./btdesign-react-0.12.0.tgz
+npm install ./btdesign-engine-0.13.0.tgz ./btdesign-tokens-0.13.0.tgz ./btdesign-react-0.13.0.tgz
 ```
 
 ## 校验

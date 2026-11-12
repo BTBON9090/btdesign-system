@@ -27,6 +27,7 @@ export interface ComponentOverrides {
   calendar?: { cellSize?: number; gap?: number };
   tree?: { rowHeight?: number; indent?: number };
   navigation?: { itemHeight?: number; padding?: number };
+  systemHeader?: { minHeight?: number; paddingInline?: number; gap?: number };
   breadcrumb?: { itemGap?: number; separatorGap?: number; fontSize?: number };
   tabs?: {
     minHeight?: number;
@@ -92,6 +93,23 @@ export const componentGeometry = {
   navigation: {
     itemHeight: { min: 30, max: 56, comfortable: 40, compact: 32, token: '--f-nav-item-height' },
     padding: { min: 8, max: 24, comfortable: 12, compact: 8, token: '--f-nav-padding' },
+  },
+  systemHeader: {
+    minHeight: {
+      min: 48,
+      max: 96,
+      comfortable: 64,
+      compact: 56,
+      token: '--f-system-header-min-height',
+    },
+    paddingInline: {
+      min: 8,
+      max: 40,
+      comfortable: 24,
+      compact: 16,
+      token: '--f-system-header-padding-inline',
+    },
+    gap: { min: 4, max: 32, comfortable: 16, compact: 12, token: '--f-system-header-gap' },
   },
   list: {
     rowPadding: { min: 8, max: 24, comfortable: 16, compact: 10, token: '--f-list-row-padding' },

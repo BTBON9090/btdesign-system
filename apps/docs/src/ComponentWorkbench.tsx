@@ -166,6 +166,25 @@ export function ComponentWorkbench({
         current.tabsShowIcon ? current : { ...current, tabsShowIcon: true },
       );
   }, [embedded, kind, selectedPart]);
+  useEffect(() => {
+    if (!embedded || kind !== 'system-header') return;
+    if (selectedPart === 'search')
+      setOptions((current) =>
+        current.headerSearch === false ? { ...current, headerSearch: true } : current,
+      );
+    if (selectedPart === 'actions')
+      setOptions((current) =>
+        current.headerActions === false ? { ...current, headerActions: true } : current,
+      );
+    if (selectedPart === 'account' || selectedPart === 'menu')
+      setOptions((current) =>
+        current.headerAccount === false ? { ...current, headerAccount: true } : current,
+      );
+    if (selectedPart === 'organization')
+      setOptions((current) =>
+        current.headerOrganization === false ? { ...current, headerOrganization: true } : current,
+      );
+  }, [embedded, kind, selectedPart]);
   const [savedProject] = useState(() => loadStudio().project);
   const project = liveProject ?? savedProject;
   const [themeSource, setThemeSource] = useState<'workspace' | 'default'>('workspace');
@@ -210,6 +229,30 @@ export function ComponentWorkbench({
                 <option value="multiple">多选</option>
               </select>
             </label>
+          )}
+          {kind === 'system-header' && (
+            <>
+              {(
+                [
+                  ['headerSearch', '搜索'],
+                  ['headerActions', '快捷操作'],
+                  ['headerAccount', '账户'],
+                  ['headerOrganization', '组织'],
+                ] as const
+              ).map(([key, label]) => (
+                <label key={key}>
+                  {label}
+                  <select
+                    aria-label={`预览顶栏${label}`}
+                    value={options[key] === false ? 'hide' : 'show'}
+                    onChange={(event) => update(key, event.target.value === 'show')}
+                  >
+                    <option value="show">显示</option>
+                    <option value="hide">隐藏</option>
+                  </select>
+                </label>
+              ))}
+            </>
           )}
           {(kind === 'sidebar-nav' || kind === 'top-nav') && (
             <>
@@ -1860,6 +1903,9 @@ export function ComponentWorkbench({
                 </select>
               </label>
             </>
+          )}
+          {embedded && kind === 'system-header' && selectedPart === 'menu' && (
+            <p className="bt-workbench-hint">打开个人菜单可查看浮层规则。</p>
           )}
           {kind === 'button' && (
             <>

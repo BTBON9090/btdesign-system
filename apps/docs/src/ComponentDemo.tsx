@@ -1,3 +1,5 @@
+import { SystemHeaderPreview } from './SystemHeaderPreview';
+import { systemHeaderPreviewOptions } from './SystemHeaderExample';
 import { TabsDetailPreview } from './TabsDetailPreview';
 import { tabsDetailOptions } from './TabsDetailExample';
 import { NavigationPreview } from './NavigationPreview';
@@ -200,6 +202,8 @@ export function ComponentDemo({
       />
     );
   }
+  if (kind === 'system-header')
+    return <SystemHeaderPreview options={systemHeaderPreviewOptions(options)} />;
   if (kind === 'sidebar-nav' || kind === 'top-nav')
     return (
       <NavigationPreview

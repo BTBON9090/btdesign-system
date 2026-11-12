@@ -68,10 +68,15 @@ export type ComponentId =
   | 'transfer'
   | 'sidebar-nav'
   | 'top-nav'
+  | 'system-header'
   | 'dropdown-menu'
   | 'data-table';
 
 export interface DemoOptions {
+  headerSearch?: boolean;
+  headerActions?: boolean;
+  headerAccount?: boolean;
+  headerOrganization?: boolean;
   navCollapsed?: boolean;
   navIcons?: boolean;
   navShowCollapseControl?: boolean;
