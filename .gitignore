@@ -21,3 +21,4 @@ test-results/
 playwright-report/
 !assets/legacy-downloads/0.12.0/*.tgz
 !assets/legacy-downloads/0.13.0/*.tgz
+!assets/legacy-downloads/0.14.0/*.tgz

@@ -1,9 +1,20 @@
-import { forwardRef, type HTMLAttributes, type MouseEvent, type ReactNode } from 'react';
+import {
+  Fragment,
+  forwardRef,
+  isValidElement,
+  type HTMLAttributes,
+  type MouseEvent,
+  type ReactNode,
+} from 'react';
 
 export interface PageHeaderProps extends Omit<HTMLAttributes<HTMLElement>, 'title'> {
   title: ReactNode;
   description?: ReactNode;
   breadcrumb?: ReactNode;
+  /** Optional application-owned control beside the breadcrumb. */
+  guide?: ReactNode;
+  /** Optional application-owned tabs below the heading. */
+  tabs?: ReactNode;
   actions?: ReactNode;
   backIcon?: ReactNode;
   backLabel?: string;
@@ -12,12 +23,23 @@ export interface PageHeaderProps extends Omit<HTMLAttributes<HTMLElement>, 'titl
   headingLevel?: 1 | 2 | 3 | 4 | 5 | 6;
 }
 
+function hasContent(node: ReactNode): boolean {
+  if (node == null || typeof node === 'boolean') return false;
+  if (typeof node === 'string') return node.trim().length > 0;
+  if (Array.isArray(node)) return node.some(hasContent);
+  if (isValidElement<{ children?: ReactNode }>(node) && node.type === Fragment)
+    return hasContent(node.props.children);
+  return true;
+}
+
 /** Navigation remains application-owned; this component never guesses a destination. */
 export const PageHeader = forwardRef<HTMLElement, PageHeaderProps>(function PageHeader(
   {
     title,
     description,
     breadcrumb,
+    guide,
+    tabs,
     actions,
     backIcon,
     backLabel = '返回',
@@ -34,7 +56,14 @@ export const PageHeader = forwardRef<HTMLElement, PageHeaderProps>(function Page
   const renderBack = showBack ?? Boolean(onBack);
   return (
     <header {...props} ref={ref} className={['f-page-header', className].filter(Boolean).join(' ')}>
-      {breadcrumb != null && <div className="f-page-header-breadcrumb">{breadcrumb}</div>}
+      {hasContent(guide) ? (
+        <div className="f-page-header-top">
+          {breadcrumb != null && <div className="f-page-header-breadcrumb">{breadcrumb}</div>}
+          <div className="f-page-header-guide">{guide}</div>
+        </div>
+      ) : (
+        breadcrumb != null && <div className="f-page-header-breadcrumb">{breadcrumb}</div>
+      )}
       <div className="f-page-header-main">
         <div className="f-page-header-heading">
           {renderBack && (
@@ -55,6 +84,7 @@ export const PageHeader = forwardRef<HTMLElement, PageHeaderProps>(function Page
         </div>
         {actions != null && <div className="f-page-header-actions">{actions}</div>}
       </div>
+      {hasContent(tabs) && <div className="f-page-header-tabs">{tabs}</div>}
     </header>
   );
 });

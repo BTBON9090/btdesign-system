@@ -161,6 +161,8 @@ const partsByComponent: Record<ComponentId, ControlPart[]> = {
     part('back', '返回操作', ['buttonHeight', 'buttonRadius'], [0]),
     part('title', '标题与说明', [], [1]),
     part('actions', '面包屑与操作', [], [2]),
+    part('guide', '帮助指引', ['buttonHeight', 'buttonRadius']),
+    part('tabs', '底部标签栏', ['tabsMinHeight', 'tabsPadding', 'tabsGap', 'tabsFontSize']),
   ],
   anchor: [part('links', '锚点链接', [], [0]), part('nested', '子级目录', ['treeIndent'], [1])],
   card: [

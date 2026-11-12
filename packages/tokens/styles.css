@@ -3145,6 +3145,22 @@
 .f-page-header-breadcrumb {
   margin-bottom: var(--f-space, 16px);
 }
+.f-page-header-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--f-space, 16px);
+  margin-bottom: var(--f-space, 16px);
+}
+.f-page-header-top .f-page-header-breadcrumb {
+  margin-bottom: 0;
+}
+.f-page-header-guide {
+  margin-inline-start: auto;
+}
+.f-page-header-tabs {
+  margin-top: var(--f-space, 16px);
+}
 .f-page-header-main {
   display: flex;
   align-items: flex-start;

@@ -115,6 +115,11 @@ try {
           tabsDisabledItem: true,
         },
       ]);
+    if (component.id === 'page-header')
+      variants.push([
+        'with-guide-and-tabs',
+        { ...defaults, pageHeaderGuide: true, pageHeaderTabs: true },
+      ]);
     if (component.id === 'cascader')
       variants.push([
         'parent-no-search',

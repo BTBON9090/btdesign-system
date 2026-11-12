@@ -19,11 +19,17 @@ test('PageHeader examples expose only selected parts and wire back and action ca
       showDescription: true,
       showActions: true,
       showBreadcrumb: true,
+      showGuide: true,
+      showTabs: true,
     });
     assert.match(full, /handleBack/);
     assert.match(full, /handleSave/);
     assert.match(full, /面包屑/);
     assert.match(full, /查看并管理/);
+    assert.match(full, /handleGuide/);
+    assert.match(full, /帮助指引/);
+    assert.match(full, /成员内容（演示）/);
+    assert.match(full, /<Tabs/);
   }
 });
 test('generated PageHeader examples parse as React TSX and Vue SFC', () => {
@@ -32,6 +38,8 @@ test('generated PageHeader examples parse as React TSX and Vue SFC', () => {
     showDescription: true,
     showActions: true,
     showBreadcrumb: true,
+    showGuide: true,
+    showTabs: true,
   };
   const react = ts.transpileModule(pageHeaderExampleCode('react', options), {
     compilerOptions: { jsx: ts.JsxEmit.ReactJSX, target: ts.ScriptTarget.ES2022 },

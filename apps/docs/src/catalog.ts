@@ -373,7 +373,7 @@ export const catalog = [
     props: [
       ['title / title slot', 'ReactNode / string / Vue slot', '必填（或插槽）'],
       ['description / description slot', 'ReactNode / string / Vue slot', '—'],
-      ['breadcrumb / actions', 'ReactNode / Vue slots', '—'],
+      ['breadcrumb / actions / guide / tabs', 'ReactNode / Vue slots', '—'],
       ['onBack / @back', '(event: MouseEvent) => void', '—'],
       ['showBack / backLabel / headingLevel', 'boolean / string / 1–6', '自动 / 返回 / 1'],
     ],
@@ -988,6 +988,8 @@ export function pageHeaderPreviewOptions(options?: DemoOptions): PageHeaderPrevi
     showDescription: options?.pageHeaderDescription ?? true,
     showActions: options?.pageHeaderActions ?? true,
     showBreadcrumb: options?.pageHeaderBreadcrumb ?? false,
+    showGuide: options?.pageHeaderGuide ?? false,
+    showTabs: options?.pageHeaderTabs ?? false,
   };
 }
 export function anchorPreviewOptions(options?: DemoOptions): AnchorPreviewOptions {
@@ -1438,6 +1440,22 @@ export const componentAnatomy: Record<ComponentId, AnatomyPart[]> = {
       'breadcrumb / actions',
       '通过组合内容和插槽提供路径及页面动作。',
       '--f-space',
+    ),
+    part(
+      '帮助指引',
+      'guide → Button',
+      '指引内容与操作由应用提供。',
+      '--f-button-height',
+      '--f-button-radius',
+    ),
+    part(
+      '底部标签栏',
+      'tabs → Tabs',
+      '页头下方可组合真实的标签栏与内容。',
+      '--f-tabs-min-height',
+      '--f-tabs-padding-inline',
+      '--f-tabs-gap',
+      '--f-tabs-font-size',
     ),
   ],
   anchor: [

@@ -198,6 +198,17 @@ export function ComponentWorkbench({
         current.workspaceTabsMore === false ? { ...current, workspaceTabsMore: true } : current,
       );
   }, [embedded, kind, selectedPart]);
+  useEffect(() => {
+    if (!embedded || kind !== 'page-header') return;
+    if (selectedPart === 'guide')
+      setOptions((current) =>
+        current.pageHeaderGuide ? current : { ...current, pageHeaderGuide: true },
+      );
+    if (selectedPart === 'tabs')
+      setOptions((current) =>
+        current.pageHeaderTabs ? current : { ...current, pageHeaderTabs: true },
+      );
+  }, [embedded, kind, selectedPart]);
   const [savedProject] = useState(() => loadStudio().project);
   const project = liveProject ?? savedProject;
   const [themeSource, setThemeSource] = useState<'workspace' | 'default'>('workspace');
@@ -1821,6 +1832,24 @@ export function ComponentWorkbench({
                   onChange={(event) => update('pageHeaderBreadcrumb', event.target.checked)}
                 />
                 面包屑
+              </label>
+              <label>
+                <input
+                  type="checkbox"
+                  aria-label="预览帮助指引"
+                  checked={options.pageHeaderGuide ?? false}
+                  onChange={(event) => update('pageHeaderGuide', event.target.checked)}
+                />
+                帮助指引
+              </label>
+              <label>
+                <input
+                  type="checkbox"
+                  aria-label="预览底部标签栏"
+                  checked={options.pageHeaderTabs ?? false}
+                  onChange={(event) => update('pageHeaderTabs', event.target.checked)}
+                />
+                底部标签栏
               </label>
             </>
           )}

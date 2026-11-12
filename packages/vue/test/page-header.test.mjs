@@ -1,6 +1,16 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createSSRApp, createRenderer, h, markRaw, nextTick, ref } from 'vue';
+import {
+  Comment,
+  Fragment,
+  Text,
+  createSSRApp,
+  createRenderer,
+  h,
+  markRaw,
+  nextTick,
+  ref,
+} from 'vue';
 import { renderToString } from '@vue/server-renderer';
 import { PageHeader } from '../dist/page-header.js';
 
@@ -25,6 +35,66 @@ test('PageHeader renders semantic heading, named back action and content slots',
   assert.match(html, /<h2 class="f-page-header-title">项目<\/h2>/);
   assert.match(html, /<span>管理工作<\/span>/);
   assert.match(html, /<button>新建<\/button>/);
+  assert.match(html, /<header[^>]*><div class="f-page-header-breadcrumb">/);
+  assert.doesNotMatch(html, /f-page-header-top|f-page-header-guide|f-page-header-tabs/);
+});
+
+test('guide shares breadcrumb row and tabs follow the main section with host controls intact', async () => {
+  const html = await renderToString(
+    createSSRApp({
+      render: () =>
+        h(
+          PageHeader,
+          { title: '项目' },
+          {
+            breadcrumb: () => h('nav', { 'aria-label': '路径' }, '首页'),
+            guide: () => h('button', { type: 'button' }, '帮助'),
+            tabs: () => h('nav', { 'aria-label': '项目页面' }, '概览'),
+          },
+        ),
+    }),
+  );
+  assert.match(
+    html,
+    /<div class="f-page-header-top"><div class="f-page-header-breadcrumb"><nav aria-label="路径">首页<\/nav><\/div><div class="f-page-header-guide"><button type="button">帮助<\/button><\/div><\/div>/,
+  );
+  assert.match(
+    html,
+    /f-page-header-main[\s\S]*<div class="f-page-header-tabs"><nav aria-label="项目页面">概览<\/nav><\/div><\/header>/,
+  );
+  const guideOnly = await renderToString(
+    createSSRApp({
+      render: () => h(PageHeader, { title: '项目' }, { guide: () => h('button', '帮助') }),
+    }),
+  );
+  assert.match(guideOnly, /f-page-header-top/);
+  assert.doesNotMatch(guideOnly, /f-page-header-breadcrumb/);
+});
+
+test('empty fragments and whitespace do not create guide or tabs wrappers', async () => {
+  const html = await renderToString(
+    createSSRApp({
+      render: () =>
+        h(
+          PageHeader,
+          { title: '项目' },
+          {
+            breadcrumb: () => h('nav', '路径'),
+            guide: () => h(Fragment, null, [h(Comment, ''), h(Text, '  '), h(Fragment, null, [])]),
+            tabs: () => [h(Text, ' \n '), h(Comment, '')],
+          },
+        ),
+    }),
+  );
+  assert.match(html, /<header[^>]*><div class="f-page-header-breadcrumb">/);
+  assert.doesNotMatch(html, /f-page-header-top|f-page-header-guide|f-page-header-tabs/);
+  const zero = await renderToString(
+    createSSRApp({
+      render: () => h(PageHeader, { title: '项目' }, { guide: () => [0], tabs: () => [0] }),
+    }),
+  );
+  assert.match(zero, /class="f-page-header-guide">0/);
+  assert.match(zero, /class="f-page-header-tabs">0/);
 });
 test('PageHeader emits back to the consumer and disables a requested back action without a listener', async () => {
   const node = (type) => markRaw({ type, props: {}, children: [], parent: null });

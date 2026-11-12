@@ -1,3 +1,4 @@
+import { pageHeaderTabItems } from './page-header-example-code';
 import type { PageHeaderPreviewOptions } from './page-header-example-code';
 
 export function pageHeaderVueDemo(
@@ -8,6 +9,27 @@ export function pageHeaderVueDemo(
   onAction: (message: string) => void,
 ) {
   const slots = {
+    ...(options.showGuide
+      ? {
+          guide: () =>
+            vue.h(
+              ui.Button,
+              { variant: 'ghost', onClick: () => onAction('已点击帮助指引（演示）') },
+              () => '帮助指引',
+            ),
+        }
+      : {}),
+    ...(options.showTabs
+      ? {
+          tabs: () =>
+            vue.h(ui.Tabs, {
+              label: '项目内容',
+              variant: 'line',
+              items: pageHeaderTabItems,
+              defaultValue: 'overview',
+            }),
+        }
+      : {}),
     ...(options.showBreadcrumb
       ? { breadcrumb: () => vue.h('nav', { 'aria-label': '面包屑' }, '项目 / 项目详情') }
       : {}),

@@ -177,6 +177,8 @@ export interface DemoOptions {
   stepsIcons?: boolean;
   stepsError?: boolean;
   tooltipPlacement?: 'top' | 'bottom' | 'left' | 'right';
+  pageHeaderGuide?: boolean;
+  pageHeaderTabs?: boolean;
   pageHeaderBack?: boolean;
   pageHeaderDescription?: boolean;
   pageHeaderActions?: boolean;

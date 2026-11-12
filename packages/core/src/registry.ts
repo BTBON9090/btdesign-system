@@ -1,7 +1,7 @@
 export const componentRegistry = {
   schemaVersion: 1,
   library: 'BTDESIGN',
-  version: '0.14.0',
+  version: '0.15.0',
   packages: {
     react: '@btdesign/react',
     vue: '@btdesign/vue',
@@ -307,8 +307,20 @@ export const componentRegistry = {
         backLabel: 'string',
         headingLevel: '1–6',
       },
+      react: {
+        breadcrumb: 'ReactNode',
+        actions: 'ReactNode',
+        guide: 'ReactNode',
+        tabs: 'ReactNode',
+      },
+      vue: {
+        'breadcrumb slot': 'content',
+        'actions slot': 'content',
+        'guide slot': 'content',
+        'tabs slot': 'content',
+      },
       notes:
-        'The application supplies breadcrumb, actions and the back callback; navigation is not implicit.',
+        'The application supplies breadcrumb, actions, guide, tabs and the back callback; navigation is not implicit.',
     },
     {
       name: 'Anchor',

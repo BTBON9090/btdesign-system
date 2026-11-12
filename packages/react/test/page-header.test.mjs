@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createElement as h } from 'react';
+import { createElement as h, Fragment } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { PageHeader } from '../dist/page-header.js';
 
@@ -41,4 +41,51 @@ test('PageHeader delegates back to its consumer and cannot offer an inert enable
   const disabled = renderToStaticMarkup(h(PageHeader, { title: '项目', showBack: true }));
   assert.match(disabled, /f-page-header-back" aria-label="返回" disabled=""/);
   assert.doesNotMatch(renderToStaticMarkup(h(PageHeader, { title: '项目' })), /f-page-header-back/);
+});
+
+test('guide shares breadcrumb row and tabs follow the heading without supplying behavior', () => {
+  const html = renderToStaticMarkup(
+    h(PageHeader, {
+      title: '项目',
+      breadcrumb: h('nav', { 'aria-label': '路径' }, '首页'),
+      guide: h('a', { href: '/help' }, '使用指南'),
+      tabs: h('nav', { 'aria-label': '项目页' }, h('a', { href: '/details' }, '详情')),
+    }),
+  );
+  assert.match(
+    html,
+    /<div class="f-page-header-top"><div class="f-page-header-breadcrumb"><nav aria-label="路径">首页<\/nav><\/div><div class="f-page-header-guide"><a href="\/help">使用指南<\/a><\/div><\/div>/,
+  );
+  assert.ok(html.indexOf('f-page-header-main') < html.indexOf('f-page-header-tabs'));
+  assert.match(
+    html,
+    /f-page-header-tabs"><nav aria-label="项目页"><a href="\/details">详情<\/a><\/nav>/,
+  );
+});
+test('empty guide and tabs retain legacy structure, including nested blank fragments', () => {
+  const breadcrumb = h('nav', { 'aria-label': '路径' }, '首页');
+  const baseline = renderToStaticMarkup(h(PageHeader, { title: '项目', breadcrumb }));
+  for (const empty of [
+    '',
+    '  ',
+    null,
+    false,
+    [],
+    h(Fragment, {}, [null, ' ', h(Fragment, { key: 'x' })]),
+  ]) {
+    const html = renderToStaticMarkup(
+      h(PageHeader, { title: '项目', breadcrumb, guide: empty, tabs: empty }),
+    );
+    assert.equal(html, baseline);
+    assert.doesNotMatch(html, /f-page-header-top|f-page-header-guide|f-page-header-tabs/);
+  }
+});
+test('guide without breadcrumb and zero-valued content remain valid', () => {
+  const html = renderToStaticMarkup(h(PageHeader, { title: '项目', guide: 0, tabs: 0 }));
+  assert.match(
+    html,
+    /<div class="f-page-header-top"><div class="f-page-header-guide">0<\/div><\/div>/,
+  );
+  assert.match(html, /<div class="f-page-header-tabs">0<\/div>/);
+  assert.doesNotMatch(html, /f-page-header-breadcrumb/);
 });
